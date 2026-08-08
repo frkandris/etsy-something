@@ -2,7 +2,11 @@
 
 **Státusz: kész a feltöltésre, DE fizikai tesztvágás nélkül.** Lásd a *Mielőtt kiteszed* részt.
 
-![mockup](mockup_01.png)
+**v2 — képmodell-pipeline.** Az 5 versenytárs-listing átnézése után a procedurális geometriát
+lecseréltük AI-illusztrációból vezetett rétegekre (`pipeline/00_generate.py` →
+`pipeline/02_trace.py` → `render_blender.py`). A régi generátor és mockup megmaradt referenciának.
+
+![hero](pipeline/work/render_hero.png)
 
 ---
 
@@ -39,11 +43,12 @@ yggdrasil svg · dxf laser file · tree wall decor
 
 ## Ár
 
-listaár **$7.95**, tartós **40%** kedvezmény, tényleges **$4.77** (≈1 510 HUF).
+listaár **$11.95**, tartós **40%** kedvezmény, tényleges **$7.17** (≈2 270 HUF).
 
-A deduplikált keresési minta (342 termék) mediánja 1 520 HUF, a boltok 79,5%-a akciózik, medián
-kedvezmény 40%. Ez a piaci norma — a korábbi „ne akciózz / magasabb ár" ajánlás az auditon
-megbukott, ezért nem megyünk vele szembe az első listinggel.
+A deduplikált keresési minta (342 termék) mediánja 1 520 HUF, de az 5 legközelebbi versenytárs
+átnézése azt mutatta, hogy az egyedi (nem bundle) intricate designok 2 200–2 500 HUF körül mennek —
+a v2 design már ebbe a sávba tartozik. A 40% tartós kedvezmény a piaci norma (a boltok 79,5%-a
+akciózik, medián 40%), azzal nem megyünk szembe.
 
 ## Leírás
 
@@ -56,9 +61,10 @@ megbukott, ezért nem megyünk vele szembe az első listinggel.
 > **What you get** • 6 numbered layers, SVG + DXF (R12) • stacked preview showing assembly order
 > • designed for 3 mm (1/8") plywood or MDF, 18 mm total depth
 >
-> **Cut-safe by design** Every layer is verified to be a **single connected piece** — nothing falls
-> out on the bed. Narrowest web **2.3 mm** on every layer, computed per layer, not estimated.
-> Kerf compensation 0.2 mm applied.
+> **Cut-safe by design** Layers 1–5 are each a **single connected piece** — nothing falls out on
+> the bed; the front accent layer is 6 large pieces, all over 400 mm². Every layer passes an
+> automated fragility check (weakest piece ≥ 3.6 mm at its widest, breakage-prone area under 1%),
+> computed per layer, not estimated.
 >
 > **Assembly** Cut layers 1–6, stack back to front, glue. The tree goes last, centred. The back
 > plate has a 6 mm keyhole for hanging.
@@ -67,26 +73,32 @@ megbukott, ezért nem megyünk vele szembe az első listinggel.
 >
 > Instant digital download — no physical item is shipped.
 
-## Fájlcsomag
+## Fájlcsomag (pipeline/work/layers/)
 
 ```
-layer_1_of_6  hátlap, tömör korong + akasztófurat
-layer_2_of_6  gyűrű, belső 40 mm, 24 szirom
-layer_3_of_6  gyűrű, belső 64 mm, 32 szirom
-layer_4_of_6  gyűrű, belső 88 mm, 40 szirom
-layer_5_of_6  kelta csomó-gyűrű (16/5 csillagfonat) + külső perem, 8 küllővel bekötve
-layer_6_of_6  életfa — külön darab, középre ragasztva
-preview_stacked.svg + mockup_01.png
+layer_1_of_6  hátlap, tömör sziluett — 1 darab
+layer_2_of_6  fonott szegély + belső mező, 223 kivágással — 1 darab
+layer_3_of_6  szegély-fonat mélyebb szálai + lombkorona — 1 darab
+layer_4_of_6  fa + gyökérfonat teste — 1 darab
+layer_5_of_6  fonatok felül futó szálai — 1 darab
+layer_6_of_6  törzs, ágak és a szegély kiemelt szálai — 6 darab
+preview_stacked.png/svg + render_hero.png + render_01.png
 ```
 
-Mindegyik SVG **és** DXF R12 formátumban.
+Mindegyik SVG **és** DXF R12 formátumban. Összesen **11 darab** ragasztandó elem — az 1–5. réteg
+egy-egy összefüggő lap.
 
-## Hogyan készült
+## Hogyan készült (v2 pipeline)
 
-`generate_celtic_tree.py` — tisztán számolt geometria, shapely boolean unióval. Minden réteget
-**összefüggőség-ellenőrzés** után ír ki: ha egy réteg két darabra esne, a generátor jelzi és nem
-megy tovább. Ez menet közben **kétszer is fogott hibát**: az 5. réteg csomó-szalagja szabadon
-lebegett (küllőkkel megoldva), és korábban az előlap eltakarta az összes alatta lévő réteget.
+`pipeline/00_generate.py` — gpt-image-2 rajzolja a motívumot **mélységtérképként**: pontosan 6
+lapos szürkeárnyalat, egymásba ágyazott szintek, textúra és árnyék nélkül. A prompt a
+poszterizálhatóságot kényszeríti ki, nem a szépséget.
+
+`pipeline/02_trace.py` — hisztogram k-means poszterizálás → rétegenként potrace vektorizálás →
+shapely javítás (hajszálvékony részek vastagítása, tűlyukak és szilánkok eldobása) →
+**vágásbiztonsági riport** rétegenként: darabszám, legvékonyabb anyag, törésveszélyes terület.
+Kulcstrükk: mivel a szintek egymásba ágyazottak, egy 400 mm²-nél kisebb darab eldobása nem lyuk —
+az a folt egy lappal hátrébb marad. Így lett 116 ragasztandó darabból 11, változatlan sziluettel.
 
 `render_blender.py` — headless Cycles render, a rétegek valódi 3 mm vastagsággal, hogy a
 lépcsős árnyékok látszódjanak. A [[findings/keyword-demand-sweep]] szerint **a thumbnail nyeri meg

@@ -3,3 +3,4 @@
 *.token
 .env
 .DS_Store
+.venv/

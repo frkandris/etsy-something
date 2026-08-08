@@ -1,6 +1,9 @@
 """Blender headless render of the layered stack -> product photo.
 
-Run:  blender -b -P render_blender.py -- <svg_dir> <out.png>
+Run:  blender -b -P render_blender.py -- <svg_dir> <out.png> [view] [elev_deg]
+
+  view = hero    near-frontal, the main listing image
+         angled  three-quarter, shows the layer edges
 
 Imports each layer SVG as curves, extrudes to 3 mm, stacks them with the real
 layer spacing, gives them a plywood-ish material and lights the scene so the
@@ -13,6 +16,9 @@ import bpy, sys, math, pathlib
 argv = sys.argv[sys.argv.index("--") + 1:]
 SRC = pathlib.Path(argv[0])
 OUT = argv[1]
+VIEW = argv[2] if len(argv) > 2 else "hero"
+ELEV = float(argv[3]) if len(argv) > 3 else (74.0 if VIEW == "hero" else 34.0)
+AZIM = 0.0 if VIEW == "hero" else 24.0
 THICK = 0.003          # 3 mm plywood, in metres (SVG imports in metres-ish)
 GAP = 0.0002
 
@@ -91,13 +97,22 @@ bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
 bpy.context.object.data.materials.append(wood("wall", (0.80, 0.75, 0.68, 1), 0.7))
 
 # ------------------------------------------------------------------ camera + light
-D = SIZE * 1.75
+# Distance from the framing we want, not a guessed multiplier: at focal length f
+# on a 36 mm sensor, a camera d away sees d*36/f across. Solve for the piece plus
+# a margin, then add back what the tilt foreshortens. The earlier fixed 1.75x
+# multiplier cropped the piece.
+LENS, MARGIN = 85.0, 1.22
+D = SIZE * MARGIN * LENS / 36.0 / max(0.55, math.sin(math.radians(ELEV)) ** 0.35)
+el, az = math.radians(ELEV), math.radians(AZIM)
 bpy.ops.object.camera_add(
-    location=(D * 0.30, -D * 0.62, D * 0.72),
-    rotation=(math.radians(42), 0, math.radians(26)))
+    location=(D * math.sin(az) * math.cos(el),
+              -D * math.cos(az) * math.cos(el),
+              D * math.sin(el)),
+    rotation=(math.radians(90 - ELEV), 0, az))
 cam = bpy.context.object
-cam.data.lens = 70
+cam.data.lens = LENS
 scene.camera = cam
+print(f"[render] nezet={VIEW} emelkedes={ELEV:.0f} tavolsag={D:.3f}")
 
 key = bpy.data.lights.new("key", "AREA"); key.energy = SIZE * SIZE * 85; key.size = SIZE * 1.6
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)

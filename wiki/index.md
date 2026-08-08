@@ -20,6 +20,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/geography-and-cost-competition]] — kivel versenyzel, hol a rés
 - [[findings/listing-craft]] — címek: gépek, formátumok, rétegszám, témák
 - [[findings/competitor-listing-images]] — képek: színes karton + keret + lifestyle háttér nyer
+- [[findings/off-etsy-monetisation]] — külső kutatás: hol pénz a pipeline az Etsyn kívül
 - [[findings/verified-shop-list]] — a bolt-lista (a 33-as szűrő hibás volt, dedupolva 21)
 - [[findings/functional-segment-comparison]] — a felmért alternatíva, és miért nem váltunk
 - [[findings/independent-second-opinion]] — **független elemzés** ugyanabból az adatból

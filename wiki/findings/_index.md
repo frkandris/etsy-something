@@ -11,5 +11,6 @@ Mért következtetések. Minden oldal megmondja, melyik populáción számol: ny
 - [[findings/layered-niche-size-and-structure]]
 - [[findings/listing-craft]]
 - [[findings/competitor-listing-images]]
+- [[findings/off-etsy-monetisation]]
 - [[findings/pricing-and-discounting]]
 - [[findings/verified-shop-list]]

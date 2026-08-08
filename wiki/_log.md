@@ -1,0 +1,22 @@
+# Változásnapló
+
+Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
+
+- 2026-08-08 — Termék-vetületek lezárva: a sík print elvetve (0 review / 0 listing, és a `printable art` 2,6-os aránya a legrosszabbak közt), az ajándékdoboz későbbre (index 1,43, gyakorlatilag egy bolt), a mécses/lámpás igazolva (16 listing adja el, a 33 igazolt boltnál 1 van) (decisions/2026-08-08-parked-directions.md)
+- 2026-08-08 — Review-elemzés keresleti indexszel: cross 3,41 / cow 2,53 / patriotic 2,33 alulkínált, welcome sign 0,15 és deer 0,23 túlkínált; a `deer svg` +55,1%-os keresési trendjét az eladás cáfolja (findings/review-mining.md)
+- 2026-08-08 — Review-bányászat (2190 review): a norse/kelta katalógusterv VISSZAVONVA — a témában rangsoroló boltok review-jainak 2,8%-a rétegzett, 58,8%-a gravírozó/tárgy; a mandala indexe 1,02, tehát arányosan fogy, nem túlkínált (findings/review-mining.md)
+- 2026-08-08 — A norse/kelta/tree of life komplexum katalógustervvé bontva: 88 kulcsszó, 22 535 keresés/hó, ~18 designkoncepció, prioritás szerint (workflows/norse-celtic-catalogue-plan.md)
+- 2026-08-08 — Kulcsszó-adatbázis kibővítve 345 kifejezésre (10 seed): a viking/kelta/tree of life komplexum kínálata ~7 000 listing/kulcsszó, a kutyáé 16 200, a mandaláé 39 500 — ez a jobb hosszú farok, és egy vizuális nyelvet beszél (findings/keyword-database.md)
+- 2026-08-08 — Elnapolt irányok rögzítve: termék-vetületek (sík print, ajándékdoboz oldala, rétegelt lámpa) és review-bányászat a tényleges eladásokhoz (decisions/2026-08-08-parked-directions.md)
+- 2026-08-08 — Kulcsszó-adatbázis felépítve (210 kifejezés): a konkurencia terméknevein indított crawl, seedenként ~36 rekord a kapcsolódó táblából; a kutyafajta nem a legjobb család (medián 6,9), a tree of life/kelta jobb (12,2), a papercraft telített (0,2) (findings/keyword-database.md)
+- 2026-08-08 — Kereslet-mérés 40+ kifejezésre az Etsy Marketplace Insightson: a `shadow box svg` a legjobb fájlszándékú kifejezés (75,4 keresés/1000 listing); a hosszú farok volumenben nyer (~15k keresés/hó), de a kombinációt (`layered dog svg` 51) senki nem keresi, ezért a differenciálás vizuális, nem lexikai (findings/keyword-demand-sweep.md)
+- 2026-08-07 — Etsy Marketplace Insights elérhető (Etsy Plus): `layered svg` 1200 keresés / 189,9k találat / +11,1% trend; kiderült, hogy a kutatás végig eladói szókincsben mozgott, a vevők `bedroom wall art`-ot keresnek 22x nagyobb volumennel (findings/etsy-first-party-search-data.md)
+- 2026-08-07 — Öt kulcsszókutató eszköz élőben tesztelve; az eRank modellez (CTR 123%), a RankHero valószínűleg Google-volument ad (CPC, bid range, KWP-bucketek) és fizetőfal mögött van; eRank előfizetés elhalasztva (methods/keyword-tools-comparison.md)
+- 2026-08-07 — Wiki létrehozva a Karpathy LLM Wiki minta + OKF v0.2 frontmatter alapján; taxonómia kutatási projekthez igazítva (`bugs/` → `pitfalls/`, `apps/`+`features/`+`integrations/`+`tech-debt/` elhagyva, mert nincs kód) (CLAUDE.md, index.md)
+- 2026-08-07 — A funkcionális szegmens felmérve (285 bolt, 73 szakosodott, katalógus-mintavétel); statisztikailag azonos a layereddel, ezért marad a layered irány (findings/functional-segment-comparison.md, decisions/2026-08-07-pursue-layered.md)
+- 2026-08-07 — Katalógus-mintavétel 65 boltra (1543 listing): a specialista medián 321 653 → 144 939 HUF/hó (−55%); 13 bolt bizonyult <20%-ban layerednek (pitfalls/2026-08-07-whole-shop-revenue-attribution.md)
+- 2026-08-07 — A Beameez adatpont visszavonva: katalógusa 0%-ban layered, a 3 „találata" ugyanaz az egy listing volt (shops/beameez.md, pitfalls/2026-08-07-duplicate-search-hits.md)
+- 2026-08-07 — Specialista-szűrő bevezetve (≥3 különálló találat): a 173-as populáció fele egyetlen kulcsszóra optimalizált listinggel került be (pitfalls/2026-08-07-single-listing-attribution.md)
+- 2026-08-07 — Layered niche populáció felépítve: 5 Etsy keresés, 500 listing, 173 bolt, Apify actorokkal (findings/layered-niche-size-and-structure.md, methods/data-collection-pipeline.md)
+- 2026-08-06 — A `revenue estimation` fül 2026-os sorai előkészítve Apps Scriptként; gcloud ADC és rclone token út elbukott (decisions/2026-08-06-apps-script-for-sheets.md)
+- 2026-08-06 — 51 bolt újramérve SalesDoe-n a 2024-es kohorszból; 13 bolt megszűnt két év alatt (findings/2024-vs-2026-cohort.md)

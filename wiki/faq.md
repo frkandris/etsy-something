@@ -1,0 +1,63 @@
+---
+type: FAQ
+title: Visszatérő kérdések
+description: Amit már megválaszoltunk, hogy ne kelljen újra levezetni.
+status: stable
+generated:
+  by: claude-opus-5
+  at: 2026-08-07T20:00:00Z
+---
+
+# Visszatérő kérdések
+
+## Nem csak két szerencsés bolt ez az egész?
+
+Nem. 173 bolt látszik öt keresés top találataiban, 33 közülük katalógussal igazolt layered bolt. De a
+kétely jogos volt és termékeny: pont ebből derült ki, hogy a populáció fele egyetlen listinggel került
+be ([[pitfalls/2026-08-07-single-listing-attribution]]).
+
+## Mennyi az esély, hogy beindul?
+
+A 3 évnél fiatalabb specialista boltok kb. **16–19%-a** jut 500 ezer HUF/hó fölé, és **~59%-a** marad
+200 ezer alatt. Lásd [[findings/catalogue-size-and-throughput]].
+
+## Hány listing kell?
+
+**70–200.** 100 alatt a medián bolt kicsi (70 ezer HUF/hó), 300–700 között a listingenkénti hozam a
+legrosszabb. A verifikált kis kivételek (29 és 72 listing) mind magas árúak és **nem akcióznak**.
+
+## Kell lézervágó?
+
+Nem kell megvenni. Fali panelnél nincs illesztés, tehát nem kell iteratív tesztvágás — alkalmi
+hozzáférés elég a validációhoz és a valódi fotókhoz. Lásd [[workflows/production-pipeline]].
+
+## Miért ne akciózzunk, ha mindenki akciózik?
+
+Mert a mérés szerint az akciózók keresnek kevesebbet: a nem akciózó igazolt boltok mediánja
+575 060 HUF/hó és 4 108 HUF/listing, a 55%+ diszkontálóké 282 369 és 1 396. **Fontos:** ez korreláció
+— valószínűleg a jobb termék teszi lehetővé az akciómentességet, nem fordítva.
+[[findings/pricing-and-discounting]]
+
+## Miért nem SalesDoe-t használunk a niche-kutatásban?
+
+Mert a medián ára a lista- és az akciós ár között ingadozik, ami a mélyen diszkontálóknál felfelé
+torzít, és mert boltonként egy böngésző-kattintást igényel.
+[[pitfalls/2026-08-06-salesdoe-list-vs-sale-price]]
+
+## Tudjuk már a keresési volument?
+
+Igen, 2026-08-07 óta: az **Etsy Marketplace Insights** (Etsy Plus) első kézből adja, korlátlanul.
+A `layered svg` 1 200 keresést kap 30 nap alatt, 189 900 találat mellett, **+11,1%-os trenddel**.
+Amit nem ad: 30 napnál hosszabb historikus adatot, tehát szezonalitást.
+[[findings/etsy-first-party-search-data]]
+
+## Mennyibe kerül egy új niche felmérése?
+
+Nagyságrendileg **8–12 USD** Apify-on (5 keresés + bolt-adat + katalógus-mintavétel), plusz
+~30–45 perc. Lásd [[methods/apify-actors]].
+
+## Miért nem lehet API-ból írni a Sheetet?
+
+A Google szervezeti policy tiltja a gcloud ADC klienst a `spreadsheets` scope-ra, az rclone tokenje
+pedig olyan projekthez tartozik, ahol a Sheets API nincs engedélyezve.
+[[decisions/2026-08-06-apps-script-for-sheets]]

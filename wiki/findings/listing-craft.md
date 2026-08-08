@@ -15,7 +15,8 @@ sources:
 
 > **AUDIT 2026-08-08 UTÁN.** A **témamegoszlás hibás volt**: az osztályozó a `man` szót részszóként
 > kereste, ami a `mandala` minden előfordulására illeszkedett. Az „ember/portré 42%" valójában
-> **2,6%** (a 324-ből 296 mandala volt). Szóhatáros újraszámolás a dedupolt igazolt populáción:
+> **2,4%** ugyanezen a 777 listinges korpuszon (a 324-ből 296 mandala volt). A **dedupolt, 21 boltos,
+> 504 listinges** korpuszon szóhatárral:
 > mandala 44,2%, állat 22,8%, természet 20,0%, ünnep 10,7%, vallási 2,8%, **ember/portré 2,6%**,
 > jármű 1,0%. A gép-, formátum- és rétegszám-adatokat a hiba nem érinti. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
 
@@ -93,9 +94,9 @@ rés az adatban.
 Mindössze **6 listing (1%)** említi. Az a **2 bolt**, amelyik igen, mediánban **728 965 HUF/hó**-t és
 **6 544 HUF/listing**-et hoz, szemben a másik 31 bolt 315 434-es és 1 415-ös értékével.
 
-Óvatosan: két bolt, és mindkettő amúgy is a felső mezőnyben van, tehát ez ugyanaz az összefüggés, mint
-a nem akciózásnál — valószínűleg mindkettő a „komolyabb termék" tünete, nem az oka. De ez a leginkább
-kihasználatlan pozicionálási elem az egész mintában.
+**Az audit után ez az állítás elesett:** a két boltból a deduplikálás után **egy** maradt a
+populációban (BKCUT, 3 címemlítés), és annak listingenkénti bevétele (1 035) a **többi 20 bolt
+mediánja (1 628) alatt** van. Egyetlen boltból nem lehet pozicionálási következtetést levonni.
 
 ## Provenancia
 

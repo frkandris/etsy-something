@@ -2,6 +2,7 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+- 2026-08-08 — Codex-audit 2. kör: a review-elemzés még a hibás 33-as populáción és 36 duplikált sorral futott (a 21 boltos újraszámolás: kereszt 57/8 eladó, hazafias 68/10, western 28/10, koponya 18/8); az overview kevert nyers és korrigált mediánt; a README és 8 további felület még a visszavont ajánlást hirdette; a saját javításomban is volt hiba (a nem akciózó csoport HUF/listingje a legmagasabb, nem az 55%+-é)
 - 2026-08-08 — Külső codex-audit 1. kör: a specialista-szűrő keresési sorokat számolt különálló listingek helyett (65→35 specialista, 33→21 igazolt), a review-jelek listingeket eladók helyett; a `man` rész-szó a `mandala`-ra illeszkedett (ember/portré 42%→2,6%). Visszavonva: „ne akciózz”, „ár monoton”, európai klaszter, mécses/lámpás irány (pitfalls/2026-08-08-wrong-unit-of-independence.md)
 - 2026-08-08 — Termék-vetületek lezárva: a sík print elvetve (0 review / 0 listing, és a `printable art` 2,6-os aránya a legrosszabbak közt), az ajándékdoboz későbbre (index 1,43, gyakorlatilag egy bolt), a mécses/lámpás igazolva (16 listing adja el, a 33 igazolt boltnál 1 van) (decisions/2026-08-08-parked-directions.md)
 - 2026-08-08 — Review-elemzés keresleti indexszel: cross 3,41 / cow 2,53 / patriotic 2,33 alulkínált, welcome sign 0,15 és deer 0,23 túlkínált; a `deer svg` +55,1%-os keresési trendjét az eladás cáfolja (findings/review-mining.md)

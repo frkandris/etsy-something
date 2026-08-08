@@ -62,8 +62,8 @@ kimaradtak. A `bugs/` helyett [[pitfalls/_index|pitfalls]] van — kutatásban a
 - **Egy fogalom egy oldal.** ~200 sor felett bontsd ketté.
 - **Előbb a válasz, utána a provenancia.** Minden nem magától értetődő szám mellett ott van, honnan
   jön: melyik adathalmaz, melyik szkript, melyik populáció.
-- **Mindig írd oda a populációt.** Egy szám a populációja nélkül (`173 bolt` vs `65 specialista` vs
-  `33 katalógussal igazolt`) rosszabb, mint a semmi — ez a projekt pontosan ezen égett meg. Lásd
+- **Mindig írd oda a populációt.** Egy szám a populációja nélkül (`173 bolt` vs `35 specialista` vs
+  `21 igazolt`) rosszabb, mint a semmi — ez a projekt pontosan ezen égett meg. Lásd
   [[pitfalls/2026-08-07-whole-shop-revenue-attribution]].
 - **Abszolút dátumok**, `YYYY-MM-DD`. Soha nem „nemrég" vagy „jelenleg".
 - **Hivatkozz bőven** Obsidian-stílusú kettős szögletes zárójellel, az oldal útvonalát megadva

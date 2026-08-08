@@ -1,6 +1,6 @@
 # Eredmények
 
-Mért következtetések. Minden oldal megmondja, melyik populáción számol: nyers (173) / specialista (65) / igazolt (33). Szám populáció nélkül itt nem szerepelhet.
+Mért következtetések. Minden oldal megmondja, melyik populáción számol: nyers (173) / specialista (35) / igazolt (21). Szám populáció nélkül itt nem szerepelhet.
 
 ## Oldalak
 

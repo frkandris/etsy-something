@@ -14,10 +14,10 @@ generated:
 
 - **nyers populáció** — minden bolt, ami megjelent a keresési találatokban (layered: 173).
   Használható a piac zsúfoltságának jellemzésére, **bevételi állításra nem**.
-- **specialista** — legalább 3 **különálló** listinggel rangsorolt (layered: 65; funkcionálisnál a
-  küszöb 2). Lásd [[pitfalls/2026-08-07-duplicate-search-hits]].
+- **specialista** — legalább 3 **különálló** listinggel rangsorolt (layered: **35**; funkcionálisnál a
+  küszöb 2). *A korábbi 65-ös szám hibás volt: keresési sorokat számolt*. Lásd [[pitfalls/2026-08-07-duplicate-search-hits]].
 - **igazolt (verified)** — specialista, **és** a saját katalógusából mintavett 24 listing legalább
-  80%-a a niche-be tartozik (layered: 33). Minden `findings/` szám alapértelmezésben ezen a halmazon
+  80%-a a niche-be tartozik (layered: **21**). Minden `findings/` szám alapértelmezésben ezen a halmazon
   számol.
 
 ## Metrikák

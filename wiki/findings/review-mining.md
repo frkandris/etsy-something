@@ -1,7 +1,7 @@
 ---
 type: Finding
 title: Review-bányászat — mi fogy ténylegesen
-description: 2190 review két mintából; a mandala arányosan fogy, a hazafias és a portré alulkínált, a norse/kelta viszont gravírozást akar, nem rétegzett falidíszt.
+description: 2190 review; a norse/kelta gravirozast akar, nem retegzett falidiszt. Az itteni szamok a hibas 33-as populacion keszultek - a 21 boltos ujraszamolas a lap tetejen.
 status: stable
 generated:
   by: claude-opus-5
@@ -15,7 +15,14 @@ sources:
 
 # Review-bányászat
 
-> **AUDIT 2026-08-08 UTÁN.** A **mécses/lámpás, suncatcher, mirror és ajándékdoboz ajánlás visszavonva**:
+> **AUDIT 2026-08-08 UTÁN — 2. kör.** Az alábbi számok a **hibás 33-as populáción** és
+> **deduplikálatlan** review-kon készültek (36 duplikált sor volt bennük). A **21 igazolt** bolt
+> **1 027 deduplikált** review-ján újraszámolva: kereszt **57 review / 34 listing / 8 eladó**,
+> hazafias **68 / 35 / 10**, western-farm **28 / 19 / 10**, koponya **18 / 14 / 8**,
+> óra **11 / 8 / 3**, mirror **1 / 1 / 1**. Az irány (kereszt–hazafias–western–koponya, több
+> eladóval) áll; a konkrét számok az alább közölteknél kisebbek.
+>
+> **AUDIT 2026-08-08 UTÁN — 1. kör.** A **mécses/lámpás, suncatcher, mirror és ajándékdoboz ajánlás visszavonva**:
 > ezek egy-két eladó katalógusai (tealight 23/29 és lantern 23/23 ugyanattól a YarensWoodDream
 > bolttól, suncatcher 14/14 PetalSmith3D, ajándékdoboz 30/30 LaserArtisanDesigns). Különálló
 > **listingeket** számoltam különálló **eladók** helyett. Ami megmaradt, mert 13–16 eladó adja:

@@ -8,7 +8,7 @@ generated:
   at: 2026-08-07T20:00:00Z
 sources:
   - resource: /assets/data/layered_adjusted.json
-    title: 65 specialista bolt katalógusból számolt layered aránnyal
+    title: specialista boltok katalógusból számolt layered aránnyal (dedupolva 35, ebből 21 igazolt)
   - resource: /assets/data/catalog_sample.json
     title: 1543 listing a boltok saját katalógusából mintavéve
 ---
@@ -27,8 +27,9 @@ Van-e olyan digitális termék niche az Etsy-n, amibe érdemes belépni, és ha 
 strukturális eredmény, ami a 2026-08-08-i auditot is túlélte. Az igazolt populáció (21 bolt) medián
 boltja **417 ezer HUF/hó**-t termel.
 
-**Termékirány eladási adatból**, ott ahol legalább 13 különböző eladó adja a jelet: **kereszt +
-mandala + amerikai zászló kombók**, mellette western/farm és koponya motívum. Lásd
+**Termékirány eladási adatból** (a 21 igazolt bolt **1 027 deduplikált** review-ja), ott ahol több
+különböző eladó adja a jelet: **kereszt** 57 review / 8 eladó, **hazafias** 68 / 10,
+**western-farm** 28 / 10, **koponya** 18 / 8. Lásd
 [[findings/review-mining]] és [[decisions/2026-08-07-pursue-layered]].
 
 > **Az audit után visszavont állítások:** a „ne akciózz" és az „ár monoton együtt jár az
@@ -43,10 +44,11 @@ Három egyre szigorúbb szűrő, és mindegyik megváltoztatta a választ:
 | szűrő | boltok | medián HUF/hó |
 |---|---:|---:|
 | megjelent az 5 Etsy keresésben (500 listing) | 173 | 210 327 |
-| legalább 3 **különálló** listinggel rangsorolt („specialista") | **35** | 471 998 |
+| legalább 3 **különálló** listinggel rangsorolt („specialista") | **35** | 320 156 |
 | **katalógus mintavéve, ≥80%-ban layered („igazolt")** | **21** | **416 893** |
 
-*(A 65 és 33 a 2026-08-08-i auditig érvényes, hibás szám volt: a szűrő keresési sorokat számolt
+*(Mindkét medián **katalógus-aránnyal korrigált**; korrekció nélkül 471 998 és 435 019 volna — a
+kettőt nem szabad egy oszlopban keverni. A 65 és 33 a 2026-08-08-i auditig érvényes, hibás szám volt: a szűrő keresési sorokat számolt
 különálló listingek helyett. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].)*
 
 A középső lépés kiszórta azokat a boltokat, amelyek **egyetlen** kulcsszóra optimalizált listinggel
@@ -63,7 +65,7 @@ ment ez félre, mielőtt jóra fordult.
 
 - **Zsúfolt és épp elárasztás alatt.** 173 bolt látszik öt keresés top találataiban; közülük **47 az
   elmúlt 12 hónapban nyílt**. Lásd [[findings/layered-niche-size-and-structure]].
-- **Alacsony költségű országok uralják.** A 33 igazolt boltból 15 ukrán, mellette Törökország,
+- **Alacsony költségű országok uralják.** A 21 igazolt boltból 10 ukrán, mellette Törökország,
   Vietnám, Indonézia. A volumenversenyt ellenük elveszíted.
 - **Tartósan akciós.** A boltok 75%-a állandó 30–70%-os „akciót" futtat. Hogy ez árt-e vagy segít,
   **a mi adatunkból nem dönthető el** — dedupolva a nem akciózó csoport 3 bolt, és a sávok eredménye
@@ -78,8 +80,8 @@ ment ez félre, mielőtt jóra fordult.
    sáv (**2 009 HUF/listing**, szemben a 300–700 sáv 825-ével), és egyedül is elérhető havi ~4–10
    listinggel. Ez az egyetlen strukturális eredmény, ami az auditot túlélte.
    [[findings/catalogue-size-and-throughput]]
-2. **Termékirány eladási adatból, nem keresésiből:** kereszt + mandala + zászló kombók (104 review,
-   **13 különböző eladó**), mellette western/farm (16 eladó) és koponya (13 eladó).
+2. **Termékirány eladási adatból, nem keresésiből:** kereszt (57 review / **8 eladó**), hazafias
+   (68 / 10), western-farm (28 / 10), koponya (18 / 8) — a 21 igazolt bolt deduplikált review-in.
    [[findings/review-mining]]
 
 ## Amit a munka elvégzéséről tudunk

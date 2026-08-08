@@ -1,7 +1,7 @@
 ---
 type: Finding
 title: Mekkora és mennyire zsúfolt a layered niche
-description: 173 látható bolt, ebből 33 katalógussal igazolt; az igazolt medián 320 ezer HUF/hó, és 47 új bolt nyílt az elmúlt évben.
+description: 173 lathato bolt, ebbol dedupolva 21 katalogussal igazolt; az igazolt median 416 893 HUF/ho.
 status: stable
 generated:
   by: claude-opus-5
@@ -12,7 +12,7 @@ sources:
     title: 173 bolt Etsy bolt-szintű adattal
   - resource: /assets/data/layered_adjusted.json
     id: clean
-    title: 65 specialista katalógusból számolt layered aránnyal
+    title: specialista boltok (dedupolva 35, ebbol 21 igazolt)
 ---
 
 # A layered niche mérete és szerkezete

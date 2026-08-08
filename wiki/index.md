@@ -19,7 +19,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/catalogue-size-and-throughput]] — hány listing kell, milyen tempóval
 - [[findings/geography-and-cost-competition]] — kivel versenyzel, hol a rés
 - [[findings/listing-craft]] — címek: gépek, formátumok, rétegszám, témák
-- [[findings/verified-shop-list]] — a 33 igazolt bolt teljes listája
+- [[findings/verified-shop-list]] — a bolt-lista (a 33-as szűrő hibás volt, dedupolva 21)
 - [[findings/functional-segment-comparison]] — a felmért alternatíva, és miért nem váltunk
 - [[findings/review-mining]] — **mi fogy ténylegesen**: kínálat vs eladás, és a norse/kelta bukása
 - [[findings/keyword-database]] — **345 kulcsszó volumennel**: hol a hosszú farok a kutyákon túl

@@ -18,23 +18,25 @@ be ([[pitfalls/2026-08-07-single-listing-attribution]]).
 
 ## Mennyi az esély, hogy beindul?
 
-A 3 évnél fiatalabb specialista boltok kb. **16–19%-a** jut 500 ezer HUF/hó fölé, és **~59%-a** marad
-200 ezer alatt. Lásd [[findings/catalogue-size-and-throughput]].
+A ma is rangsoroló, 3 évnél fiatalabb specialista boltok kb. **24%-a** van 500 ezer HUF/hó fölött.
+**Ez nem belépési valószínűség**, hanem rangsorolás-túlélési arány: a megbukott és bezárt belépők
+szerkezetileg hiányoznak a mintából. Lásd [[findings/catalogue-size-and-throughput]].
 
 ## Hány listing kell?
 
-**70–200.** 100 alatt a medián bolt kicsi (70 ezer HUF/hó), 300–700 között a listingenkénti hozam a
-legrosszabb. A verifikált kis kivételek (29 és 72 listing) mind magas árúak és **nem akcióznak**.
+**100–300** — a dedupolt adaton ez a legjobb listingenkénti sáv (2 009 HUF/listing, n=8), a 300–700
+sávban 825. A <100 sávban a deduplikálás után **egy** bolt maradt. *(A korábban idézett két kis kivétel — 29 és 72 listing — a deduplikálás után kiesett.)*
 
 ## Kell lézervágó?
 
 Nem kell megvenni. Fali panelnél nincs illesztés, tehát nem kell iteratív tesztvágás — alkalmi
 hozzáférés elég a validációhoz és a valódi fotókhoz. Lásd [[workflows/production-pipeline]].
 
-## Miért ne akciózzunk, ha mindenki akciózik?
+## Miért ne akciózzunk, ha mindenki akciózik? — **VISSZAVONVA**
 
-Mert a mérés szerint az akciózók keresnek kevesebbet: a nem akciózó igazolt boltok mediánja
-575 060 HUF/hó és 4 108 HUF/listing, a 55%+ diszkontálóké 282 369 és 1 396. **Fontos:** ez korreláció
+**Ez az állítás megbukott a 2026-08-08-i auditon:** deduplikált populáción a nem akciózó csoport
+**3 boltra** esik és a sávok nem monotonok, tehát a kérdés a mi adatunkból **nem dönthető el**.
+Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]]. Az eredeti érvelés: **Fontos:** ez korreláció
 — valószínűleg a jobb termék teszi lehetővé az akciómentességet, nem fordítva.
 [[findings/pricing-and-discounting]]
 

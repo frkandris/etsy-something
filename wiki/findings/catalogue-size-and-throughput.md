@@ -1,14 +1,14 @@
 ---
 type: Finding
 title: Katalógusméret, belépési kohorszok és termelési tempó
-description: A 100–300 listinges sáv a legjobb listingenkénti hozamú; a fiatal boltok havi 20 listinget tolnak, a régiek 4-et.
+description: A 100-300 listinges sav a legjobb listingenkenti hozamu (dedupolva is); a belepesi arany rangsorolas-tulelesi arany, nem valoszinuseg.
 status: stable
 generated:
   by: claude-opus-5
   at: 2026-08-07T20:00:00Z
 sources:
   - resource: /assets/data/layered_adjusted.json
-    title: 33 igazolt bolt
+    title: igazolt boltok (dedupolva 21; a 33-as szűrő hibás volt)
 ---
 
 # Katalógusméret és termelési tempó
@@ -74,10 +74,10 @@ volt, lásd [[pitfalls/2026-08-07-whole-shop-revenue-attribution]].
 
 ## Gyakorlati célszám
 
-**70–200 listing, havi 4–10 új tétel.** Ez a fókuszút alsó fele, egyedül tartható tempóval. A
-verifikált kis boltok ([[shops/laserartisandesigns]] 72 listing, [[shops/woodlusterstore]] 29 listing)
-mutatják, hogy ez működhet, de mindkettő a nem akciózó, magas árú sávban van — a kis katalógus
-**csak magas árral együtt** működik. Lásd [[findings/pricing-and-discounting]].
+**100–300 listing, havi 4–10 új tétel.** (Dedupolva a 100–300 sáv 2 009 HUF/listinget hoz, n=8; a
+<100 sávban **egy** bolt maradt.) Ez a fókuszút alsó fele, egyedül tartható tempóval. *(A korábban idézett két kis bolt — [[shops/laserartisandesigns]] és [[shops/woodlusterstore]] — a
+deduplikálás után kiesett a populációból, tehát a „kis katalógus magas árral” érv elvesztette a
+bizonyítékát.)*
 
 ## Provenancia
 

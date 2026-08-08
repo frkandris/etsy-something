@@ -68,7 +68,9 @@ valódi jelet az egyszereplős műtermékektől**.
 A dedupolt populáción a korábbi fő eredmények sem tartják magukat:
 
 - **„Ne akciózz"** — a nem akciózó csoport 6-ról **3 boltra** esett, és a kedvezmény-sávok
-  eredménye már **nem monoton**: a 55%+ diszkontálók HUF/listingje (1 767) a legmagasabb.
+  eredménye már **nem monoton**: nincs akció **2 093**, <35% 1 035, 35–55% 1 583, 55%+ 1 767
+  HUF/listing. A legmagasabb továbbra is a nem akciózó csoport — de **3 bolton**, és a sorrend
+  közben megtörik, tehát következtetést nem hordoz.
   Lásd [[findings/pricing-and-discounting]].
 - **„Az ár monoton együtt jár az eredménnyel"** — a HUF/listing dedupolva **csökken** az árral
   (1 720 → 1 581 → 1 338 → 817), és a $12+ sávban **egy** bolt maradt.

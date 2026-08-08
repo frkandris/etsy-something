@@ -40,8 +40,10 @@ Vagyis a váltásnak **nincs mérhető haszna**, viszont van költsége: a layer
 igazolt referenciabolt, kategória-térkép, kulcsszó- és formátumelemzés. A tudás átvitele veszteséges
 lenne.
 
-A pozicionálási tanulság ráadásul **mindkét szegmensben ugyanaz** (nem akciózni, magasabb ár, közepes
-katalógus), tehát a lényegi következtetés a szegmensválasztástól független.
+~~A pozicionálási tanulság mindkét szegmensben ugyanaz (nem akciózni, magasabb ár…)~~ — **az ár- és
+akció-állítás a 2026-08-08-i auditon megbukott** ([[pitfalls/2026-08-08-wrong-unit-of-independence]]).
+Ami maradt: a **közepes katalógusméret** (100–300 listing), és az ebben a szegmensválasztástól
+független.
 
 ## Következmények
 

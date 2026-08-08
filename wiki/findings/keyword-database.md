@@ -1,7 +1,7 @@
 ---
 type: Finding
 title: Kulcsszó-adatbázis — 345 kifejezés volumennel és telítettséggel
-description: A konkurencia terméknevein indított crawl 345 kulcsszót adott; a viking/kelta/tree of life komplexum kínálata töredéke a mandaláénak vagy a kutyáénak, és ez a legjobb hosszú farok.
+description: 345 kulcsszo volumennel; a kulcsszo-meresek ervenyesek, de a beloluk levont norse/kelta termekajanlas a review-adaton megbukott.
 status: stable
 generated:
   by: claude-opus-5
@@ -83,7 +83,7 @@ farok, mint a kutyafajta — lásd [[findings/keyword-demand-sweep]], ahol a kut
 forma nem ráerőltetett, hanem a motívum sajátja.
 
 A 42 kulcsszó ráadásul kész katalógusterv: pont a [[findings/catalogue-size-and-throughput]] szerinti
-70–200 listinges optimum alsó felébe esik.
+100–300 listinges optimum alsó felébe esik. *(Az ajánlás maga a review-adaton megbukott, lásd a lap tetejét.)*
 
 ## A legjobb fájlszándékú kifejezések
 

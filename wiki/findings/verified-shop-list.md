@@ -1,17 +1,17 @@
 ---
 type: Finding
-title: A 33 igazolt layered bolt teljes listája
-description: Minden bolt, aminek a katalógusa legalább 80%-ban layered — a kutatás referencia-populációja.
+title: A layered bolt-lista (a 33-as szuro hibas volt; dedupolva 21)
+description: A 33-as lista a hibas szuron alapul; dedupolva 21 bolt a referencia-populacio.
 status: stable
 generated:
   by: claude-opus-5
   at: 2026-08-07T20:00:00Z
 sources:
   - resource: /assets/data/layered_adjusted.json
-    title: 65 specialista, share mezővel
+    title: specialista boltok share mezovel
 ---
 
-# A 33 igazolt bolt
+# A bolt-lista (33-as, hibás szűrővel)
 
 > **AUDIT 2026-08-08 UTÁN.** A lista a **hibás, nem deduplikált** szűrőn alapul: a 33-ból csak **21**
 > teljesíti a ≥3 **különálló** listing feltételt. A táblázat dokumentációként marad. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].

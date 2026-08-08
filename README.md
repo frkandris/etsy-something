@@ -27,16 +27,20 @@ wiki/
 ## A legfontosabb szabály
 
 **Soha ne írj le számot a populációja nélkül.** Ebben a projektben a
-`173 bolt` / `65 specialista` / `33 igazolt` megkülönböztetés a különbség egy igaz és egy hamis
+`173 bolt` / `35 specialista` / `21 igazolt` megkülönböztetés a különbség egy igaz és egy hamis
 állítás között. Négy ígéretes következtetés bukott meg azon, hogy ezt elmulasztottuk — lásd
 [`wiki/pitfalls/`](wiki/pitfalls/).
 
 ## A jelenlegi következtetés
 
-Rétegzett lézervágott SVG, a **nem akciózó, magasabb árú végén** (70–200 listing, $9–28, tartós
-kedvezmény nélkül). Termékirány eladási adat alapján: **kereszt + mandala + amerikai zászló
-kombók**, mellé **mécses/lámpás csomagok**. Részletek:
-[`wiki/findings/review-mining.md`](wiki/findings/review-mining.md).
+Rétegzett lézervágott SVG, **100–300 listinges katalógussal** — ez az egyetlen strukturális
+eredmény, ami a 2026-08-08-i külső auditot is túlélte. Termékirány eladási adat alapján:
+**kereszt + mandala + amerikai zászló kombók**, mellette western/farm és koponya.
+
+> Az audit **visszavonta** a korábbi „ne akciózz / magasabb ár / 70–200 listing" ajánlást és a
+> mécses-lámpás irányt is. Részletek:
+> [`wiki/pitfalls/2026-08-08-wrong-unit-of-independence.md`](wiki/pitfalls/2026-08-08-wrong-unit-of-independence.md)
+> és [`wiki/findings/review-mining.md`](wiki/findings/review-mining.md).
 
 ## Apps Script fájlok
 

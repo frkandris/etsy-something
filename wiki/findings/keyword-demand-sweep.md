@@ -1,7 +1,7 @@
 ---
 type: Finding
 title: Kereslet-mérés az Etsy Marketplace Insightson — 40+ kifejezés
-description: A shadow box svg a legjobb fájlszándékú kifejezés (75,4 keresés/1000 listing); a hosszú farok volumenben nyer, de a kombinációt senki nem keresi, ezért a differenciálás vizuális, nem lexikai.
+description: A shadow box svg a legjobb fájlszándékú kifejezés (75,6 keresés/1000 listing); a hosszú farok volumenben nyer, de a kombinációt senki nem keresi, ezért a differenciálás vizuális, nem lexikai.
 status: stable
 generated:
   by: claude-opus-5

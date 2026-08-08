@@ -1,14 +1,14 @@
 ---
 type: Finding
 title: Földrajz — kivel versenyzel, és hol van a rés
-description: A 33 igazolt boltból 15 ukrán; a négy közép-/nyugat-európai bolt viszont 2,6-szor annyit hoz listingenként, magasabb áron és nulla akcióval.
+description: A 21 igazolt boltbol 10 ukran; az europai csoport dedupolva 2 boltra esett, igy az itteni osszehasonlitas nem hasznalhato.
 status: stable
 generated:
   by: claude-opus-5
   at: 2026-08-07T20:00:00Z
 sources:
   - resource: /assets/data/layered_adjusted.json
-    title: 33 igazolt bolt országkóddal
+    title: igazolt boltok orszagkoddal (dedupolva 21)
 ---
 
 # Földrajz és költségverseny

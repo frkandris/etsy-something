@@ -49,6 +49,17 @@ FORMATS = {
 }
 
 SUBJECTS = {
+    "dachshund-longhair": (
+        "A long-haired dachshund lying down elegantly, flowing feathered coat drawn "
+        "as sweeping nested tone bands, long silky ear, gentle eye. Behind it a "
+        "soft damask filigree field with two small hearts and a bone. A clean "
+        "border frames the panel.", "square"),
+    "celtic-dara": (
+        "A Celtic Dara knot (shield knot) medallion: four interlocked loops "
+        "weaving over and under around a central woven square, every strand a "
+        "bold band one depth level lighter where it passes over. Dense knotwork "
+        "corners and a braided border on the square panel edges. Carved stone "
+        "Celtic style.", "square"),
     "dachshund": (
         "A dachshund (sausage dog) portrait in profile, sitting, smooth coat, "
         "unmistakable breed silhouette: very long body, short legs, long muzzle, "

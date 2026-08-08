@@ -4,6 +4,8 @@ Run:  blender -b -P render_blender.py -- <svg_dir> <out.png> [view] [elev_deg]
 
   view = hero    near-frontal, the main listing image
          angled  three-quarter, shows the layer edges
+         shelf   standing on a sideboard against a wall - the lifestyle shot
+                 every high-review competitor uses
 
 Imports each layer SVG as curves, extrudes to 3 mm, stacks them with the real
 layer spacing, gives them a plywood-ish material and lights the scene so the
@@ -14,6 +16,8 @@ is what makes the thumbnail different (wiki/findings/keyword-demand-sweep.md).
 import bpy, sys, math, pathlib
 
 argv = sys.argv[sys.argv.index("--") + 1:]
+GRAIN = "--grain" in argv
+argv = [a for a in argv if a != "--grain"]
 SRC = pathlib.Path(argv[0])
 OUT = argv[1]
 VIEW = argv[2] if len(argv) > 2 else "hero"
@@ -36,12 +40,34 @@ scene.view_settings.look = "AgX - Base Contrast"
 scene.view_settings.exposure = -0.4
 
 
-def wood(name, base, rough=0.45):
+def wood(name, base, rough=0.45, grain=None):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
-    b = m.node_tree.nodes["Principled BSDF"]
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
     b.inputs["Base Color"].default_value = base
     b.inputs["Roughness"].default_value = rough
+    if GRAIN if grain is None else grain:
+        # subtle plywood grain: elongated wave bands distorted by noise,
+        # blending the base colour with a slightly darker/warmer sibling
+        tex = nt.nodes.new("ShaderNodeTexWave")
+        tex.wave_type = "BANDS"
+        tex.inputs["Scale"].default_value = 3.2
+        tex.inputs["Distortion"].default_value = 22.0
+        tex.inputs["Detail"].default_value = 3.0
+        tex.inputs["Detail Roughness"].default_value = 0.55
+        map_ = nt.nodes.new("ShaderNodeMapping")
+        map_.inputs["Scale"].default_value = (1.0, 7.0, 1.0)   # stretch the grain
+        coord = nt.nodes.new("ShaderNodeTexCoord")
+        ramp = nt.nodes.new("ShaderNodeValToRGB")
+        dark = tuple(c * 0.82 for c in base[:3]) + (1,)
+        lite = tuple(min(1.0, c * 1.06) for c in base[:3]) + (1,)
+        ramp.color_ramp.elements[0].color = dark
+        ramp.color_ramp.elements[1].color = lite
+        nt.links.new(coord.outputs["Object"], map_.inputs["Vector"])
+        nt.links.new(map_.outputs["Vector"], tex.inputs["Vector"])
+        nt.links.new(tex.outputs["Fac"], ramp.inputs["Fac"])
+        nt.links.new(ramp.outputs["Color"], b.inputs["Base Color"])
     return m
 
 
@@ -113,8 +139,26 @@ SIZE = max(maxv.x - minv.x, maxv.y - minv.y)
 print(f"[render] darab merete: {SIZE:.4f} egyseg")
 
 # ------------------------------------------------------------------ backdrop
-bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
-bpy.context.object.data.materials.append(wood("wall", (0.80, 0.75, 0.68, 1), 0.7))
+if VIEW == "shelf":
+    STACK = max(p.z for p in pts) - min(p.z for p in pts)
+    for o in objs:
+        # +90 about X keeps the artwork upright with its front toward the
+        # camera; a few degrees past 90 leans it back like a framed print
+        o.rotation_euler = (math.radians(96), 0, 0)
+        o.location.y, o.location.z = -o.location.z, SIZE / 2
+    # sideboard top
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.25, -SIZE * 0.016))
+    top = bpy.context.object
+    top.scale = (SIZE * 2.6, SIZE * 0.9, SIZE * 0.03)
+    top.data.materials.append(wood("board", (0.42, 0.30, 0.19, 1), 0.35, grain=True))
+    # wall behind
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 8, location=(0, SIZE * 0.09, 0),
+                                     rotation=(math.radians(90), 0, 0))
+    bpy.context.object.data.materials.append(wood("wall", (0.84, 0.80, 0.74, 1), 0.8,
+                                                  grain=False))
+else:
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
+    bpy.context.object.data.materials.append(wood("wall", (0.80, 0.75, 0.68, 1), 0.7, grain=False))
 
 # ------------------------------------------------------------------ camera + light
 # Distance from the framing we want, not a guessed multiplier: at focal length f
@@ -122,13 +166,20 @@ bpy.context.object.data.materials.append(wood("wall", (0.80, 0.75, 0.68, 1), 0.7
 # a margin, then add back what the tilt foreshortens. The earlier fixed 1.75x
 # multiplier cropped the piece.
 LENS, MARGIN = 85.0, 1.22
-D = SIZE * MARGIN * LENS / 36.0 / max(0.55, math.sin(math.radians(ELEV)) ** 0.35)
-el, az = math.radians(ELEV), math.radians(AZIM)
-bpy.ops.object.camera_add(
-    location=(D * math.sin(az) * math.cos(el),
-              -D * math.cos(az) * math.cos(el),
-              D * math.sin(el)),
-    rotation=(math.radians(90 - ELEV), 0, az))
+if VIEW == "shelf":
+    D = SIZE * MARGIN * LENS / 36.0 * 1.06
+    az = math.radians(14)
+    bpy.ops.object.camera_add(
+        location=(D * math.sin(az), -D * math.cos(az), SIZE * 0.52),
+        rotation=(math.radians(88), 0, az))
+else:
+    D = SIZE * MARGIN * LENS / 36.0 / max(0.55, math.sin(math.radians(ELEV)) ** 0.35)
+    el, az = math.radians(ELEV), math.radians(AZIM)
+    bpy.ops.object.camera_add(
+        location=(D * math.sin(az) * math.cos(el),
+                  -D * math.cos(az) * math.cos(el),
+                  D * math.sin(el)),
+        rotation=(math.radians(90 - ELEV), 0, az))
 cam = bpy.context.object
 cam.data.lens = LENS
 scene.camera = cam

@@ -105,7 +105,7 @@ def clean(geom, scale, thicken, min_part, height):
     # narrow slots (a 10 x 0.3 mm cut) are design features the closing pass
     # below would seal shut - collect them first, re-cut them after
     slots = [Polygon(r) for p in parts_of(g) for r in p.interiors
-             if Polygon(r).area < MIN_HOLE * 3 and _extent(r) >= 2.5]
+             if _extent(r) >= 2.5 and Polygon(r).buffer(-0.8).is_empty]
     if thicken > 0:                       # close hairline gaps, then shrink back
         g = g.buffer(thicken).buffer(-thicken * 0.65)
         if slots:
@@ -170,6 +170,19 @@ def necks(geom):
     return n
 
 
+def thin_limbs(p, frags):
+    """Long thin protrusions (a 30 x 1.5 mm tail) that erosion removes without
+    splitting the piece - the neck detector is blind to them. Returns the
+    zones worth widening: long and substantial, not decorative tips."""
+    fat = unary_union([f.buffer(MIN_WEB / 2 + 0.05) for f in frags]) if frags \
+        else None
+    if fat is None:
+        return []
+    zone = p.difference(fat)
+    return [z for z in parts_of(zone)
+            if _extent(z.exterior) >= 6.0 and z.area >= 15.0]
+
+
 def thin_area(geom, w):
     """How much of the piece is thinner than w - the bit that snaps off."""
     keep = geom.buffer(-w / 2).buffer(w / 2)
@@ -191,17 +204,26 @@ def heal_necks(geom, clip=None):
     detail that must not be ballooned. Additions are clipped to the plate
     behind so the nesting guarantee survives the repair."""
     pieces = parts_of(geom)
-    healed = []
+    healed, all_adds = [], []
     for i, p in enumerate(pieces):
         er = p.buffer(-MIN_WEB / 2)
         frags = [f for f in parts_of(er) if f.area >= MIN_FRAG]
         if len(frags) <= 1:
+            limbs = thin_limbs(p, frags)
+            if limbs:
+                add = unary_union([z.buffer(MIN_WEB * 0.6) for z in limbs])
+                others = [q for j, q in enumerate(pieces) if j != i] + all_adds
+                if others:
+                    add = add.difference(unary_union(others).buffer(0.6))
+                all_adds.append(add)
+                p = unary_union([p, add]).buffer(0)
             healed.append(p)
             continue
         fat_parts = [f.buffer(MIN_WEB / 2 + 0.05) for f in frags]
         neck_zone = p.difference(unary_union(fat_parts))
         bridges = [nz for nz in parts_of(neck_zone)
                    if sum(1 for fp in fat_parts if nz.distance(fp) < 0.1) >= 2]
+        bridges += thin_limbs(p, frags)      # widen long thin tails too
         if not bridges:
             # a neck shorter than the fragments' dilation has no zone of its
             # own - patch the meeting point of every close fragment pair
@@ -214,9 +236,13 @@ def heal_necks(geom, clip=None):
                             bridges.append(lens)
         if bridges:
             add = unary_union([b.buffer(MIN_WEB * 0.6) for b in bridges])
-            others = [q for j, q in enumerate(pieces) if j != i]
-            if others:   # a repair must never fuse two separate pieces
-                add = add.difference(unary_union(others).buffer(0.4))
+            # a repair must never fuse two separate pieces - avoid every other
+            # piece AND every addition a previous piece already made (two
+            # repairs growing into the same 1 mm gap would meet in the middle)
+            others = [q for j, q in enumerate(pieces) if j != i] + all_adds
+            if others:
+                add = add.difference(unary_union(others).buffer(0.6))
+            all_adds.append(add)
             p = unary_union([p, add]).buffer(0)
         healed.append(p)
     out = unary_union(healed)
@@ -234,7 +260,11 @@ def heal_necks(geom, clip=None):
         if len(frags) > 1:
             small = [f for f in frags if f.area < MIN_PART]
             big = [f for f in frags if f.area >= MIN_PART]
+            small = [f for f in small if f.area <= 60.0]
             if big and small:
+                # cap: anything bigger than a fingertip is a design element -
+                # removing it silently would hide damage, so leave it and let
+                # the report fail instead
                 cut = unary_union([f.buffer(MIN_WEB / 2 + 0.25) for f in small])
                 p = p.difference(cut).buffer(0)
                 p = unary_union([q for q in parts_of(p) if q.area >= MIN_FRAG])
@@ -252,9 +282,10 @@ def keyhole(geom):
     spot with 3 mm of solid material around the hole - an ornate silhouette's
     upper band is often lace, not plate."""
     minx, miny, maxx, maxy = geom.bounds
-    cx = geom.centroid.x        # bbox centre would hang an asymmetric piece tilted
+    cx = geom.centroid.x        # hang point off the centroid = the piece tilts
+    best = None
     for dy in range(14, 70, 4):
-        for dx in (0, -8, 8, -16, 16):
+        for dx in (0, -4, 4, -8, 8, -12, 12, -16, 16):
             ex, ey = cx + dx, miny + dy
             entry = Point(ex, ey).buffer(3.5, 64)
             slot = Polygon([(ex - 1.75, ey - 10), (ex + 1.75, ey - 10),
@@ -262,10 +293,20 @@ def keyhole(geom):
             top = Point(ex, ey - 10).buffer(1.75, 32)
             hole = unary_union([entry, slot, top])
             if geom.contains(hole.buffer(3.0)):
-                print(f"[i] kulcslyuk: ({ex - minx:.0f}, {dy}) mm a bal-felso saroktol")
-                return geom.difference(hole)
-    print("[!] kulcslyuk kihagyva - nincs eleg tomor anyag a felso savban")
-    return geom
+                # centredness beats height: 1 mm sideways tilts the whole
+                # piece, 1 mm deeper is invisible
+                score = (abs(dx), dy)
+                if best is None or score < best[0]:
+                    best = (score, ex, ey, hole)
+        if best is not None and best[0][0] == 0:
+            break                # centred spot found, no need to scan deeper
+    if best is None:
+        print("[!] kulcslyuk kihagyva - nincs eleg tomor anyag a felso savban")
+        return geom
+    _, ex, ey, hole = best
+    print(f"[i] kulcslyuk: ({ex - minx:.0f}, {ey - miny:.0f}) mm, "
+          f"{ex - cx:+.0f} mm a sulyponti tengelytol")
+    return geom.difference(hole)
 
 
 def main():
@@ -321,6 +362,21 @@ def main():
     for k in dropped:
         dropped[k] = affinity.translate(dropped[k], -minx, -miny)
 
+    if a.solid_back:
+        # fill the back plate FIRST: the nesting clip and the demotion audit
+        # must see the plate the buyer actually receives
+        geoms[1] = unary_union([Polygon(p.exterior) for p in parts_of(geoms[1])])
+
+    # the thicken closing grows the object slightly; renormalise so the
+    # promised size is exact
+    minx, miny, maxx, maxy = geoms[1].bounds
+    f2 = MM / max(maxx - minx, maxy - miny)
+    if abs(f2 - 1.0) > 1e-4:
+        for k in geoms:
+            geoms[k] = affinity.scale(geoms[k], xfact=f2, yfact=f2, origin=(0, 0))
+        for k in dropped:
+            dropped[k] = affinity.scale(dropped[k], xfact=f2, yfact=f2, origin=(0, 0))
+
     # pass 3: independent potrace runs + simplify break exact nesting, so
     # enforce it: each layer is clipped to the final layer behind it. This is
     # what makes the MIN_PART argument true - a dropped piece's footprint is
@@ -362,11 +418,6 @@ def main():
             print(f"[i] {k}. reteg: {dropped[k].area:.0f} mm2 eldobva, ebbol "
                   f"{deeper.area:.0f} mm2 tobb mint egy lappal hatrebb latszik")
 
-    if a.solid_back:
-        # fill every hole of the back plate: the lace sits on a solid backer,
-        # which also gives the keyhole guaranteed meat
-        geoms[1] = unary_union([Polygon(p.exterior) for p in parts_of(geoms[1])])
-
     if not a.no_keyhole:
         cut = keyhole(geoms[1])
         if cut is geoms[1]:
@@ -401,11 +452,14 @@ def main():
     if not all_ok and not a.draft:
         raise SystemExit("HIBAS RETEG - nem irok ki fajlokat. Reszeredmenyhez: --draft")
 
-    # a previous run's files are removed only now, when the new build is known
-    # good - a crash above must not leave a half-mixed output directory
-    for stale in list(out.glob("layer_*.*")) + list(out.glob("preview_*")) \
-               + list(out.glob("assembly_*")):
-        stale.unlink()
+    # build into a staging dir and swap at the very end - neither a failed
+    # report nor a mid-export crash may leave a half-mixed output directory
+    import shutil
+    stage = out.parent / (out.name + ".staging")
+    if stage.exists():
+        shutil.rmtree(stage)
+    stage.mkdir(parents=True)
+    final_out, out = out, stage
 
     for k, geom, *_ in rows:
         svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
@@ -429,11 +483,14 @@ def main():
             for ring in [gg.exterior] + list(gg.interiors):
                 e += ["0", "POLYLINE", "8", "CUT", "66", "1", "70", "1",
                       "10", "0.0", "20", "0.0", "30", "0.0"]
-                pts = list(ring.coords)
-                if len(pts) > 1 and pts[0] == pts[-1]:
-                    pts = pts[:-1]        # 70=1 closes the loop; a repeated
-                for x, y in pts:          # point would add a zero-length edge
-                    e += ["0", "VERTEX", "8", "CUT", "10", f"{x:.4f}", "20", f"{y:.4f}"]
+                pts = [(f"{x:.4f}", f"{y:.4f}") for x, y in ring.coords]
+                # dedupe AFTER rounding - two distinct floats can land on the
+                # same 4-decimal value and would leave a zero-length edge
+                dd = [q for i, q in enumerate(pts) if i == 0 or q != pts[i - 1]]
+                if len(dd) > 1 and dd[0] == dd[-1]:
+                    dd = dd[:-1]          # 70=1 closes the loop
+                for x, y in dd:
+                    e += ["0", "VERTEX", "8", "CUT", "10", x, "20", y]
                 e += ["0", "SEQEND"]
         e += ["0", "ENDSEC", "0", "EOF"]
         (out / f"layer_{k}_of_{a.levels}.dxf").write_text("\n".join(e) + "\n")
@@ -495,7 +552,11 @@ def main():
         draw_geom(guide, geom, (214, 116, 40), ox, oy)
         gd.text((ox + 12, oy + PW + 8), f"{k}. reteg", fill=(60, 50, 40))
     guide.save(out / "assembly_guide.png")
-    print(f"\nkiirva: {out}  ({len(list(out.iterdir()))} fajl)")
+
+    if final_out.exists():
+        shutil.rmtree(final_out)
+    stage.rename(final_out)
+    print(f"\nkiirva: {final_out}  ({len(list(final_out.iterdir()))} fajl)")
 
 
 if __name__ == "__main__":

@@ -101,9 +101,10 @@ poszterizálhatóságot kényszeríti ki, nem a szépséget.
 shapely javítás (hajszálvékony részek vastagítása, tűlyukak és szilánkok eldobása) →
 **vágásbiztonsági riport** rétegenként: darabszám, legvékonyabb anyag, törésveszélyes terület.
 Kulcstrükk: mivel a szintek egymásba ágyazottak, egy 400 mm²-nél kisebb darab eldobása nem lyuk —
-az a folt a mögötte lévő lapon marad meg. A nestinget a lánc explicit kikényszeríti (minden
-réteg a mögötte lévőhöz van vágva), így a demóció garantáltan igaz — MIN_PART=0-val 168 különálló
-darab lenne, a szállított fájlokban 11. A vékony nyakakat (két tömör régiót összekötő, 2 mm-nél
+az a folt egy mögöttes lapon marad látható — sosem lesz átmenő lyuk, mert a nestinget a lánc
+explicit kikényszeríti (minden réteg a mögötte lévőhöz van vágva). A demóció-audit minden futásnál
+kiírja, mekkora terület esik egynél több lappal hátrébb (a kelta fánál ez 518 mm², a felület
+0,2%-a). MIN_PART=0-val 168 különálló darab lenne, a szállított fájlokban 11. A vékony nyakakat (két tömör régiót összekötő, 2 mm-nél
 keskenyebb híd) a lánc detektálja és lokálisan kiszélesíti; a kulcslyuk-akasztót a hátlap tömör
 sávjába szkenneléssel helyezi el.
 

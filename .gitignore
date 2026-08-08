@@ -2,3 +2,4 @@
 .apify_token
 *.token
 .env
+.DS_Store

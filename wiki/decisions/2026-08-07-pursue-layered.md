@@ -21,7 +21,8 @@ irányítja a javaslat.
 
 ## Mérlegelt opciók
 
-1. **Layered fali dekor** — az eredeti tézis, 173 bolt felmérve, 33 igazolt.
+1. **Layered fali dekor** — az eredeti tézis, 173 bolt felmérve (dedupolva 35 specialista,
+   ebből 21 igazolt).
 2. **Funkcionális tárgyak** — 285 bolt felmérve utólag, 73 szakosodott.
 3. Mindkettő párhuzamosan.
 

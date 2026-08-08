@@ -1,7 +1,7 @@
 ---
 type: Workflow
 title: Norse / kelta / tree of life katalógusterv
-description: 88 mért kulcsszó ~18 designkoncepcióvá rendezve — mit érdemes ténylegesen legyártani és milyen sorrendben.
+description: VISSZAVONT katalogusterv - a review-adat szerint a norse/kelta kereslet gravirozast akar, nem retegzett falidiszt.
 status: deprecated
 generated:
   by: claude-opus-5

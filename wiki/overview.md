@@ -29,7 +29,9 @@ boltja **417 ezer HUF/hó**-t termel.
 
 **Termékirány eladási adatból** (a 21 igazolt bolt **1 027 deduplikált** review-ja), ott ahol több
 különböző eladó adja a jelet: **kereszt** 57 review / 8 eladó, **hazafias** 68 / 10,
-**western-farm** 28 / 10, **koponya** 18 / 8. Lásd
+**western-farm** 28 / 10, **koponya** 18 / 8. A motívumokat **külön-külön** kell kezelni: a
+kereszt+mandala párosítás áll (27 review, 6 eladó), a **hármas** kereszt+mandala+zászló viszont
+egyetlen listing egyetlen eladótól. Lásd
 [[findings/review-mining]] és [[decisions/2026-08-07-pursue-layered]].
 
 > **Az audit után visszavont állítások:** a „ne akciózz" és az „ár monoton együtt jár az
@@ -43,7 +45,7 @@ Három egyre szigorúbb szűrő, és mindegyik megváltoztatta a választ:
 
 | szűrő | boltok | medián HUF/hó |
 |---|---:|---:|
-| megjelent az 5 Etsy keresésben (500 listing) | 173 | 210 327 |
+| megjelent az 5 Etsy keresésben (500 listing) | 173 | 205 816 |
 | legalább 3 **különálló** listinggel rangsorolt („specialista") | **35** | 320 156 |
 | **katalógus mintavéve, ≥80%-ban layered („igazolt")** | **21** | **416 893** |
 

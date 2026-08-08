@@ -1,7 +1,7 @@
 ---
 type: Finding
 title: Mit írnak a listing címekbe — gépek, formátumok, rétegszám, témák
-description: 777 listing címének elemzése az igazolt boltoktól: 85% említ lézert, 94% SVG-t, a medián rétegszám 7, és a bundle csak 4%.
+description: Cimelemzes: 85% emlit lezert, 94% SVG-t, median retegszam 7, bundle 4%. A temamegoszlas az auditon javitva (a 'man' resszo a 'mandala'-ra illeszkedett).
 status: stable
 generated:
   by: claude-opus-5

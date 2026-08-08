@@ -200,13 +200,15 @@ A formátum jellemzően **csomag**: „8 Pcs Bundle Halloween Lantern", „10x B
 
 ## Az ajánlás
 
-**Elsődleges: kereszt + mandala + amerikai zászló rétegzett kombók.** Ez a legjobban bizonyított
+**Elsődleges: kereszt, hazafias, western és koponya motívum — külön-külön tesztelve.** (A hármas
+kereszt+mandala+zászló kombó **nem** áll: egyetlen listing egyetlen eladótól. A kereszt+mandala
+párosítás igen: 27 review, 6 eladó.) Ez a legjobban bizonyított
 kereslet az egész projektben (index 3,41 / 2,33 / 2,04, 44 különböző keresztes listingen), és
 koherens kulturális piac — amerikai hazafias–hit vonal, ami illeszkedik ahhoz, hogy a keresők
 37,4%-a amerikai ([[findings/etsy-first-party-search-data]]).
 
-**Másodlagos termékforma: mécses / lámpás csomagok.** A legtisztább kínálati hiány, ugyanabból a
-rétegezési pipeline-ból ([[workflows/production-pipeline]]).
+~~Másodlagos termékforma: mécses / lámpás csomagok.~~ **VISSZAVONVA** — a jel 2 eladótól jön,
+23/29 review egyetlen boltból. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
 
 **További alulkínált motívumok:** western/farm (cow 2,53, horse 1,72), koponya (2,13), kolibri
 (2,70), óra mint forma (1,44).

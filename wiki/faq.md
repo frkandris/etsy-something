@@ -12,7 +12,8 @@ generated:
 
 ## Nem csak két szerencsés bolt ez az egész?
 
-Nem. 173 bolt látszik öt keresés top találataiban, 33 közülük katalógussal igazolt layered bolt. De a
+Nem. 173 bolt látszik öt keresés top találataiban; deduplikálva 35 specialista, ebből **21** katalógussal
+igazolt layered bolt. De a
 kétely jogos volt és termékeny: pont ebből derült ki, hogy a populáció fele egyetlen listinggel került
 be ([[pitfalls/2026-08-07-single-listing-attribution]]).
 

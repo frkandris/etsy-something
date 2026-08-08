@@ -22,7 +22,8 @@ sources:
 
 ## Lényeg
 
-Két járható út van: **tömeg** (700+ listing) vagy **fókusz** (100–300 listing magasabb áron). A
+Két járható út van: **tömeg** (700+ listing) vagy **fókusz** (100–300 listing). *(Az eredetileg
+ide irt „magasabb aron” kitetel az auditon megbukott — az ár-hatás a mi adatunkból nem eldönthető.)* A
 tömegút a vietnámi/ukrán stúdiók pályája; a fókuszút az, amit egyedül meg lehet nyerni. **100 listing
 alatt a medián bolt kicsi**, tehát a „30 listinggel is megy" gondolat kivétel, nem szabály.
 

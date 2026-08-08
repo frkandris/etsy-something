@@ -23,9 +23,9 @@ A **legkisebb katalógusú igazolt bolt**, ami érdemi bevételt termel. Termék
 témájú multilayer fájlok (`Multilayer Mandala Cross`, `Om Mandala Layered SVG`), Cricut és Glowforge
 kompatibilitást is hirdetve.
 
-**Miért fontos:** 29 listinggel és egy év működéssel 315 ezer HUF/hó — ez a legerősebb bizonyíték
-arra, hogy a **kis katalógus + magas ár + nulla akció** kombináció önmagában is működik, nem csak a
-[[shops/laserartisandesigns]] esetében.
+> **AUDIT UTÁN:** ez a bolt a deduplikálás után **kiesett** az igazolt populációból, tehát a
+> kis katalógus / magas ár / nulla akció érv elvesztette a bizonyítékát. Lásd
+> [[pitfalls/2026-08-08-wrong-unit-of-independence]].
 
 **Fenntartás:** 1,1 éves bolt, tehát az élettartam-átlag itt közel van a valós futáshoz — de egyetlen
 év adata, szezonális hatás nélkül. És összesen 3 találattal került be, „közepes" megbízhatósággal

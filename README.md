@@ -34,8 +34,10 @@ wiki/
 ## A jelenlegi következtetés
 
 Rétegzett lézervágott SVG, **100–300 listinges katalógussal** — ez az egyetlen strukturális
-eredmény, ami a 2026-08-08-i külső auditot is túlélte. Termékirány eladási adat alapján:
-**kereszt + mandala + amerikai zászló kombók**, mellette western/farm és koponya.
+eredmény, ami a 2026-08-08-i külső auditot is túlélte. Termékirány eladási adat alapján, motívumonként
+külön tesztelve: **kereszt** (57 review / 8 eladó), **hazafias** (68 / 10), **western-farm**
+(28 / 10), **koponya** (18 / 8). A kereszt+mandala párosítás áll (6 eladó); a hármas
+kereszt+mandala+zászló kombó **nem** — az egyetlen listing egyetlen eladótól.
 
 > Az audit **visszavonta** a korábbi „ne akciózz / magasabb ár / 70–200 listing" ajánlást és a
 > mécses-lámpás irányt is. Részletek:

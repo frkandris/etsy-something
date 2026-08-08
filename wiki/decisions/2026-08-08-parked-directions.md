@@ -42,7 +42,8 @@ külön kulcsszavakkal:
   `Commercial Licence` bundle-lel). A norse/kelta boltoknál más műfaj (kockatartó, gyűrűsdoboz).
   Ellenérv: a funkcionális szegmens kínálatában **már 205 doboz-listing van (12%)** — nem üres
   piac; a LaserArtisanDesigns a licencmodelltől teljesít jól, nem a hiánytól.
-- **rétegelt lámpa — IGAZOLVA, ez a legerősebb termékforma-hiány.** 29 review **16 különböző
+- **rétegelt lámpa — VISSZAVONVA** (az alabbi „igazolas” hibas volt: 2 eladó, 23/29 review
+  egyetlen boltból). 29 review **16 különböző
   listingen**, miközben az igazolt boltok katalógusában **egy** ilyen tétel van — **de a 29 review 2 eladótól jön, 23 egyetlen boltból**, ezért az irány visszavonva. A funkcionális
   szegmens kínálatában viszont 97 tealight/lantern listing (5,7%) — vagyis működő piac, amit a
   rétegzett boltok nem szolgálnak ki. **A korábbi óvatosságom téves volt:** a `light box svg`
@@ -74,5 +75,6 @@ lásd [[methods/apify-actors]].
 2. ~~Mécses / lámpás csomagok~~ — **visszavonva**: a jel 2 eladótól jön (23/29 a YarensWoodDream
    boltból), tehát egy katalógus, nem piaci rés.
    Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
-3. **Ajándékdoboz commercial licence-szel** — csak ha az első kettő megy.
+3. ~~Ajándékdoboz commercial licence-szel~~ — **visszavonva**: 30/30 review egyetlen boltból
+   (LaserArtisanDesigns), tehát egy katalógus, nem piaci jel.
 4. ~~Sík print~~ — elvetve.

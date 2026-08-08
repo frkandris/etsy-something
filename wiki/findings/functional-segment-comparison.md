@@ -15,6 +15,12 @@ sources:
 
 # Funkcionális szegmens vs layered
 
+> **AUDIT 2026-08-08 UTÁN.** A táblázat **kevert alapon** áll: a bevétel-medián sor katalógussal
+> korrigált, a HUF/listing, a méreteloszlás és a belépési arány viszont **nyers, teljes bolti** érték.
+> Egységesen korrigálva: HUF/listing 793 / 788 (nem 1 353 / 1 789), >1M 8% / 12% (nem 18% / 19%),
+> <200k 55% / 59% (nem 38% / 38%). A fő következtetés — **a két szegmens gyakorlatilag azonos** —
+> ettől nem változik. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 ## Miért mértük meg
 
 Egy javaslat elhangzott, hogy érdemes lenne layered fali dekor helyett **funkcionális lézervágott

@@ -13,6 +13,12 @@ sources:
 
 # Listing-készítés: mit tartalmaznak a címek
 
+> **AUDIT 2026-08-08 UTÁN.** A **témamegoszlás hibás volt**: az osztályozó a `man` szót részszóként
+> kereste, ami a `mandala` minden előfordulására illeszkedett. Az „ember/portré 42%" valójában
+> **2,6%** (a 324-ből 296 mandala volt). Szóhatáros újraszámolás a dedupolt igazolt populáción:
+> mandala 44,2%, állat 22,8%, természet 20,0%, ünnep 10,7%, vallási 2,8%, **ember/portré 2,6%**,
+> jármű 1,0%. A gép-, formátum- és rétegszám-adatokat a hiba nem érinti. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 ## Populáció
 
 **777 listing** a 33 **igazolt** bolt saját katalógusából (boltonként max. 24 tétel mintavéve
@@ -65,7 +71,7 @@ differenciálás egyik kézzelfogható tengelye: **több réteg és nagyobb mér
 
 | téma | listing | arány |
 |---|---:|---:|
-| ember / portré | 324 | 42% |
+| ~~ember / portré~~ (hibás, valójában 2,6%) | ~~324~~ 20 | ~~42%~~ **2,6%** |
 | mandala / ornamens | 313 | 40% |
 | állat | 227 | 29% |
 | természet / növény | 129 | 17% |

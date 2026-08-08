@@ -15,6 +15,13 @@ sources:
 
 # Review-bányászat
 
+> **AUDIT 2026-08-08 UTÁN.** A **mécses/lámpás, suncatcher, mirror és ajándékdoboz ajánlás visszavonva**:
+> ezek egy-két eladó katalógusai (tealight 23/29 és lantern 23/23 ugyanattól a YarensWoodDream
+> bolttól, suncatcher 14/14 PetalSmith3D, ajándékdoboz 30/30 LaserArtisanDesigns). Különálló
+> **listingeket** számoltam különálló **eladók** helyett. Ami megmaradt, mert 13–16 eladó adja:
+> **kereszt** (104 review / 13 eladó), **hazafias** (100 / 14), **western-farm** (49 / 16),
+> **koponya** (26 / 13). Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 ## Miért ez a legjobb jelünk
 
 Minden korábbi mérésünk **kereslet** (keresés) vagy **kínálat** (listing). A review az egyetlen
@@ -165,7 +172,9 @@ túlkínált. **A keresési trend megint mást mondott, mint a tényleges vétel
 | suncatcher (stained glass) | 14 | 7 | 0 |
 | mirror | 12 | 3 | 0 |
 
-Ez **nem egyszereplős torzítás** — 7–14 különböző listing mindegyiknél.
+~~Ez nem egyszereplős torzítás — 7–14 különböző listing mindegyiknél.~~ **HIBÁS:** a listingszám nem
+függetlenségi egység. Eladók szerint: tealight 2 eladó (23/29 egy bolttól), lantern **1 eladó**,
+lamp 2, suncatcher **1**, mirror 2. Ez egy-két bolt katalógusa, nem piaci jel.
 
 Ez a [[decisions/2026-08-08-parked-directions]] „rétegelt lámpa" ötletének igazolása, és egyben az
 ottani óvatosságom cáfolata: a `light box svg` gyenge kulcsszava (4,8 arány, −48,4%) alapján

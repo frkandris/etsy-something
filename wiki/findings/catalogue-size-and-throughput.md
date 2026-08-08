@@ -13,6 +13,13 @@ sources:
 
 # Katalógusméret és termelési tempó
 
+> **AUDIT 2026-08-08 UTÁN.** A katalógusméret-eredmény **túlélte** a deduplikálást: a 100–300-as sáv
+> dedupolva **2 009 HUF/listing** (300–700: 825), tehát a fő ajánlás áll. A **belépési esély** viszont
+> félrevezetően volt megfogalmazva: a nevező csak olyan fiatal boltokat tartalmaz, amelyek **ma
+> rangsorolnak** a top találatok közt — a megbukott és bezárt belépők szerkezetileg hiányoznak
+> (0/173 bezárt bolt a mintában, szemben a követett kohorsz 13/57-ével). Ez **rangsorolás-túlélési
+> arány, nem belépési valószínűség**. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 ## Lényeg
 
 Két járható út van: **tömeg** (700+ listing) vagy **fókusz** (100–300 listing magasabb áron). A

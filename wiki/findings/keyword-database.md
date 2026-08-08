@@ -15,6 +15,11 @@ sources:
 
 # Kulcsszó-adatbázis
 
+> **AUDIT 2026-08-08 UTÁN.** A **norse/kelta „legjobb hosszú farok" következtetés visszavonva.** A
+> [[findings/review-mining]] szerint a témában rangsoroló 16 bolt 609 review-jából csak **2,8%**
+> rétegzett, 58,8% gravírozó/tárgy — a kereslet valós, de más termékformát akar. A kulcsszó-mérések
+> önmagukban érvényesek, a belőlük levont termékajánlás nem.
+
 ## Hogyan épült
 
 A seedek a **konkurencia terméknevéből** jöttek ([[findings/listing-craft]] korpusza, 777 cím a 33

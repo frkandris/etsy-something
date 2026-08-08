@@ -23,12 +23,18 @@ Van-e olyan digitális termék niche az Etsy-n, amibe érdemes belépni, és ha 
 
 ## A válasz egy bekezdésben
 
-**Multilayer / layered lézervágott SVG fájlok.** A belépés a **nem akciózó, magasabb árú végén**
-érdemes: nagyjából **70–200 listing, $9–28-as áron, tartós kedvezmény nélkül**. Az igazolt populáció
-medián boltja **320 ezer HUF/hó**-t termel; a négy közép-/nyugat-európai igazolt bolt mediánja
-**743 ezer HUF/hó és 3 629 HUF/listing**, szemben a 23 alacsony költségű országbeli bolt 285 ezres
-és 1 240-es értékével. A belépési esély valós, de nem nagylelkű: a három évnél fiatalabb boltok
-nagyjából **ötödé jut 500 ezer HUF/hó fölé**. Lásd [[decisions/2026-08-07-pursue-layered]].
+**Multilayer / layered lézervágott SVG fájlok**, **100–300 listinges katalógussal** — ez az egyetlen
+strukturális eredmény, ami a 2026-08-08-i auditot is túlélte. Az igazolt populáció (21 bolt) medián
+boltja **417 ezer HUF/hó**-t termel.
+
+**Termékirány eladási adatból**, ott ahol legalább 13 különböző eladó adja a jelet: **kereszt +
+mandala + amerikai zászló kombók**, mellette western/farm és koponya motívum. Lásd
+[[findings/review-mining]] és [[decisions/2026-08-07-pursue-layered]].
+
+> **Az audit után visszavont állítások:** a „ne akciózz" és az „ár monoton együtt jár az
+> eredménnyel" **nem tartja magát** deduplikált populáción; az európai klaszter 2 boltra esett; a
+> mécses/lámpás „rés" egyetlen eladó katalógusa volt. Részletek:
+> [[pitfalls/2026-08-08-wrong-unit-of-independence]].
 
 ## Hogyan épült a populáció — és miért fontosabb ez bármelyik egyes számnál
 
@@ -37,8 +43,11 @@ Három egyre szigorúbb szűrő, és mindegyik megváltoztatta a választ:
 | szűrő | boltok | medián HUF/hó |
 |---|---:|---:|
 | megjelent az 5 Etsy keresésben (500 listing) | 173 | 210 327 |
-| legalább 3 különálló listinggel rangsorolt („specialista") | 65 | 321 653 |
-| **katalógus mintavéve, ≥80%-ban layered („igazolt")** | **33** | **320 156** |
+| legalább 3 **különálló** listinggel rangsorolt („specialista") | **35** | 471 998 |
+| **katalógus mintavéve, ≥80%-ban layered („igazolt")** | **21** | **416 893** |
+
+*(A 65 és 33 a 2026-08-08-i auditig érvényes, hibás szám volt: a szűrő keresési sorokat számolt
+különálló listingek helyett. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].)*
 
 A középső lépés kiszórta azokat a boltokat, amelyek **egyetlen** kulcsszóra optimalizált listinggel
 rangsoroltak, miközben teljesen mást árulnak — a nyers populáció 49%-át. Az utolsó lépés minden bolt
@@ -56,19 +65,22 @@ ment ez félre, mielőtt jóra fordult.
   elmúlt 12 hónapban nyílt**. Lásd [[findings/layered-niche-size-and-structure]].
 - **Alacsony költségű országok uralják.** A 33 igazolt boltból 15 ukrán, mellette Törökország,
   Vietnám, Indonézia. A volumenversenyt ellenük elveszíted.
-- **Tartósan akciós — és az akciózók veszítenek.** A boltok 75%-a állandó 30–70%-os „akciót" futtat.
-  Az a hat igazolt bolt, amelyik **nem** akciózik, a legjobb gazdaságosságú a mezőnyben.
-  Lásd [[findings/pricing-and-discounting]].
-- **Az ár monoton együtt jár az eredménnyel.** Minden ársáv $12+-ig veri az alatta lévőt, havi
-  bevételben és listingenkénti bevételben egyaránt.
+- **Tartósan akciós.** A boltok 75%-a állandó 30–70%-os „akciót" futtat. Hogy ez árt-e vagy segít,
+  **a mi adatunkból nem dönthető el** — dedupolva a nem akciózó csoport 3 bolt, és a sávok eredménye
+  nem monoton. Lásd [[findings/pricing-and-discounting]].
+- **Az ár és az eredmény kapcsolata bizonytalan.** A dedupolt populáción a listingenkénti bevétel
+  az árral **csökken** (1 720 → 1 581 → 1 338 → 817), a $12+ sávban egy bolt maradt. A korábbi
+  „monoton" állítás visszavonva.
 
 ## A két ténylegesen cselekvési következtetés
 
-1. **Ne akciózz, és árazz $9–28 közé.** Ez a legerősebb és legkövetkezetesebb jelzés az adatban, és
-   minden korrekciót túlélt. [[findings/pricing-and-discounting]]
-2. **100–300 listing legyen a cél, ne 500+.** Ez a legjobb listingenkénti sáv, és egyedül is
-   elérhető havi ~4–10 listinggel. 100 listing alatt a medián bolt kicsi (70 ezer HUF/hó) — a 29 és
-   72 listinges kivételek léteznek, de kivételek. [[findings/catalogue-size-and-throughput]]
+1. **100–300 listing legyen a cél, ne 500+.** A dedupolt populáción is ez a legjobb listingenkénti
+   sáv (**2 009 HUF/listing**, szemben a 300–700 sáv 825-ével), és egyedül is elérhető havi ~4–10
+   listinggel. Ez az egyetlen strukturális eredmény, ami az auditot túlélte.
+   [[findings/catalogue-size-and-throughput]]
+2. **Termékirány eladási adatból, nem keresésiből:** kereszt + mandala + zászló kombók (104 review,
+   **13 különböző eladó**), mellette western/farm (16 eladó) és koponya (13 eladó).
+   [[findings/review-mining]]
 
 ## Amit a munka elvégzéséről tudunk
 

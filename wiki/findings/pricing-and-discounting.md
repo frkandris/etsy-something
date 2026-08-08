@@ -14,11 +14,17 @@ sources:
 
 # Árazás és tartós kedvezmény
 
+> **AUDIT 2026-08-08 UTÁN.** Ez az oldal a **hibás, nem deduplikált** 33-as populáción számolt. Dedupolva
+> (21 bolt) **egyik fő állítása sem tartja magát**: a nem akciózó csoport 6-ról **3 boltra** esik, a
+> kedvezmény-sávok eredménye nem monoton (a 55%+ diszkontálók HUF/listingje **1 767** a legmagasabb),
+> és az ár-sávok listingenkénti bevétele az árral **csökken** (1 720 → 1 581 → 1 338 → 817), a $12+
+> sávban **egy** bolttal. A „ne akciózz" és az „ár monoton" következtetés **visszavonva**. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 ## Lényeg
 
 A **tartós kedvezmény nem növekedési eszköz, hanem a commodity-pozíció tünete**, és **az ár monoton
-együtt jár az eredménnyel**. Ez a két összefüggés minden populációszűrést és a katalógus-korrekciót is
-túlélte — ez a legmegbízhatóbb következtetés az egész kutatásból.
+együtt jár az eredménnyel**. **Ez az állítás a 2026-08-08-i auditon megbukott** — a deduplikálást nem élte túl. Az alábbi
+táblák a hibás populáción készültek, dokumentációként maradnak meg.
 
 ## Populáció
 

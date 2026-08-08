@@ -13,6 +13,11 @@ sources:
 
 # Földrajz és költségverseny
 
+> **AUDIT 2026-08-08 UTÁN.** Dedupolva az **európai csoport 4-ről 2 boltra esik**, tehát az oldal fő
+> összehasonlítása (743 ezer vs 285 ezer HUF/hó) **nem használható**. A dedupolt értékek: Európa n=2,
+> medián 936 269 HUF/hó és 3 337 HUF/listing; alacsony költségű ország n=16, 423 783 és 1 460. Az
+> irány ugyanaz maradt, de **két bolt nem bizonyíték**. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 ## Lényeg
 
 A niche-t alacsony költségű országok uralják, de **nem ők a legjobb gazdaságosságúak**. A néhány

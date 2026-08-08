@@ -17,6 +17,10 @@ sources:
 
 # A layered niche mérete és szerkezete
 
+> **AUDIT 2026-08-08 UTÁN.** A specialista és igazolt populáció mérete korrigálva: **35** és **21**
+> (volt 65 és 33), a dedupolt igazolt medián **416 893 HUF/hó**. A nyers 173-as populáció számai
+> változatlanok. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 ## Lényeg
 
 A niche **valós és népes — nem két szerencsés bolt** —, de zsúfolt, épp elárasztás alatt áll, és a

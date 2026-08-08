@@ -39,7 +39,7 @@ A `shadow box` 153,5-ös aránya ezért **nem a mi résünk**.
 
 | kifejezés | keresés | találat | ker./1000 | trend |
 |---|---:|---:|---:|---:|
-| **shadow box svg** | 2 600 | 34 500 | **75,4** | −8,4% |
+| **shadow box svg** | 2 600 | 34 400 | **75,6** | −7,0% |
 | dog shadow box | 354 | 8 200 | 43,2 | −10,2% |
 | mandala svg | 741 | 39 500 | 18,8 | −25,3% |
 | 3d shadow box svg | 286 | 24 500 | 11,7 | −4,9% |

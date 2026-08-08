@@ -13,6 +13,9 @@ sources:
 
 # A 33 igazolt bolt
 
+> **AUDIT 2026-08-08 UTÁN.** A lista a **hibás, nem deduplikált** szűrőn alapul: a 33-ból csak **21**
+> teljesíti a ≥3 **különálló** listing feltételt. A táblázat dokumentációként marad. Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]].
+
 Ez a kutatás **referencia-populációja**: minden más `findings/` oldal ezen a halmazon számol, hacsak
 külön nem jelzi. Kritérium: legalább 3 különálló listinggel rangsorolt a niche keresésekben, **és** a
 saját katalógusából mintavett 24 listing legalább 80%-a layered.

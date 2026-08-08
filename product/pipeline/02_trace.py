@@ -22,6 +22,7 @@ MM = 300.0          # finished diameter
 MIN_WEB = 2.0       # mm - narrowest material we accept
 MIN_PART = 400.0    # mm2 - smaller pieces stay one plate back, not glued separately
 MIN_HOLE = 4.0      # mm^2 - drop pinholes smaller than this
+MIN_FRAG = 20.0     # mm^2 - a region this big hanging on a thin neck is a defect
 
 
 def posterise(img, levels):
@@ -95,28 +96,35 @@ def clean(geom, scale, thicken, min_part, height):
     stays one plate further back instead of becoming a separate chip to glue.
     """
     if geom is None or geom.is_empty:
-        return None
+        return None, None
     # One fixed transform for every layer, derived from the image extent - never
     # from each layer's own bounding box, or the layers would not register.
     g = affinity.scale(geom, xfact=scale, yfact=-scale, origin=(0, 0))
     g = affinity.translate(g, 0, height)
     g = g.buffer(0)
+    # narrow slots (a 10 x 0.3 mm cut) are design features the closing pass
+    # below would seal shut - collect them first, re-cut them after
+    slots = [Polygon(r) for p in parts_of(g) for r in p.interiors
+             if Polygon(r).area < MIN_HOLE * 3 and _extent(r) >= 2.5]
     if thicken > 0:                       # close hairline gaps, then shrink back
         g = g.buffer(thicken).buffer(-thicken * 0.65)
-    parts = [p for p in (g.geoms if g.geom_type == "MultiPolygon" else [g])
-             if p.area >= min_part]
-    if not parts:
-        return None
+        if slots:
+            g = g.difference(unary_union(slots)).buffer(0)
+    kept, dropped = [], []
+    for p in parts_of(g):
+        (kept if p.area >= min_part else dropped).append(p)
+    if not kept:
+        return None, None
     out = []
-    for p in parts:
-        # a pinhole filter must not eat long narrow slots: a 10 x 0.3 mm cut is
-        # only 3 mm^2 but is a real design feature, so gate on extent, not area
+    for p in kept:
+        # a pinhole filter must not eat long narrow slots: gate on extent too
         holes = [r for r in p.interiors
                  if Polygon(r).area >= MIN_HOLE or _extent(r) >= 2.5]
         out.append(Polygon(p.exterior, holes))
     # potrace emits a vertex per pixel; 0.12 mm is far below any cutter's
     # tolerance and shrinks the delivered files by an order of magnitude
-    return unary_union(out).simplify(0.12).buffer(0)
+    final = unary_union(out).simplify(0.12).buffer(0)
+    return final, (unary_union(dropped) if dropped else None)
 
 
 def parts_of(geom):
@@ -156,7 +164,7 @@ def necks(geom):
         er = p.buffer(-MIN_WEB / 2)
         if er.is_empty:
             continue
-        frags = [f for f in parts_of(er) if f.area >= MIN_PART / 4]
+        frags = [f for f in parts_of(er) if f.area >= MIN_FRAG]
         if len(frags) > 1:
             n += len(frags) - 1
     return n
@@ -182,10 +190,11 @@ def heal_necks(geom, clip=None):
     substantial fragments are bridges - an ornate piece is full of thin edge
     detail that must not be ballooned. Additions are clipped to the plate
     behind so the nesting guarantee survives the repair."""
+    pieces = parts_of(geom)
     healed = []
-    for p in parts_of(geom):
+    for i, p in enumerate(pieces):
         er = p.buffer(-MIN_WEB / 2)
-        frags = [f for f in parts_of(er) if f.area >= MIN_PART / 4]
+        frags = [f for f in parts_of(er) if f.area >= MIN_FRAG]
         if len(frags) <= 1:
             healed.append(p)
             continue
@@ -193,13 +202,48 @@ def heal_necks(geom, clip=None):
         neck_zone = p.difference(unary_union(fat_parts))
         bridges = [nz for nz in parts_of(neck_zone)
                    if sum(1 for fp in fat_parts if nz.distance(fp) < 0.1) >= 2]
+        if not bridges:
+            # a neck shorter than the fragments' dilation has no zone of its
+            # own - patch the meeting point of every close fragment pair
+            for i1 in range(len(frags)):
+                for i2 in range(i1 + 1, len(frags)):
+                    if frags[i1].distance(frags[i2]) < MIN_WEB + 0.3:
+                        lens = frags[i1].buffer(MIN_WEB * 0.8).intersection(
+                               frags[i2].buffer(MIN_WEB * 0.8))
+                        if not lens.is_empty:
+                            bridges.append(lens)
         if bridges:
-            p = unary_union([p] + [b.buffer(MIN_WEB * 0.9) for b in bridges]).buffer(0)
+            add = unary_union([b.buffer(MIN_WEB * 0.6) for b in bridges])
+            others = [q for j, q in enumerate(pieces) if j != i]
+            if others:   # a repair must never fuse two separate pieces
+                add = add.difference(unary_union(others).buffer(0.4))
+            p = unary_union([p, add]).buffer(0)
         healed.append(p)
     out = unary_union(healed)
     if clip is not None:
         out = out.intersection(clip).buffer(0)
-    return out
+    # amputation fallback: a neck that could not be widened (usually because
+    # the plate behind has a hole exactly there, so the clip removed the
+    # repair) is resolved by cutting the SMALL limb off at the neck - its
+    # footprint stays visible on the plate behind, same as any demoted piece.
+    # A neck between two LARGE regions is left alone and fails the report.
+    final = []
+    for p in parts_of(out):
+        er = p.buffer(-MIN_WEB / 2)
+        frags = [f for f in parts_of(er) if f.area >= MIN_FRAG]
+        if len(frags) > 1:
+            small = [f for f in frags if f.area < MIN_PART]
+            big = [f for f in frags if f.area >= MIN_PART]
+            if big and small:
+                cut = unary_union([f.buffer(MIN_WEB / 2 + 0.25) for f in small])
+                p = p.difference(cut).buffer(0)
+                p = unary_union([q for q in parts_of(p) if q.area >= MIN_FRAG])
+                if not p.is_empty:
+                    print(f"[i] amputalva {len(small)} gyogyithatatlan nyakon "
+                          f"logo kis vegtag ({sum(f.area for f in small):.0f} mm2)")
+        if not p.is_empty:
+            final.append(p)
+    return unary_union(final) if final else out
 
 
 def keyhole(geom):
@@ -208,7 +252,7 @@ def keyhole(geom):
     spot with 3 mm of solid material around the hole - an ornate silhouette's
     upper band is often lace, not plate."""
     minx, miny, maxx, maxy = geom.bounds
-    cx = (minx + maxx) / 2
+    cx = geom.centroid.x        # bbox centre would hang an asymmetric piece tilted
     for dy in range(14, 70, 4):
         for dx in (0, -8, 8, -16, 16):
             ex, ey = cx + dx, miny + dy
@@ -232,39 +276,47 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--draft", action="store_true",
+                    help="hibas biztonsagi riport mellett is irjon fajlokat")
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
     src = pathlib.Path(a.src)
     out = pathlib.Path(a.out or src.parent / "layers"); out.mkdir(parents=True, exist_ok=True)
-    for stale in out.glob("layer_*.*"):    # a failed level must not be masked
-        stale.unlink()                     # by a file from an earlier run
     img = Image.open(src)
-    scale = MM / img.width
     g, edges, cent = posterise(img, a.levels)
 
     print(f"forras: {src.name}  {img.width}x{img.height}px")
     print("tonusszintek: " + ", ".join(f"{c:.0f}" for c in cent))
 
-    # pass 1: trace + clean every level
-    geoms = {}
+    # pass 0: the mm scale must come from the OBJECT (the level-1 silhouette
+    # bbox), not the canvas, and it must be known BEFORE clean() runs -
+    # thicken/min_part/min_hole are physical thresholds. A canvas-derived
+    # scale would shrink or inflate them by the empty-margin ratio.
+    raw1 = trace(mask_at(g, edges[1]))
+    if raw1 is None or raw1.is_empty:
+        raise SystemExit("az 1. reteg (hatlap) ures - hasznalhatatlan bemenet")
+    rminx, rminy, rmaxx, rmaxy = raw1.bounds
+    scale = MM / max(rmaxx - rminx, rmaxy - rminy)
+
+    # pass 1: trace + clean every level at final physical scale
+    geoms, dropped = {}, {}
     for k in range(1, a.levels + 1):
-        geom = clean(trace(mask_at(g, edges[k])), scale, a.thicken, a.min_part,
-                     img.height * scale)
+        geom, drp = clean(trace(mask_at(g, edges[k])), scale, a.thicken,
+                          a.min_part, img.height * scale)
         if geom is not None:
             geoms[k] = geom
+            if drp is not None:
+                dropped[k] = drp
     if 1 not in geoms:
         raise SystemExit("az 1. reteg (hatlap) ures - hasznalhatatlan bemenet")
 
-    # pass 2: scale FIRST, so every mm threshold below (min_part, MIN_WEB,
-    # neck healing) operates on the final physical size. The object (back
-    # plate bbox), not the image canvas, is exactly MM wide - the listing
-    # promises the finished size.
+    # anchor the object at the origin
     minx, miny, maxx, maxy = geoms[1].bounds
-    f = MM / max(maxx - minx, maxy - miny)
     for k in geoms:
-        gk = affinity.scale(geoms[k], xfact=f, yfact=f, origin=(0, 0))
-        geoms[k] = affinity.translate(gk, -minx * f, -miny * f)
+        geoms[k] = affinity.translate(geoms[k], -minx, -miny)
+    for k in dropped:
+        dropped[k] = affinity.translate(dropped[k], -minx, -miny)
 
     # pass 3: independent potrace runs + simplify break exact nesting, so
     # enforce it: each layer is clipped to the final layer behind it. This is
@@ -295,13 +347,31 @@ def main():
     enforce_nesting()
     heal_all()
 
+    # demotion audit: a piece dropped from layer k is promised to remain
+    # visible on a plate behind it. Nesting guarantees the footprint stays
+    # inside layer 1, but say honestly how much falls MORE than one plate back.
+    for k in sorted(dropped):
+        prev = geoms.get(k - 1)
+        if prev is None or k == 1:
+            continue
+        deeper = dropped[k].difference(prev)
+        if deeper.area > 1.0:
+            print(f"[i] {k}. reteg: {dropped[k].area:.0f} mm2 eldobva, ebbol "
+                  f"{deeper.area:.0f} mm2 tobb mint egy lappal hatrebb latszik")
+
     if not a.no_keyhole:
-        geoms[1] = keyhole(geoms[1])
+        cut = keyhole(geoms[1])
+        if cut is geoms[1]:
+            raise SystemExit("nincs hova vagni a kulcslyukat - futtasd "
+                             "--no-keyhole kapcsoloval, ha tudatosan hagyod el")
+        geoms[1] = cut
+        # the hole pierces only the back plate; front layers may overlap it
+        # by design (they hide it). This is a deliberate nesting exception.
 
     print(f"objektum: {MM:.0f} mm (a hatlap befoglaloja, nem a vaszon)")
     print(f"\n{'reteg':>6}{'darab':>7}{'lyuk':>6}{'terulet mm2':>13}{'leggyengebb':>14}"
           f"{'vekony%':>9}{'nyak':>6}  statusz")
-    rows = []
+    rows, all_ok = [], True
     for k in sorted(geoms):
         geom = geoms[k]
         pieces = parts_of(geom)
@@ -310,12 +380,26 @@ def main():
         ta = thin_area(geom, MIN_WEB)
         nk = necks(geom)
         ok = nw >= MIN_WEB and ta < 0.02 and nk == 0
+        all_ok = all_ok and ok
         st = "OK" if ok else ("TORIK" if nw < MIN_WEB else
                               "NYAK" if nk else "VEKONY RESZEK")
         print(f"{k:>6}{len(pieces):>7}{holes:>6}{geom.area:>13,.0f}{nw:>13.2f}mm"
               f"{ta*100:>8.2f}%{nk:>6}  {st}")
         rows.append((k, geom, len(pieces), holes, nw, ta))
 
+    if len(geoms) < a.levels:
+        all_ok = False
+        print(f"[!] {a.levels} szintbol csak {len(geoms)} adott reteget")
+    if not all_ok and not a.draft:
+        raise SystemExit("HIBAS RETEG - nem irok ki fajlokat. Reszeredmenyhez: --draft")
+
+    # a previous run's files are removed only now, when the new build is known
+    # good - a crash above must not leave a half-mixed output directory
+    for stale in list(out.glob("layer_*.*")) + list(out.glob("preview_*")) \
+               + list(out.glob("assembly_*")):
+        stale.unlink()
+
+    for k, geom, *_ in rows:
         svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
                f'viewBox="0 0 {MM} {MM}">\n  <path d="{d_of(geom)}" fill-rule="evenodd" '
                f'fill="none" stroke="#000" stroke-width="0.3"/>\n</svg>\n')

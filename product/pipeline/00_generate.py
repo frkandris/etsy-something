@@ -9,8 +9,16 @@ Output is the same depth_map.png that 01_illustrate.py produces by hand, so
 step 02 consumes either one without changes.
 
 Key is read from OPENAI_API_KEY (kept outside the repo).
+
+Two ways to call the model:
+- text only: fresh composition from the subject prompt
+- --ref [--crop x,y,w,h]: image-to-image via the edits endpoint. Feed it OUR
+  earlier output (or a crop of it - e.g. just the knot border or the root
+  weave, without the background) and the new image inherits that drawing
+  style. This is how a multi-design series stays visually consistent, and how
+  a weak region gets redrawn without losing the rest.
 """
-import os, sys, base64, json, pathlib, argparse, urllib.request
+import os, sys, base64, json, pathlib, argparse, urllib.request, uuid
 
 MODEL = "gpt-image-2"
 LEVELS = 6
@@ -49,16 +57,52 @@ SUBJECTS = {
 }
 
 
-def generate(subject_key, out_dir, size="1024x1024", n=1):
+REF_NOTE = """
+STYLE REFERENCE: the attached image shows the exact drawing style, stroke
+weight and flat grey depth-level scheme to reproduce. Draw the NEW subject
+below as a complete new composition in that same visual voice - do not copy
+the reference's subject, only its style and its flat-grey depth convention."""
+
+
+def _multipart(fields, files):
+    b = uuid.uuid4().hex
+    out = bytearray()
+    for k, v in fields.items():
+        out += (f"--{b}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n").encode()
+    for k, (fn, blob, ct) in files.items():
+        out += (f"--{b}\r\nContent-Disposition: form-data; name=\"{k}\"; "
+                f"filename=\"{fn}\"\r\nContent-Type: {ct}\r\n\r\n").encode() + blob + b"\r\n"
+    out += f"--{b}--\r\n".encode()
+    return bytes(out), f"multipart/form-data; boundary={b}"
+
+
+def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
     prompt = PROMPT.format(subject=SUBJECTS[subject_key], levels=LEVELS)
-    body = json.dumps({"model": MODEL, "prompt": prompt, "size": size, "n": n}).encode()
+    if ref:
+        from PIL import Image
+        import io
+        img = Image.open(ref)
+        if crop:
+            x, y, w, h = crop
+            img = img.crop((x, y, x + w, y + h))
+        buf = io.BytesIO(); img.save(buf, "PNG")
+        body, ctype = _multipart(
+            {"model": MODEL, "prompt": prompt + REF_NOTE, "size": size, "n": str(n)},
+            {"image": ("ref.png", buf.getvalue(), "image/png")})
+        url = "https://api.openai.com/v1/images/edits"
+        print(f"[gen] {MODEL}  {size}  temaja: {subject_key}  ref: {ref}"
+              + (f" crop {crop}" if crop else ""))
+    else:
+        body = json.dumps({"model": MODEL, "prompt": prompt, "size": size, "n": n}).encode()
+        ctype = "application/json"
+        url = "https://api.openai.com/v1/images/generations"
+        print(f"[gen] {MODEL}  {size}  temaja: {subject_key}")
     req = urllib.request.Request(
-        "https://api.openai.com/v1/images/generations", data=body,
-        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
-    print(f"[gen] {MODEL}  {size}  temaja: {subject_key}")
+        url, data=body,
+        headers={"Authorization": f"Bearer {key}", "Content-Type": ctype})
     with urllib.request.urlopen(req, timeout=600) as r:
         data = json.load(r)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -79,6 +123,9 @@ if __name__ == "__main__":
     ap.add_argument("--subject", default="celtic-tree", choices=list(SUBJECTS))
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--n", type=int, default=1)
+    ap.add_argument("--ref", default=None, help="stilus-referencia kep (image-to-image)")
+    ap.add_argument("--crop", default=None, help="x,y,w,h - a referencia kivagando resze")
     ap.add_argument("--out", default=str(pathlib.Path(__file__).parent / "work"))
     a = ap.parse_args()
-    generate(a.subject, pathlib.Path(a.out), a.size, a.n)
+    crop = tuple(int(v) for v in a.crop.split(",")) if a.crop else None
+    generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop)

@@ -6,7 +6,7 @@
 lecseréltük AI-illusztrációból vezetett rétegekre (`pipeline/00_generate.py` →
 `pipeline/02_trace.py` → `render_blender.py`). A régi generátor és mockup megmaradt referenciának.
 
-![hero](pipeline/work/render_hero.png)
+![hero](iterations/0005-fixed-celtic-tree/render_hero.png)
 
 ---
 
@@ -54,26 +54,29 @@ akciózik, medián 40%), azzal nem megyünk szembe.
 
 > **Celtic Tree of Life — 6-layer shadow box, ready to cut, layers numbered.**
 >
-> A 300 mm (11.8") layered Tree of Life inside a Celtic star-knot ring. Four concentric mandala
-> rings build the depth, a 16-point interlaced knot frames it, and the tree is a separate piece you
-> glue centred on top.
+> A 300 mm (11.8") layered Tree of Life inside a woven Celtic knot ring. Interlaced knotwork
+> branches, a mirrored root weave and a braided border build six true depth levels — the over-under
+> of the knots is a real physical step, not an engraving.
 >
 > **What you get** • 6 numbered layers, SVG + DXF (R12) • stacked preview showing assembly order
-> • designed for 3 mm (1/8") plywood or MDF, 18 mm total depth
+> • designed for 3 mm (1/8") plywood, MDF or card stock — 6 layers, ~18–19 mm assembled
 >
 > **Cut-safe by design** Layers 1–5 are each a **single connected piece** — nothing falls out on
 > the bed; the front accent layer is 6 large pieces, all over 400 mm². Every layer passes an
-> automated fragility check (weakest piece ≥ 3.6 mm at its widest, breakage-prone area under 1%),
-> computed per layer, not estimated.
+> automated fragility check: weakest piece ≥ 6 mm at its widest, thin (breakage-prone) area at most
+> 0.9% of any layer, and **zero thin necks** — narrow bridges between solid regions are detected
+> and locally widened before export. Widths are measured on the cut centreline, before kerf.
 >
-> **Assembly** Cut layers 1–6, stack back to front, glue. The tree goes last, centred. The back
-> plate has a 6 mm keyhole for hanging.
+> **Assembly** Cut layers 1–6, stack back to front, glue. Layers 1–5 are one piece each; layer 6
+> is six accent pieces — the included **assembly guide** shows each layer highlighted in place, so
+> every piece has an unambiguous home. The back plate has a keyhole hanger (7 mm entry, 3.5 mm
+> slot) cut near the top. Total depth 17.8–19.1 mm depending on material (3 mm vs 1/8").
 >
 > **Machines** Glowforge · xTool · Ortur · CNC router · Cricut & Silhouette (3 mm card stock)
 >
 > Instant digital download — no physical item is shipped.
 
-## Fájlcsomag (pipeline/work/layers/)
+## Fájlcsomag (iterations/0005-fixed-celtic-tree/layers/)
 
 ```
 layer_1_of_6  hátlap, tömör sziluett — 1 darab
@@ -82,7 +85,7 @@ layer_3_of_6  szegély-fonat mélyebb szálai + lombkorona — 1 darab
 layer_4_of_6  fa + gyökérfonat teste — 1 darab
 layer_5_of_6  fonatok felül futó szálai — 1 darab
 layer_6_of_6  törzs, ágak és a szegély kiemelt szálai — 6 darab
-preview_stacked.png/svg + render_hero.png + render_01.png
+preview_stacked.png/svg + assembly_guide.png + render_hero.png
 ```
 
 Mindegyik SVG **és** DXF R12 formátumban. Összesen **11 darab** ragasztandó elem — az 1–5. réteg
@@ -98,7 +101,11 @@ poszterizálhatóságot kényszeríti ki, nem a szépséget.
 shapely javítás (hajszálvékony részek vastagítása, tűlyukak és szilánkok eldobása) →
 **vágásbiztonsági riport** rétegenként: darabszám, legvékonyabb anyag, törésveszélyes terület.
 Kulcstrükk: mivel a szintek egymásba ágyazottak, egy 400 mm²-nél kisebb darab eldobása nem lyuk —
-az a folt egy lappal hátrébb marad. Így lett 116 ragasztandó darabból 11, változatlan sziluettel.
+az a folt a mögötte lévő lapon marad meg. A nestinget a lánc explicit kikényszeríti (minden
+réteg a mögötte lévőhöz van vágva), így a demóció garantáltan igaz — MIN_PART=0-val 168 különálló
+darab lenne, a szállított fájlokban 11. A vékony nyakakat (két tömör régiót összekötő, 2 mm-nél
+keskenyebb híd) a lánc detektálja és lokálisan kiszélesíti; a kulcslyuk-akasztót a hátlap tömör
+sávjába szkenneléssel helyezi el.
 
 `render_blender.py` — headless Cycles render, a rétegek valódi 3 mm vastagsággal, hogy a
 lépcsős árnyékok látszódjanak. A [[findings/keyword-demand-sweep]] szerint **a thumbnail nyeri meg

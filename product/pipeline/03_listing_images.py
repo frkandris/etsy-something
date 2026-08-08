@@ -13,7 +13,7 @@ Usage:
 Reads  <dir>/render_hero.png (or --hero) and <dir>/layers/assembly_guide.png.
 Writes <dir>/listing/01_hero.png, 02_specs.png, 03_closeup.png, 04_assembly.png
 """
-import argparse, pathlib
+import argparse, json, math, pathlib
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 INK = (36, 30, 26)
@@ -58,8 +58,10 @@ def hero_overlay(hero, title, layers, size_mm, out):
     img.save(out)
 
 
-def specs_card(hero, layers, size_mm, pieces, weakest, out):
-    """The trust card: what the fragility check verified, in buyer language."""
+def specs_card(hero, layers, size_mm, pieces, weakest, out, rep=None):
+    """The trust card. Every claim comes from the build's report.json - a
+    hand-typed number or an unconditional promise is how a listing ends up
+    lying about a --draft or --no-keyhole build."""
     img = Image.new("RGB", (2000, 2000), PAPER)
     dr = ImageDraw.Draw(img)
     h = hero.convert("RGB").resize((1180, 1180))
@@ -69,10 +71,12 @@ def specs_card(hero, layers, size_mm, pieces, weakest, out):
     lines = [
         f"{layers} numbered layers  ·  {pieces} pieces total",
         f"every piece at least {weakest} mm at its widest",
-        "no thin necks - narrow bridges are auto-widened",
-        "keyhole hanger cut into the back plate",
-        f"{size_mm} mm ({size_mm/25.4:.1f}\") finished size, scalable",
     ]
+    if rep is None or rep.get("necks") == 0:
+        lines.append("no thin necks - narrow bridges are auto-widened")
+    if rep is None or rep.get("keyhole"):
+        lines.append("keyhole hanger cut into the back plate")
+    lines.append(f"{size_mm} mm ({size_mm/25.4:.1f}\") finished size, scalable")
     y = 1530
     for ln in lines:
         dr.text((1000, y), ln, font=font(52), fill=(80, 68, 58), anchor="mm")
@@ -92,8 +96,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True)
     ap.add_argument("--title", required=True)
-    ap.add_argument("--layers", type=int, required=True)
-    ap.add_argument("--pieces", type=int, required=True)
+    ap.add_argument("--layers", type=int, default=0, help="report.json feluliria")
+    ap.add_argument("--pieces", type=int, default=0, help="report.json feluliria")
     ap.add_argument("--weakest", default="6")
     ap.add_argument("--size-mm", type=int, default=300)
     ap.add_argument("--hero", default=None)
@@ -103,8 +107,19 @@ def main():
     hero = Image.open(a.hero or d / "render_hero.png")
     out = d / "listing"
     out.mkdir(exist_ok=True)
+    rep = None
+    repf = d / "layers" / "report.json"
+    if repf.exists():
+        rep = json.loads(repf.read_text())
+        a.layers = rep["levels"]
+        a.pieces = rep["pieces_total"]
+        # floor to one decimal - "at least 6" over a 5.96 mm piece is a lie
+        a.weakest = f"{math.floor(rep['weakest_mm'] * 10) / 10:g}"
+        a.size_mm = int(rep["size_mm"])
+        if rep.get("draft"):
+            raise SystemExit("draft build - listing kepet nem gyartunk belole")
     hero_overlay(hero, a.title, a.layers, a.size_mm, out / "01_hero.png")
-    specs_card(hero, a.layers, a.size_mm, a.pieces, a.weakest, out / "02_specs.png")
+    specs_card(hero, a.layers, a.size_mm, a.pieces, a.weakest, out / "02_specs.png", rep)
     closeup(hero, out / "03_closeup.png")
     guide = d / "layers" / "assembly_guide.png"
     if guide.exists():

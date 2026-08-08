@@ -1,6 +1,6 @@
 """Blender headless render of the layered stack -> product photo.
 
-Run:  blender -b -P render_blender.py -- <svg_dir> <out.png> [view] [elev_deg]
+Run:  blender -b -P render_blender.py -- <svg_dir> <out.png> [view] [palette] [elev_deg] [--grain]
 
   view = hero    near-frontal, the main listing image
          angled  three-quarter, shows the layer edges
@@ -91,6 +91,8 @@ PALETTES = {
     "knot2": [(0.42, 0.05, 0.05, 1), (0.05, 0.05, 0.06, 1), (0.10, 0.10, 0.12, 1),
               (0.45, 0.45, 0.48, 1), (0.80, 0.80, 0.82, 1), (0.96, 0.96, 0.97, 1)],
 }
+if PALETTE not in PALETTES:
+    print(f"[render] FIGYELEM: ismeretlen paletta '{PALETTE}', wood-ra esem vissza")
 TONES = PALETTES.get(PALETTE, PALETTES["wood"])
 
 svgs = sorted(SRC.glob("layer_*_of_*.svg"))
@@ -143,8 +145,9 @@ if VIEW == "shelf":
     STACK = max(p.z for p in pts) - min(p.z for p in pts)
     for o in objs:
         # +90 about X keeps the artwork upright with its front toward the
-        # camera; a few degrees past 90 leans it back like a framed print
-        o.rotation_euler = (math.radians(96), 0, 0)
+        # camera; a few degrees SHORT of 90 leans the top toward the wall
+        # (+Y) like a framed print - past 90 it would topple forward
+        o.rotation_euler = (math.radians(84), 0, 0)
         o.location.y, o.location.z = -o.location.z, SIZE / 2
     # sideboard top
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.25, -SIZE * 0.016))

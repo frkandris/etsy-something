@@ -1,0 +1,53 @@
+{
+ "levels": 7,
+ "layers": {
+  "1": {
+   "pieces": 1,
+   "holes": 1,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.0
+  },
+  "2": {
+   "pieces": 2,
+   "holes": 38,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.01
+  },
+  "3": {
+   "pieces": 5,
+   "holes": 11,
+   "weakest_mm": 10.05,
+   "thin_pct": 0.01
+  },
+  "4": {
+   "pieces": 4,
+   "holes": 12,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.01
+  },
+  "5": {
+   "pieces": 2,
+   "holes": 11,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.07
+  },
+  "6": {
+   "pieces": 1,
+   "holes": 14,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.11
+  },
+  "7": {
+   "pieces": 3,
+   "holes": 1,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.07
+  }
+ },
+ "pieces_total": 18,
+ "weakest_mm": 10.05,
+ "necks": 0,
+ "keyhole": true,
+ "draft": false,
+ "size_mm": 300.0
+}

@@ -193,8 +193,13 @@ def d_of(geom):
     d = []
     for g in (geom.geoms if geom.geom_type == "MultiPolygon" else [geom]):
         for ring in [g.exterior] + list(g.interiors):
-            pts = list(ring.coords)
-            d.append("M " + " L ".join("%.3f %.3f" % p for p in pts) + " Z")
+            pts = ["%.3f %.3f" % p for p in ring.coords]
+            # dedupe after rounding and drop the explicit closing point - the
+            # Z command closes the path, a repeated point is a zero-length edge
+            dd = [q for i, q in enumerate(pts) if i == 0 or q != pts[i - 1]]
+            if len(dd) > 1 and dd[0] == dd[-1]:
+                dd = dd[:-1]
+            d.append("M " + " L ".join(dd) + " Z")
     return " ".join(d)
 
 
@@ -260,7 +265,16 @@ def heal_necks(geom, clip=None):
         if len(frags) > 1:
             small = [f for f in frags if f.area < MIN_PART]
             big = [f for f in frags if f.area >= MIN_PART]
-            small = [f for f in small if f.area <= 60.0]
+            small = sorted((f for f in small if f.area <= 60.0),
+                           key=lambda f: f.area)
+            total = 0.0
+            capped = []
+            for f in small:          # 60 mm2 is the TOTAL amputation budget
+                if total + f.area > 60.0:
+                    break
+                total += f.area
+                capped.append(f)
+            small = capped
             if big and small:
                 # cap: anything bigger than a fingertip is a design element -
                 # removing it silently would hide damage, so leave it and let
@@ -552,6 +566,20 @@ def main():
         draw_geom(guide, geom, (214, 116, 40), ox, oy)
         gd.text((ox + 12, oy + PW + 8), f"{k}. reteg", fill=(60, 50, 40))
     guide.save(out / "assembly_guide.png")
+
+    report = {
+        "levels": a.levels,
+        "layers": {k: {"pieces": pc, "holes": ho, "weakest_mm": round(nw, 2),
+                       "thin_pct": round(ta * 100, 2)}
+                   for k, _, pc, ho, nw, ta in rows},
+        "pieces_total": sum(pc for _, _, pc, *_ in rows),
+        "weakest_mm": round(min(nw for *_, nw, _ in rows), 2),
+        "necks": 0 if all_ok else None,
+        "keyhole": not a.no_keyhole,
+        "draft": a.draft,
+        "size_mm": MM,
+    }
+    (out / "report.json").write_text(json.dumps(report, indent=1))
 
     if final_out.exists():
         shutil.rmtree(final_out)

@@ -21,6 +21,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/listing-craft]] — címek: gépek, formátumok, rétegszám, témák
 - [[findings/verified-shop-list]] — a bolt-lista (a 33-as szűrő hibás volt, dedupolva 21)
 - [[findings/functional-segment-comparison]] — a felmért alternatíva, és miért nem váltunk
+- [[findings/independent-second-opinion]] — **független elemzés** ugyanabból az adatból
 - [[findings/review-mining]] — **mi fogy ténylegesen**: kínálat vs eladás, és a norse/kelta bukása
 - [[findings/keyword-database]] — **345 kulcsszó volumennel**: hol a hosszú farok a kutyákon túl
 - [[findings/keyword-demand-sweep]] — **kereslet 40+ kifejezésre**: hol a rés, és miért a thumbnail dönt
@@ -37,6 +38,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 ## Módszer — `methods/`
 
+- [[methods/measurement-chain]] — **kezdd itt**: a keresés → találat → bolt → termék → eladás lánc
 - [[methods/data-collection-pipeline]] — a négy lépés
 - [[methods/revenue-estimation-method]] — mit jelent a bevételszám és mit nem
 - [[methods/apify-actors]] — melyik actor mit ad, mibe kerül

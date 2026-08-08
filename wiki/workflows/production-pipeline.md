@@ -10,9 +10,13 @@ generated:
 
 # Termelési folyamat
 
-> **Státusz:** javaslat, még nem futott le élesben. Amit alátámaszt, az a
-> [[findings/catalogue-size-and-throughput]] tempó-adata és a
-> [[findings/listing-craft]] formátum-elvárásai.
+> **Státusz: élesben fut** (2026-08-08-tól). Implementáció: `product/pipeline/00_generate.py`
+> (gpt-image-2 mélységtérkép, `--ref/--crop` image-to-image stílusreferenciával),
+> `product/pipeline/02_trace.py` (k-means poszterizálás → potrace → shapely → nesting-kényszer →
+> nyak-gyógyítás → kulcslyuk → SVG/DXF + biztonsági riport), `product/render_blender.py`.
+> Az iterációk számozott mappákban: `product/iterations/0001-…`. Az első teljes végigfutás
+> és a codex-audit utáni javítások: `product/iterations/0005-fixed-celtic-tree/README.md`.
+> Egy design gépi ideje a teljes láncon: ~3 perc.
 
 **Kulcsgondolat: fájlt adsz el, nem tárgyat.** A gépek nem a termeléshez kellenek, hanem (1) annak
 bizonyítására, hogy a fájl kivágható, és (2) eladható fotóhoz.

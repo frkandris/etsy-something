@@ -2,6 +2,7 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+- 2026-08-09 — A termelési pipeline élesben: gpt-image-2 mélységtérkép → trace → nesting-kényszer + nyak-gyógyítás → render; codex 1. kör 14 findingja javítva (nyakvak metrika, nem garantált demóció, 291mm-es tárgy, hiányzó kulcslyuk); iterációk számozott mappákban a product/iterations alatt (workflows/production-pipeline.md)
 - 2026-08-08 — Versenytárs-képfelmérés felvéve: a nagy volumenű eladók (UpSVGStudio 6k eladás/2 év) színes kartonrétegekkel, fehér shadow-box kerettel és lifestyle háttérrel adnak el, a vevői review-fotók Cricut+karton kivitelt mutatnak; a saját fa-tónusú hero a mezőny leghalványabb kvartilisébe esne (findings/competitor-listing-images.md)
 - 2026-08-08 — Független második vélemény felvéve: a codex a nyers adatból, a wiki következtetéseinek ismerete nélkül elemzett; egyetért a shadow box formában és a mandala semlegességében, de kisebb tesztméretet (36 listing/90 nap), piaci árat és kutyafajtákat javasol (findings/independent-second-opinion.md)
 - 2026-08-08 — Megírva a mérési lánc térképe: öt réteg, öt mértékegység, és hogy melyik hibánk melyik rétegben keletkezett (methods/measurement-chain.md)

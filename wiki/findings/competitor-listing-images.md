@@ -52,6 +52,19 @@ leghalványabb kvartilisébe esne.
    (ColorLayerArt éjszakai égboltja). A mi 1. rétegünk jelenleg ugyanolyan tónusú, mint a többi.
 5. Galéria-szerkezet: hero → videó → közeli → flat-lay rétegtábla → „what you get" → köszönőkártya.
 
+## Kiegészítés — tacskó és celtic knot felmérés (2026-08-09 éjjel)
+
+| bolt | jel | recept |
+|---|---|---|
+| **MagicVectorLaser** | bolt 5k★ | kutyafajta-BUNDLE (34 fej egy hero-n), fa tónus |
+| **StudioTokanoLayerSVG** | bolt 1,5k★ | keretezett színes karton tacskó-portré, „7 layers" badge, szöveg-overlay |
+| **Namlaserart** | bolt 761★ | portré-rács keretekben, barna monokróm |
+| **MaWoodCreationStore** | bolt 1k★ / 9,7k eladás | négyzetes trinity-knot mandala, fekete+fehér+piros, fonott szegély; review-fotók igazolják a vágást |
+
+Következmény: mindkét új témánk (0007–0012 iterációk) a fenti recepteket követi — négyzetes
+formátum, tömör hátlap sötét kontraszttal, fajtaszínű vagy MaWood-kontrasztú paletta, polcos
+lifestyle render (--grain + shelf nézet a render_blender.py-ban).
+
 ## Fenntartások
 
 Kis, kvalitatív minta; a review-számok bolti szintűek (kivéve UpSVGStudio 390, ami listing-szintű).

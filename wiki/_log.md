@@ -2,6 +2,7 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+- 2026-08-09 — Éjszakai iterációs ciklus (0007–0012): tacskó és celtic knot a magas-review versenytárs-receptek szerint (négyzetes formátum, solid-back, fajtaszín/MaWood-paletta); codex 2-3. kör javításai a láncban (nyak-gyógyítás no-fuse szabállyal, amputáció-plafon, súlypont-központú kulcslyuk, atomikus export); render: fa erezet + polcos lifestyle jelenet; 03_listing_images.py galéria-generátor (workflows/production-pipeline.md, findings/competitor-listing-images.md)
 - 2026-08-09 — Külső kutatás felvéve az Etsyn kívüli monetizálásról: 3 hónapos ablakban a marketplace-terítés (CF+DesignBundles+Cults3D, nem-exkluzív) adja a legjobb óradíjat, a Glowforge Catalog passzív royalty, a SaaS-irány nulla rövidtávú bevétel; teljes szöveg az assets alatt (findings/off-etsy-monetisation.md)
 - 2026-08-09 — A termelési pipeline élesben: gpt-image-2 mélységtérkép → trace → nesting-kényszer + nyak-gyógyítás → render; codex 1. kör 14 findingja javítva (nyakvak metrika, nem garantált demóció, 291mm-es tárgy, hiányzó kulcslyuk); iterációk számozott mappákban a product/iterations alatt (workflows/production-pipeline.md)
 - 2026-08-08 — Versenytárs-képfelmérés felvéve: a nagy volumenű eladók (UpSVGStudio 6k eladás/2 év) színes kartonrétegekkel, fehér shadow-box kerettel és lifestyle háttérrel adnak el, a vevői review-fotók Cricut+karton kivitelt mutatnak; a saját fa-tónusú hero a mezőny leghalványabb kvartilisébe esne (findings/competitor-listing-images.md)

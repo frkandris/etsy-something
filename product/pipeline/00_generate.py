@@ -100,12 +100,12 @@ def _multipart(fields, files):
     return bytes(out), f"multipart/form-data; boundary={b}"
 
 
-def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None):
+def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None, levels=LEVELS):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
     subj, fmt = SUBJECTS[subject_key]
-    prompt = PROMPT.format(subject=subj, levels=LEVELS, format=FORMATS[fmt])
+    prompt = PROMPT.format(subject=subj, levels=levels, format=FORMATS[fmt])
     if ref:
         from PIL import Image
         import io
@@ -148,9 +148,10 @@ if __name__ == "__main__":
     ap.add_argument("--subject", default="celtic-tree", choices=list(SUBJECTS))
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--n", type=int, default=1)
+    ap.add_argument("--levels", type=int, default=LEVELS)
     ap.add_argument("--ref", default=None, help="stilus-referencia kep (image-to-image)")
     ap.add_argument("--crop", default=None, help="x,y,w,h - a referencia kivagando resze")
     ap.add_argument("--out", default=str(pathlib.Path(__file__).parent / "work"))
     a = ap.parse_args()
     crop = tuple(int(v) for v in a.crop.split(",")) if a.crop else None
-    generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop)
+    generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop, a.levels)

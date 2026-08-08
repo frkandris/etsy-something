@@ -37,23 +37,47 @@ STRICT RENDERING RULES - these matter more than beauty:
 - Every lighter region must sit fully INSIDE a darker region - the levels nest like a
   contour map, never overlapping partially.
 - Keep all detail thicker than about 1/200 of the image width, so it survives cutting.
-- Perfectly centred, radially balanced, filling the frame as a circular medallion.
+- Perfectly centred, {format}.
 - Flat front view, orthographic, no perspective.
 - No text, no numbers, no signature, no watermark, no frame, no border decoration outside the circle."""
 
+FORMATS = {
+    "circle": "radially balanced, filling the frame as a circular medallion",
+    "square": ("filling the frame as a SQUARE panel with a decorative border "
+               "running along all four edges - the outermost depth level is the "
+               "square border frame itself"),
+}
+
 SUBJECTS = {
+    "dachshund": (
+        "A dachshund (sausage dog) portrait in profile, sitting, smooth coat, "
+        "unmistakable breed silhouette: very long body, short legs, long muzzle, "
+        "big floppy ear. The dog is the front layers; behind it an ornamental "
+        "background of paw prints, bones and swirling filigree. A clean border "
+        "frames the panel. The dog's body is built from flowing, nested tone "
+        "bands like layered paper art.", "square"),
+    "celtic-knot": (
+        "A Celtic trinity knot (triquetra) interlaced with a circle, drawn as "
+        "bold woven bands - each strand clearly passes over and under the "
+        "others, and the over-strand is one depth level lighter than the "
+        "under-strand at every crossing. Around it, a dense interlaced Celtic "
+        "knotwork field fills the corners of the square panel, with a woven "
+        "border along the edges. In the style of carved stone Celtic art.",
+        "square"),
     "celtic-tree": (
         "A Celtic Tree of Life medallion. A gnarled tree with tapering trunk, "
         "flowing branches that curve outward and downward into interlaced Celtic knotwork, "
         "and mirrored roots below forming the same weave, all enclosed by a circular band. "
         "Around the outside, a woven Celtic knot border of interlacing strands. "
-        "Ornate, symmetrical, intricate - in the style of carved wooden Celtic art."),
+        "Ornate, symmetrical, intricate - in the style of carved wooden Celtic art.",
+        "circle"),
     "hummingbird": (
         "A hummingbird in flight beside a large ornamental flower, surrounded by "
-        "filigree scrollwork and layered petals, enclosed in a circular medallion."),
+        "filigree scrollwork and layered petals, enclosed in a circular medallion.",
+        "circle"),
     "wolf": (
         "A wolf head facing forward, framed by a circular mandala of pine trees and "
-        "mountains, with ornamental filigree filling the corners."),
+        "mountains, with ornamental filigree filling the corners.", "circle"),
 }
 
 
@@ -80,7 +104,8 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
-    prompt = PROMPT.format(subject=SUBJECTS[subject_key], levels=LEVELS)
+    subj, fmt = SUBJECTS[subject_key]
+    prompt = PROMPT.format(subject=subj, levels=LEVELS, format=FORMATS[fmt])
     if ref:
         from PIL import Image
         import io

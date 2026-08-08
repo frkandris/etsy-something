@@ -276,6 +276,9 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--solid-back", action="store_true",
+                    help="a hatlap lyukai kitoltve - tomor hatter a csipke moge, "
+                         "ahogy a keretezett shadow boxoknal szokas")
     ap.add_argument("--draft", action="store_true",
                     help="hibas biztonsagi riport mellett is irjon fajlokat")
     ap.add_argument("--out", default=None)
@@ -358,6 +361,11 @@ def main():
         if deeper.area > 1.0:
             print(f"[i] {k}. reteg: {dropped[k].area:.0f} mm2 eldobva, ebbol "
                   f"{deeper.area:.0f} mm2 tobb mint egy lappal hatrebb latszik")
+
+    if a.solid_back:
+        # fill every hole of the back plate: the lace sits on a solid backer,
+        # which also gives the keyhole guaranteed meat
+        geoms[1] = unary_union([Polygon(p.exterior) for p in parts_of(geoms[1])])
 
     if not a.no_keyhole:
         cut = keyhole(geoms[1])

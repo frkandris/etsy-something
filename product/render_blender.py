@@ -17,7 +17,8 @@ argv = sys.argv[sys.argv.index("--") + 1:]
 SRC = pathlib.Path(argv[0])
 OUT = argv[1]
 VIEW = argv[2] if len(argv) > 2 else "hero"
-ELEV = float(argv[3]) if len(argv) > 3 else (74.0 if VIEW == "hero" else 34.0)
+PALETTE = argv[3] if len(argv) > 3 else "wood"
+ELEV = float(argv[4]) if len(argv) > 4 else (74.0 if VIEW == "hero" else 34.0)
 AZIM = 0.0 if VIEW == "hero" else 24.0
 THICK = 0.003          # 3 mm plywood, in metres (SVG imports in metres-ish)
 GAP = 0.0002
@@ -44,8 +45,17 @@ def wood(name, base, rough=0.45):
     return m
 
 
-TONES = [(0.29, 0.19, 0.10, 1), (0.34, 0.23, 0.12, 1), (0.39, 0.27, 0.15, 1),
-         (0.44, 0.31, 0.18, 1), (0.50, 0.36, 0.21, 1), (0.57, 0.42, 0.25, 1)]
+# back layer first. The competitor survey (wiki/findings/competitor-listing-images.md):
+# high-volume sellers use bold colour layers and a DARK back field for contrast.
+PALETTES = {
+    "wood":  [(0.29, 0.19, 0.10, 1), (0.34, 0.23, 0.12, 1), (0.39, 0.27, 0.15, 1),
+              (0.44, 0.31, 0.18, 1), (0.50, 0.36, 0.21, 1), (0.57, 0.42, 0.25, 1)],
+    "doxie": [(0.055, 0.045, 0.042, 1), (0.28, 0.14, 0.06, 1), (0.48, 0.26, 0.10, 1),
+              (0.72, 0.48, 0.22, 1), (0.87, 0.70, 0.45, 1), (0.93, 0.88, 0.80, 1)],
+    "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
+              (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
+}
+TONES = PALETTES.get(PALETTE, PALETTES["wood"])
 
 svgs = sorted(SRC.glob("layer_*_of_*.svg"))
 print(f"[render] {len(svgs)} reteg")

@@ -2,6 +2,7 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+- 2026-08-08 — Versenytárs-képfelmérés felvéve: a nagy volumenű eladók (UpSVGStudio 6k eladás/2 év) színes kartonrétegekkel, fehér shadow-box kerettel és lifestyle háttérrel adnak el, a vevői review-fotók Cricut+karton kivitelt mutatnak; a saját fa-tónusú hero a mezőny leghalványabb kvartilisébe esne (findings/competitor-listing-images.md)
 - 2026-08-08 — Független második vélemény felvéve: a codex a nyers adatból, a wiki következtetéseinek ismerete nélkül elemzett; egyetért a shadow box formában és a mandala semlegességében, de kisebb tesztméretet (36 listing/90 nap), piaci árat és kutyafajtákat javasol (findings/independent-second-opinion.md)
 - 2026-08-08 — Megírva a mérési lánc térképe: öt réteg, öt mértékegység, és hogy melyik hibánk melyik rétegben keletkezett (methods/measurement-chain.md)
 - 2026-08-08 — Codex-audit 3. kör (záró): a 21 boltos újraszámolás reprodukálódott, de a hármas kereszt+mandala+zászló ajánlás megbukott (egyetlen listing egyetlen eladótól) — a motívumokat külön kell kezelni: kereszt+mandala 27 review/6 eladó, kereszt+hazafias 27/5; a 173 boltos medián 210 327 helyett 205 816; további 6 helyen maradt visszavont ajánlás, javítva

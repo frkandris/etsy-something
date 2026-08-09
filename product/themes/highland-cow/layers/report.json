@@ -1,6 +1,6 @@
 {
  "web_target_mm": 2.0,
- "thin_area_worst_pct": 0.0,
+ "thin_area_worst_pct": 0.01,
  "web_target_at_scale_mm": {
   "100%": 2.0,
   "75%": 1.5,
@@ -8,42 +8,48 @@
   "25%": 0.5
  },
  "note": "web_target_mm is the design target the chain heals to, not a guaranteed floor; thin_area_worst_pct is how much of the worst layer measured below it.",
- "levels": 5,
+ "levels": 6,
  "levels_requested": 6,
- "levels_merged": 1,
+ "levels_merged": 0,
  "layers": {
   "1": {
    "pieces": 1,
-   "holes": 6,
+   "holes": 8,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
   "2": {
    "pieces": 1,
-   "holes": 9,
+   "holes": 11,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
   "3": {
    "pieces": 1,
-   "holes": 19,
+   "holes": 17,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
   "4": {
    "pieces": 3,
-   "holes": 17,
+   "holes": 15,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.01
+  },
+  "5": {
+   "pieces": 3,
+   "holes": 11,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
-  "5": {
+  "6": {
    "pieces": 1,
-   "holes": 17,
+   "holes": 9,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   }
  },
- "pieces_total": 7,
+ "pieces_total": 10,
  "weakest_mm": 12.0,
  "necks": 0,
  "keyhole": false,

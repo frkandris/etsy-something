@@ -540,21 +540,32 @@ def main():
         safe = safe.buffer(-(a.margin + 6))
         sizes = [16.0, 12.0, 12.0, 12.0, 8.0, 8.0, 8.0, 8.0, 5.0, 5.0,
                  5.0, 5.0, 5.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
-        placed = 0
-        for i in range(a.punch):
-            d = sizes[i % len(sizes)]
-            ang = (i * 137.508) % 360.0
-            rad = span * (0.30 + 0.16 * ((i * 7) % 5) / 4.0)
-            px = cxp + rad * math.cos(math.radians(ang))
+        # Break the ring. Constant-radius placement read as polka dots; the
+        # references scatter to ONE SIDE, hugging the silhouette, with a few
+        # touching pairs. Deterministic pseudo-random, no RNG needed.
+        lean = 1.0 if (hash(str(sorted(geoms))) % 2 == 0) else -1.0
+        placed, pts_done = 0, []
+        for i in range(a.punch * 4):
+            if placed >= a.punch:
+                break
+            d = sizes[placed % len(sizes)]
+            u = ((i * 0.6180339887) % 1.0)
+            v = ((i * 0.7548776662) % 1.0)
+            ang = 360.0 * u
+            rad = span * (0.26 + 0.22 * v)
+            px = cxp + rad * math.cos(math.radians(ang)) + lean * span * 0.06
             py = cyp + rad * math.sin(math.radians(ang))
             hole = Point(px, py).buffer(d / 2, 48)
-            if not safe.contains(hole) or motif.intersects(hole.buffer(4)):
+            if not safe.contains(hole) or motif.intersects(hole.buffer(3)):
                 continue
-            # Cut DOWN FROM THE TOP. ks2 is ascending and layer 1 is the floor,
-            # so slicing from the front of the list drilled through the backing
-            # and left the visible top sheet intact - the exact opposite of a
-            # dot you can see into.
-            depth = 1 + (i % (len(ks2) - 1))
+            # allow a few touching pairs, but never overlap
+            if any(hole.buffer(1.0).intersects(q) for q in pts_done[:-3]):
+                continue
+            pts_done.append(hole)
+            # depth 1-3 sheets from the TOP, never down to the floor, so every
+            # dot bottoms out on a coloured layer rather than a dark hole
+            depth = 1 + (placed % 3)
+            depth = min(depth, len(ks2) - 2)
             for k in ks2[len(ks2) - depth:]:
                 geoms[k] = geoms[k].difference(hole).buffer(0)
             placed += 1

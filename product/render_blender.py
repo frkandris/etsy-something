@@ -201,11 +201,19 @@ PALETTES = {
     # Five stops, L* 26/44/62/80/95, so the ladder reads as five steps rather
     # than collapsing to three. Layer 1 is the floor, the last the top sheet;
     # the mid stop is a saturated rust, not a greyish brown.
-    "well":  [(0.036, 0.028, 0.024, 1),   # L*26  floor
-              (0.118, 0.072, 0.052, 1),   # L*44
-              (0.430, 0.121, 0.048, 1),   # L*62  #B5623A saturated rust
-              (0.700, 0.520, 0.320, 1),   # L*80
-              (0.925, 0.885, 0.812, 1)],  # L*95  #F7F2E8 warm off-white
+    # Every layer stays CHROMATIC (C* >= 22, hue 25-55 deg). The old ramp
+    # bottomed out in neutral charcoal, and a neutral floor reads as a shadow
+    # pit rather than as another sheet of coloured paper - the references have
+    # no neutral anywhere. L* 38/52/64/76/90.
+    # Chromatic everywhere (no neutral floor) but with the RANGE opened back
+    # up: L* 38/52/64/76/90 was chromatic and monotonic, yet so compressed that
+    # everything read as one mid-brown. L* 30-90 with higher chroma keeps the
+    # warmth and gets the contrast back.
+    "well":  [(0.102, 0.028, 0.007, 1),   # L*30  #5A2F14 deep saturated brown
+              (0.253, 0.068, 0.013, 1),   # L*45  #8A4A1E
+              (0.474, 0.171, 0.033, 1),   # L*60  #B87334
+              (0.716, 0.368, 0.142, 1),   # L*75  #DDA469
+              (0.887, 0.761, 0.630, 1)],  # L*90  #F2E3D0 warm top sheet
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,

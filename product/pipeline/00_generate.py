@@ -55,20 +55,22 @@ FORMATS = {
 
 SUBJECTS = {
     "cat-splatter": (
-        "A cat head seen straight on, floating alone in the middle of a large "
-        "EMPTY field. There is no border, no frame ornament, no background "
-        "scene - the area around the head is one single flat empty level "
-        "occupying at least 40 percent of the picture, like white paper. "
-        "The head is built from nested PAINT-SPLATTER shapes: every depth level "
-        "is an organic blob with rounded lobes and a few soft drips running "
-        "downward, stacked so each level sits inside the one behind it. "
-        "Ears, muzzle and eyes are clearly readable. Scatter a handful of "
-        "separate round DOTS of assorted sizes in the empty field around the "
-        "head, each dot its own level. Bold and simple - few, large shapes.",
+        "A cat head floating in the middle of a completely EMPTY white field. "
+        "CRITICAL: there must be NO border, NO frame, NO ring, NO margin band "
+        "and NO ornament of any kind around the head - the entire area outside "
+        "the head is ONE single flat background level that runs all the way to "
+        "the edges of the picture. The head occupies only the middle 55 percent "
+        "of the width, leaving a wide empty margin on all four sides. "
+        "The head is built from nested PAINT-SPLATTER shapes: bold rounded "
+        "lobes with a few soft drips running downward, each depth level a "
+        "separate flat blob sitting inside the one behind it. Few, LARGE, "
+        "simple shapes - not fine detail. Ears, muzzle and eyes clearly "
+        "readable. Scatter about FOURTEEN TINY round DOTS, each only about "
+        "2 percent of the picture width across, clustered close around the "
+        "lower and side contour of the head - they must stay well away from the "
+        "edges of the picture. Give the dots DIFFERENT depth levels from each "
+        "other so they read as different colours.",
         "square"),
-    # The two winning cat listings (50 and 49 listing-level reviews) are both
-    # PORTRAITS with no background scene at all - the ornament lives inside the
-    # fur as swirls and dots. Round 1 built a moon scene and was wrong.
     "cat-portrait-eye": (
         "A cat head-and-shoulders portrait in three-quarter profile, looking "
         "slightly upward, with long whiskers extending outward past the edges. "

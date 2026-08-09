@@ -26,7 +26,7 @@ FRAME = "--frame" in argv
 ACCENT_ON = "--accent" in argv
 skip = set()
 for i, a in enumerate(argv):
-    if a in ("--grain", "--orbit", "--frame", "--accent"):
+    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top"):
         skip.add(i)
         if a == "--orbit":
             skip.add(i + 1)
@@ -38,8 +38,9 @@ PALETTE = argv[3] if len(argv) > 3 else "wood"
 ELEV = float(argv[4]) if len(argv) > 4 else (80.0 if VIEW == "hero" else 34.0)
 # a dead-on 0 deg yaw reads as a scan; the winning listings tilt 8-15 deg
 AZIM = 10.0 if VIEW == "hero" else 24.0
-THICK = 0.003          # 3 mm plywood, in metres (SVG imports in metres-ish)
-GAP = 0.0002
+PAPER = "--paper" in argv
+THICK = 0.0009 if PAPER else 0.003     # cardstock stack vs 3 mm plywood
+GAP = 0.00005 if PAPER else 0.0002
 
 # ------------------------------------------------------------------ scene
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -53,9 +54,13 @@ scene.render.film_transparent = False
 scene.view_settings.look = "AgX - Base Contrast"
 scene.view_settings.exposure = -0.4
 if "lifestyle" in sys.argv:
-    # AgX desaturates hard; the reference look is flat saturated spot colour
-    scene.view_settings.look = "AgX - Punchy"
-    scene.view_settings.exposure = 0.15
+    # AgX rolls saturated colour off toward pastel. The reference is flat
+    # printed spot colour, so use the untouched Standard transform instead.
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    # Standard has no highlight roll-off, so the AgX-era light levels blew the
+    # white frame and the paper out to pure white
+    scene.view_settings.exposure = -1.35
 
 
 def wood(name, base, rough=0.45, grain=None):
@@ -128,9 +133,18 @@ PALETTES = {
                    (0.90, 0.28, 0.03, 1), (0.98, 0.98, 0.97, 1)],
     # reference look: the field is WHITE paper, the motif is a scatter of
     # saturated flat colours - not a dark-to-light ramp
-    "splatter": [(0.96, 0.96, 0.95, 1), (0.06, 0.13, 0.30, 1), (0.05, 0.42, 0.72, 1),
-                 (0.78, 0.14, 0.10, 1), (0.03, 0.52, 0.30, 1), (0.94, 0.55, 0.05, 1),
-                 (0.97, 0.78, 0.10, 1), (0.20, 0.62, 0.85, 1)],
+    # exact hexes the reviewer specified, converted sRGB -> linear (Blender base
+    # colour is linear; feeding sRGB values straight in is what made everything
+    # look washed out). Dark navy anchors, two cold blues break the warm cast.
+    "splatter": [(0.871, 0.162, 0.015, 1),   # layer 1 is almost fully hidden
+                 (0.011, 0.022, 0.069, 1),   # #1B2A4A navy - the big outer shape
+                 (0.048, 0.565, 0.745, 1),   # #3EC6E0 cyan
+                 (0.913, 0.474, 0.031, 1),   # #F5B731 yellow
+                 (0.027, 0.342, 0.107, 1),   # #2E9E5B green
+                 (0.024, 0.212, 0.552, 1),   # #2B7FC4 mid blue
+                 (0.651, 0.028, 0.028, 1),   # #D32F2F red
+                 (0.871, 0.162, 0.015, 1),
+                 (0.048, 0.565, 0.745, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -266,8 +280,52 @@ else:
     bpy.context.object.data.materials.append(
         wood("wall", (0.885, 0.870, 0.845, 1), 0.72, grain=GRAIN))
 
-FRAME_OBJS = []
 if FRAME:
+    # the reviewer measured the motif at 79% of the opening; the reference is
+    # 62%. Shrink the art, not the frame.
+    for o in objs:
+        o.scale = tuple(c * 0.90 for c in o.scale)
+        o.location = (o.location.x * 0.90, o.location.y * 0.90, o.location.z)
+
+WHITE_TOP = "--white-top" in argv
+if WHITE_TOP and objs:
+    # The reference is not a motif sitting ON white - it is a WHITE TOP SHEET
+    # with the motif's silhouette cut out of it, and the colour layers showing
+    # through from underneath. That is why its white reads perfectly clean and
+    # the colours look recessed.
+    src = objs[0]                      # layer 1 = the full motif outline
+    dup = src.copy(); dup.data = src.data.copy()
+    scene.collection.objects.link(dup)
+    bpy.ops.object.select_all(action="DESELECT")
+    dup.select_set(True); bpy.context.view_layer.objects.active = dup
+    bpy.ops.object.convert(target="MESH")
+    sol = dup.modifiers.new("sol", "SOLIDIFY"); sol.thickness = SIZE * 0.5
+    sol.offset = 0
+    bpy.ops.object.modifier_apply(modifier="sol")
+    ztop = max(o.location.z for o in objs) + THICK
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, ztop + THICK * 1.2))
+    plate = bpy.context.object
+    plate.scale = (SIZE * 1.14, SIZE * 1.14, THICK * 1.6)
+    bl = plate.modifiers.new("cut", "BOOLEAN")
+    bl.operation = "DIFFERENCE"; bl.object = dup
+    bpy.context.view_layer.objects.active = plate
+    bpy.ops.object.modifier_apply(modifier="cut")
+    bpy.data.objects.remove(dup, do_unlink=True)
+    plate.data.materials.append(wood("whitetop", (0.94, 0.938, 0.930, 1), 0.62,
+                                     grain=False))
+    objs.append(plate)
+    print("[render] feher fedolap a motivum nyilasaval")
+
+FRAME_OBJS = []
+if FRAME and not WHITE_TOP:
+    # White backing sheet. In the real product the cut layers are mounted on a
+    # plain sheet inside the frame - it is not one of the cut layers, so it must
+    # not be palette-coloured.
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 1.10, location=(0, 0, -0.0004))
+    _bk = bpy.context.object
+    _bk.data.materials.append(wood("backing", (0.965, 0.962, 0.955, 1), 0.75,
+                                   grain=False))
+    FRAME_OBJS.append(_bk)
     fw = SIZE * 0.115
     fd = SIZE * 0.14
     inner, outer = SIZE / 2 * 1.06, SIZE / 2 * 1.06 + fw
@@ -302,16 +360,42 @@ if VIEW == "lifestyle":
                                      rotation=(math.radians(90), 0, 0))
     bpy.context.object.data.materials.append(
         wood("backwall", (0.52, 0.38, 0.24, 1), 0.85, grain=False))
-    props = [(-SIZE * 0.95, SIZE * 0.75, 0.22, (0.45, 0.30, 0.18)),
-             (-SIZE * 1.25, SIZE * 0.55, 0.15, (0.30, 0.42, 0.22)),
-             (SIZE * 1.00, SIZE * 0.70, 0.26, (0.55, 0.36, 0.20)),
-             (SIZE * 1.35, SIZE * 0.95, 0.34, (0.42, 0.28, 0.16)),
-             (SIZE * 0.80, SIZE * 0.35, 0.10, (0.62, 0.48, 0.30))]
-    for i, (px, py, r, col) in enumerate(props):
-        bpy.ops.mesh.primitive_cylinder_add(radius=SIZE * r, depth=SIZE * r * 2.2,
-                                            location=(px, py, SIZE * r * 1.1))
-        bpy.context.object.data.materials.append(
-            wood(f"prop{i}", (*col, 1), 0.6, grain=False))
+    def prop(kind, x, y, s_, col, rot=0.0):
+        if kind == "cyl":
+            bpy.ops.mesh.primitive_cylinder_add(radius=SIZE * s_,
+                                                depth=SIZE * s_ * 2.3,
+                                                location=(x, y, SIZE * s_ * 1.15))
+        elif kind == "sphere":
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=SIZE * s_,
+                                                 location=(x, y, SIZE * s_))
+        else:
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, SIZE * s_ * 0.5))
+            bpy.context.object.scale = (SIZE * s_ * 2.6, SIZE * s_ * 1.7, SIZE * s_)
+        o = bpy.context.object
+        o.rotation_euler = (0, 0, math.radians(rot))
+        o.data.materials.append(wood(f"p{len(bpy.data.objects)}", (*col, 1), 0.62,
+                                     grain=(kind == "book")))
+        return o
+
+    # front right: a small stack of books, like the reference
+    # everything sits CLOSER to the frame and partly in front of it, otherwise
+    # the props fall outside the crop and the scene reads as an empty sweep
+    prop("book", SIZE * 0.72, -SIZE * 0.62, 0.13, (0.36, 0.19, 0.10), 9)
+    prop("book", SIZE * 0.76, -SIZE * 0.59, 0.12, (0.28, 0.14, 0.08), -6)
+    prop("cyl", -SIZE * 0.66, -SIZE * 0.58, 0.085, (0.34, 0.20, 0.11))
+    prop("sphere", -SIZE * 0.64, -SIZE * 0.58, 0.062, (0.38, 0.23, 0.13))
+    prop("cyl", -SIZE * 0.80, SIZE * 0.30, 0.20, (0.63, 0.45, 0.27))
+    prop("cyl", -SIZE * 1.00, SIZE * 0.16, 0.13, (0.56, 0.34, 0.19))
+    prop("sphere", -SIZE * 0.95, SIZE * 0.80, 0.30, (0.15, 0.30, 0.14))
+    prop("sphere", -SIZE * 0.72, SIZE * 0.92, 0.22, (0.19, 0.35, 0.17))
+    prop("cyl", SIZE * 0.85, SIZE * 0.40, 0.24, (0.59, 0.41, 0.23))
+    prop("cyl", SIZE * 1.05, SIZE * 0.80, 0.34, (0.45, 0.29, 0.16))
+    prop("sphere", SIZE * 0.95, SIZE * 1.00, 0.26, (0.17, 0.32, 0.15))
+    # a patterned runner under everything, just catching the bottom edge
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 5, location=(0, -SIZE * 0.75, 0.0006),
+                                     rotation=(0, 0, 0))
+    bpy.context.object.data.materials.append(
+        wood("runner", (0.55, 0.40, 0.30, 1), 0.9, grain=True))
 
 # ------------------------------------------------------------------ camera + light
 # Distance from the framing we want, not a guessed multiplier: at focal length f
@@ -321,8 +405,9 @@ if VIEW == "lifestyle":
 LENS, MARGIN = 85.0, 1.22
 if FRAME:
     # the frame is built after the bounding box, so the camera must be told the
-    # object is bigger - otherwise it fits the art and crops the frame away
-    MARGIN *= 1.34
+    # object is bigger - otherwise it fits the art and crops the frame away.
+    # 1.34 filled 88% of the canvas; the reference frame fills ~73%.
+    MARGIN *= 1.45
 if VIEW == "lifestyle":
     D = SIZE * MARGIN * LENS / 36.0 * 1.02
     bpy.ops.object.camera_add(location=(0, -D, SIZE * 0.62),
@@ -354,18 +439,28 @@ scene.camera = cam
 print(f"[render] nezet={VIEW} emelkedes={ELEV:.0f} tavolsag={D:.3f}")
 
 # tighter key = sharper layer-edge shadows, which is what sells the depth
-key = bpy.data.lights.new("key", "AREA"); key.energy = SIZE * SIZE * 110; key.size = SIZE * 0.85
+KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 110)
+key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E; key.size = SIZE * 1.5
+if VIEW == "lifestyle":
+    key.color = (0.94, 0.96, 1.0)          # ~5600K daylight, not 4500K tungsten
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
 ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5); ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
 
-fill = bpy.data.lights.new("fill", "AREA"); fill.energy = SIZE * SIZE * 22; fill.size = SIZE * 3
+FILL_E = SIZE * SIZE * (70 if VIEW == "lifestyle" else 22)
+fill = bpy.data.lights.new("fill", "AREA"); fill.energy = FILL_E; fill.size = SIZE * 5
+if VIEW == "lifestyle":
+    fill.color = (0.96, 0.97, 1.0)
 fo = bpy.data.objects.new("fill", fill); scene.collection.objects.link(fo)
 fo.location = (SIZE * 1.6, -SIZE * 0.9, SIZE * 0.9); fo.rotation_euler = (math.radians(65), 0, math.radians(60))
 
 world = bpy.data.worlds.new("w"); scene.world = world
 world.use_nodes = True
-world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.52, 0.48, 1)
-world.node_tree.nodes["Background"].inputs[1].default_value = 0.06
+if VIEW == "lifestyle":
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
+else:
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.52, 0.48, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.06
 
 if ORBIT:
     # a short left-right arc reads as "turning it in your hand" and shows the

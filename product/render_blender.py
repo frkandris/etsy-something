@@ -26,7 +26,7 @@ FRAME = "--frame" in argv
 ACCENT_ON = "--accent" in argv
 skip = set()
 for i, a in enumerate(argv):
-    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top"):
+    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top", "--dots"):
         skip.add(i)
         if a == "--orbit":
             skip.add(i + 1)
@@ -60,7 +60,7 @@ if "lifestyle" in sys.argv:
     scene.view_settings.look = "None"
     # Standard has no highlight roll-off, so the AgX-era light levels blew the
     # white frame and the paper out to pure white
-    scene.view_settings.exposure = -1.35
+    scene.view_settings.exposure = -0.55
 
 
 def wood(name, base, rough=0.45, grain=None):
@@ -136,15 +136,27 @@ PALETTES = {
     # exact hexes the reviewer specified, converted sRGB -> linear (Blender base
     # colour is linear; feeding sRGB values straight in is what made everything
     # look washed out). Dark navy anchors, two cold blues break the warm cast.
-    "splatter": [(0.871, 0.162, 0.015, 1),   # layer 1 is almost fully hidden
-                 (0.011, 0.022, 0.069, 1),   # #1B2A4A navy - the big outer shape
-                 (0.048, 0.565, 0.745, 1),   # #3EC6E0 cyan
-                 (0.913, 0.474, 0.031, 1),   # #F5B731 yellow
-                 (0.027, 0.342, 0.107, 1),   # #2E9E5B green
-                 (0.024, 0.212, 0.552, 1),   # #2B7FC4 mid blue
-                 (0.651, 0.028, 0.028, 1),   # #D32F2F red
-                 (0.871, 0.162, 0.015, 1),
-                 (0.048, 0.565, 0.745, 1)],
+    # 8 tones the reviewer specified: 3 warm, 3 cold, 2 green, orange dominant
+    # and mustard cut back. Values converted sRGB -> linear.
+    "splatter": [(0.155, 0.468, 0.731, 1),   # #6FB6DE  (layer 1, mostly hidden)
+                 (0.008, 0.021, 0.069, 1),   # #17284A navy - big outer shape
+                 (0.761, 0.133, 0.011, 1),   # #E2661C orange - dominant
+                 (0.028, 0.212, 0.527, 1),   # #2F7FC0 cerulean
+                 (0.871, 0.280, 0.042, 1),   # #F0913A light orange
+                 (0.028, 0.342, 0.095, 1),   # #2F9E56 green
+                 (0.577, 0.041, 0.027, 1),   # #C8392E red
+                 (0.807, 0.451, 0.015, 1),   # #E8B321 mustard - now a small role
+                 (0.202, 0.584, 0.258, 1)],  # #7CC98C light green
+    # tuned for the 0022 portrait: neutral panel, warm cat, two cold accents,
+    # and a near-white top so the whiskers read as whiskers rather than grass
+    "catref": [(0.62, 0.58, 0.51, 1),    # panel - a warm neutral mat
+               (0.008, 0.021, 0.069, 1), # navy field inside the circle
+               (0.761, 0.133, 0.011, 1), # orange - the cat
+               (0.028, 0.212, 0.527, 1), # cerulean markings
+               (0.871, 0.280, 0.042, 1), # light orange
+               (0.577, 0.041, 0.027, 1), # red accents
+               (0.88, 0.86, 0.80, 1),    # near-white: whiskers, highlights
+               (0.95, 0.93, 0.88, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -284,10 +296,11 @@ if FRAME:
     # the reviewer measured the motif at 79% of the opening; the reference is
     # 62%. Shrink the art, not the frame.
     for o in objs:
-        o.scale = tuple(c * 0.90 for c in o.scale)
-        o.location = (o.location.x * 0.90, o.location.y * 0.90, o.location.z)
+        o.scale = tuple(c * 0.88 for c in o.scale)
+        o.location = (o.location.x * 0.88, o.location.y * 0.88, o.location.z)
 
 WHITE_TOP = "--white-top" in argv
+DOTS = "--dots" in argv
 if WHITE_TOP and objs:
     # The reference is not a motif sitting ON white - it is a WHITE TOP SHEET
     # with the motif's silhouette cut out of it, and the colour layers showing
@@ -315,6 +328,29 @@ if WHITE_TOP and objs:
                                      grain=False))
     objs.append(plate)
     print("[render] feher fedolap a motivum nyilasaval")
+
+if DOTS and objs:
+    # The generator kept dropping these, so place them here instead: 16 discs
+    # scattered around the lower and side field, 60/40 right-heavy, sitting just
+    # proud of the white sheet with their own soft shadow.
+    _sc = [(-0.44, -0.30, .022), (-0.37, -0.42, .015), (-0.30, -0.50, .011),
+           (-0.47, -0.10, .013), (-0.41,  0.12, .010), (-0.33, -0.20, .018),
+           ( 0.36, -0.46, .020), ( 0.44, -0.33, .014), ( 0.30, -0.53, .012),
+           ( 0.48, -0.14, .017), ( 0.42,  0.10, .011), ( 0.35,  0.24, .014),
+           ( 0.28, -0.36, .010), ( 0.50,  0.30, .013), (-0.24, -0.55, .013),
+           ( 0.20, -0.58, .016)]
+    _dc = [BASE[i % len(BASE)] for i in (6, 5, 7, 1, 3, 2, 6, 7, 5, 1, 3, 8, 2, 6, 5, 7)]
+    ztop_d = max(o.location.z for o in objs) + THICK * 2.6
+    for k, (dx, dy, dr) in enumerate(_sc):
+        bpy.ops.mesh.primitive_cylinder_add(
+            radius=SIZE * dr, depth=THICK * 0.8, vertices=48,
+            location=(SIZE * dx, SIZE * dy, ztop_d))
+        d = bpy.context.object
+        c = _dc[k]
+        d.data.materials.append(
+            wood(f"dot{k}", (c[0] * .82, c[1] * .82, c[2] * .82, 1), 0.66, grain=False))
+        objs.append(d)
+    print(f"[render] {len(_sc)} potty elhelyezve")
 
 FRAME_OBJS = []
 if FRAME and not WHITE_TOP:
@@ -359,7 +395,7 @@ if VIEW == "lifestyle":
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 10, location=(0, SIZE * 1.5, 0),
                                      rotation=(math.radians(90), 0, 0))
     bpy.context.object.data.materials.append(
-        wood("backwall", (0.52, 0.38, 0.24, 1), 0.85, grain=False))
+        wood("backwall", (0.552, 0.392, 0.231, 1), 0.88, grain=True))
     def prop(kind, x, y, s_, col, rot=0.0):
         if kind == "cyl":
             bpy.ops.mesh.primitive_cylinder_add(radius=SIZE * s_,
@@ -416,7 +452,7 @@ if VIEW == "lifestyle":
     cam.data.lens = LENS
     cam.data.dof.use_dof = True
     cam.data.dof.focus_distance = D
-    cam.data.dof.aperture_fstop = 2.2
+    cam.data.dof.aperture_fstop = 1.6   # props must dissolve completely
     scene.camera = cam
     print(f"[render] nezet=lifestyle tavolsag={D:.3f}")
 elif VIEW == "shelf":
@@ -442,14 +478,14 @@ print(f"[render] nezet={VIEW} emelkedes={ELEV:.0f} tavolsag={D:.3f}")
 KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 110)
 key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E; key.size = SIZE * 1.5
 if VIEW == "lifestyle":
-    key.color = (0.94, 0.96, 1.0)          # ~5600K daylight, not 4500K tungsten
+    key.color = (1.0, 0.79, 0.56)          # ~3600K warm interior key
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
 ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5); ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
 
-FILL_E = SIZE * SIZE * (70 if VIEW == "lifestyle" else 22)
+FILL_E = SIZE * SIZE * (24 if VIEW == "lifestyle" else 22)   # 1:4 key:fill
 fill = bpy.data.lights.new("fill", "AREA"); fill.energy = FILL_E; fill.size = SIZE * 5
 if VIEW == "lifestyle":
-    fill.color = (0.96, 0.97, 1.0)
+    fill.color = (0.98, 0.93, 0.86)
 fo = bpy.data.objects.new("fill", fill); scene.collection.objects.link(fo)
 fo.location = (SIZE * 1.6, -SIZE * 0.9, SIZE * 0.9); fo.rotation_euler = (math.radians(65), 0, math.radians(60))
 
@@ -461,6 +497,7 @@ if VIEW == "lifestyle":
 else:
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.52, 0.48, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.06
+
 
 if ORBIT:
     # a short left-right arc reads as "turning it in your hand" and shows the

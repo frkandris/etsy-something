@@ -22,6 +22,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/competitor-listing-images]] — képek: színes karton + keret + lifestyle háttér nyer
 - [[findings/off-etsy-monetisation]] — külső kutatás: hol pénz a pipeline az Etsyn kívül
 - [[findings/geographic-motifs]] — városok/tavak/hegyek/államok/országok: mi él és mi halott
+- [[findings/laser-vs-paper-split]] — **lézer vs papír**: a kínálat szétválik, a fájdalom nem
 - [[findings/verified-shop-list]] — a bolt-lista (a 33-as szűrő hibás volt, dedupolva 21)
 - [[findings/functional-segment-comparison]] — a felmért alternatíva, és miért nem váltunk
 - [[findings/independent-second-opinion]] — **független elemzés** ugyanabból az adatból

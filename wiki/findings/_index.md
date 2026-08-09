@@ -13,5 +13,6 @@ Mért következtetések. Minden oldal megmondja, melyik populáción számol: ny
 - [[findings/competitor-listing-images]]
 - [[findings/off-etsy-monetisation]]
 - [[findings/geographic-motifs]]
+- [[findings/laser-vs-paper-split]]
 - [[findings/pricing-and-discounting]]
 - [[findings/verified-shop-list]]

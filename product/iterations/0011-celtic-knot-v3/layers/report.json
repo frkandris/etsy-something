@@ -1,4 +1,6 @@
 {
+ "min_scale_pct": 34,
+ "min_safe_mm": 101,
  "levels": 6,
  "layers": {
   "1": {

@@ -30,7 +30,7 @@ Nem reprezentatív mérés — irányjelző a saját képkészletünkhöz.
 
 | bolt | listing review | jel | képrecept |
 |---|---:|---|---|
-| **UpSVGStudio** | 390 (5,0★), bolt 6k eladás / 2 év | a legerősebb bizonyíték | színes karton (krém/pink/magenta/arany), **fehér shadow-box keret**, bokeh lifestyle háttér; a vevői review-fotó (Cricut, karton) gyakorlatilag megegyezik a renderrel |
+| **UpSVGStudio** | **bolt** 390 review / 6k eladás / 2 év (a listingen csak **7** review) | erős bolt-szintű jel, listing-szintű nem | színes karton (krém/pink/magenta/arany), **fehér shadow-box keret**, bokeh lifestyle háttér; a vevői review-fotó (Cricut, karton) gyakorlatilag megegyezik a renderrel |
 | **LaserLee** (lightbox) | bolt 2,6k★ | Star Seller | hero szöveg-overlay-jel (formátumlista + „MATERIAL 1/8 in (3.2 mm) - 2 SIZES"), videó, **meleg fényfüzérrel megvilágított** közeli, flat-lay „mit vágsz ki" tábla |
 | **ColorLayerArt** (bundle) | bolt 2,6k★ | Star Seller | 8 variáns egy hero-n, **sötét (éjszakai) hátsó réteg** + arany/fa tónusok + szelektív zöld lomb; bundle-ökre pozicionál |
 | VyvaStudioDigital | bolt 2k★ | — | photoreal fa-tónusú render komódon állítva, lakás-környezet |
@@ -67,7 +67,7 @@ lifestyle render (--grain + shelf nézet a render_blender.py-ban).
 
 ## Fenntartások
 
-Kis, kvalitatív minta; a review-számok bolti szintűek (kivéve UpSVGStudio 390, ami listing-szintű).
+Kis, kvalitatív minta; a review-számok bolti szintűek (az UpSVGStudio 390-e is BOLT-szintű: a konkrét listingen 7 review van — 2026-08-09-i javítás).
 A színes vs fa-tónus preferenciát eladási adat nem, csak a review-fotók és a review-számok
 támasztják alá.
 

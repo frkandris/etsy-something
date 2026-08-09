@@ -487,9 +487,13 @@ if FRAME:
     bpy.context.view_layer.objects.active = shell
     bpy.ops.object.modifier_apply(modifier="cut")
     bpy.data.objects.remove(hole, do_unlink=True)
-    fc = (0.20, 0.11, 0.055, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
-    shell.data.materials.append(wood("frame", fc, 0.55 if WOODFRAME else 0.42,
-                                     grain=WOODFRAME))
+    fc = (0.115, 0.052, 0.022, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
+    _fmat = wood("frame", fc, 0.5, grain=False)
+    shell.data.materials.clear()
+    shell.data.materials.append(_fmat)
+    for _sl in shell.material_slots:
+        _sl.material = _fmat
+    print(f"[render] keret: {'dio' if WOODFRAME else 'feher'}")
     print(f"[render] mu={ART:.4f} keret-nyilas={inner*2:.4f} "
           f"kitoltes={ART/(inner*2)*100:.0f}%")
     FRAME_OBJS.append(shell)
@@ -656,6 +660,18 @@ else:
 
 
 if ORBIT:
+    # 144 Cycles frames took three hours per video - fifteen hours for five.
+    # These are flat-shaded paper planes with one key light: Eevee renders them
+    # in seconds and the difference is invisible at 1080 px.
+    try:
+        scene.render.engine = "BLENDER_EEVEE_NEXT"
+    except TypeError:
+        scene.render.engine = "BLENDER_EEVEE"
+    es = scene.eevee
+    for attr, val in (("taa_render_samples", 24), ("use_shadows", True),
+                      ("use_raytracing", True), ("use_gtao", True)):
+        if hasattr(es, attr):
+            setattr(es, attr, val)
     # a short left-right arc reads as "turning it in your hand" and shows the
     # layer edges - a static hero cannot show depth, which is the whole product
     import os

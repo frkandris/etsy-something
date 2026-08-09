@@ -22,6 +22,6 @@ esac
   | grep -v -E "Deprecat|px = list" | tail -14
 blender -b -P product/render_blender.py -- $D/layers "$PWD/$D/plate.png" \
   plate well --frame --paper --recessed $FRAMEFLAG 2>&1 | grep -E "mu=|kesz|Error" | tail -2
-.venv/bin/python product/pipeline/04_composite.py --bg product/pipeline/backdrops/warm-shelf.png \
+.venv/bin/python product/pipeline/04_composite.py --bg product/pipeline/backdrops/$BG.png \
   --art $D/plate.png --out $D/render_photo.png --cx 0.44 --base 0.94 --height 0.88 \
   --warm 1.02 --square 2>&1 | tail -1

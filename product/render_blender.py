@@ -198,13 +198,14 @@ PALETTES = {
     # Strictly monotonic: brightness may only DECREASE with depth, no
     # exceptions. Layer 1 is the floor, the last is the top sheet. Values are
     # the reviewer's L*-spaced ramp, sRGB -> linear.
-    "well":  [(0.019, 0.010, 0.007, 1),   # 40,28,22   floor
-              (0.093, 0.024, 0.010, 1),   # 86,44,28
-              (0.221, 0.055, 0.020, 1),   # 130,66,40
-              (0.417, 0.128, 0.038, 1),   # 176,101,55
-              (0.653, 0.297, 0.079, 1),   # 214,150,80
-              (0.787, 0.567, 0.297, 1),   # 232,200,150
-              (0.911, 0.887, 0.822, 1)],  # 246,243,235  top sheet
+    # Five stops, L* 26/44/62/80/95, so the ladder reads as five steps rather
+    # than collapsing to three. Layer 1 is the floor, the last the top sheet;
+    # the mid stop is a saturated rust, not a greyish brown.
+    "well":  [(0.036, 0.028, 0.024, 1),   # L*26  floor
+              (0.118, 0.072, 0.052, 1),   # L*44
+              (0.430, 0.121, 0.048, 1),   # L*62  #B5623A saturated rust
+              (0.700, 0.520, 0.320, 1),   # L*80
+              (0.925, 0.885, 0.812, 1)],  # L*95  #F7F2E8 warm off-white
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -364,9 +365,10 @@ elif VIEW != "plate":
     bpy.context.object.data.materials.append(
         wood("wall", (0.885, 0.870, 0.845, 1), 0.72, grain=GRAIN))
 
-if FRAME:
-    # the reviewer measured the motif at 79% of the opening; the reference is
-    # 62%. Shrink the art, not the frame.
+if FRAME and not RECESSED:
+    # A relief motif needs breathing room inside the mat. A recessed panel IS
+    # the mat and must fill the opening - this block still shrank it to 72%,
+    # which is why the sheet kept reading as an inserted tile.
     for o in objs:
         o.scale = tuple(c * 0.72 for c in o.scale)
         o.location = (o.location.x * 0.72, o.location.y * 0.72, o.location.z)
@@ -454,7 +456,7 @@ if FRAME:
     fw = ART * 0.085
     # a recessed sheet sits right up against the rabbet; a deep empty well in
     # front of it reads as a floating tile
-    fd = ART * (0.055 if RECESSED else 0.17)
+    fd = ART * (0.085 if RECESSED else 0.17)
     # overlap the sheet edge slightly: a 0.5% gap read as a scribed line 1.5%
     # inside the opening, which made the sheet look like an inserted plate
     inner = ART / 2 * (0.994 if RECESSED else 1.06)

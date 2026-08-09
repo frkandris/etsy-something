@@ -343,6 +343,13 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--margin", type=float, default=0.0,
+                    help="mm: ilyen szeles erintetlen sav a lap szelen")
+    ap.add_argument("--speckle", type=float, default=0.0,
+                    help="mm: nyitas+zaras sugara a szemcses belso ellen")
+    ap.add_argument("--punch", type=int, default=0,
+                    help="ennyi kerek nyilast uss a motivum kore, valtozo "
+                         "meretben es melysegben")
     ap.add_argument("--min-feature", type=float, default=0.0,
                     help="mm: ennel vekonyabb nyulvanyt a lanc levagja "
                          "(a referencia formanyelve durvabb, mint a MIN_WEB)")
@@ -495,6 +502,63 @@ def main():
             g = unary_union([p for p in parts_of(g) if p.area >= a.min_part])
             if not g.is_empty:
                 geoms[k] = g
+
+    if a.margin > 0 and geoms:
+        # The reference listings have NOTHING in the outer band: no corner
+        # brackets, no wavy border cut, no dots. Filling that band on every
+        # sheet erases whatever ornament the image model drew there.
+        ks1 = sorted(geoms)
+        mnx, mny, mxx, mxy = geoms[ks1[0]].bounds
+        outer = Polygon([(mnx, mny), (mxx, mny), (mxx, mxy), (mnx, mxy)])
+        band = outer.difference(outer.buffer(-a.margin))
+        for k in ks1:
+            geoms[k] = unary_union([geoms[k], band]).buffer(0)
+        print(f"[i] {a.margin:.0f} mm-es erintetlen margosav minden lapon")
+
+    if a.speckle > 0 and geoms:
+        # open THEN close: the opening removes grainy specks, the closing fills
+        # the pinholes the opening leaves behind. Without the close the interior
+        # came out as camouflage noise.
+        r = a.speckle
+        for k in sorted(geoms):
+            g = geoms[k].buffer(-r).buffer(2 * r).buffer(-r).buffer(0)
+            g = unary_union([p for p in parts_of(g) if p.area >= a.min_part])
+            if not g.is_empty:
+                geoms[k] = g
+
+    if a.punch > 0 and len(geoms) >= 3:
+        # Punch them here, not in the image: the model gave ~30 identical dots
+        # all opening to the same layer. The reference scatters a few large and
+        # many small ones, each reaching a DIFFERENT depth, which is what makes
+        # them read as coloured wells instead of polka dots.
+        ks2 = sorted(geoms)
+        mnx, mny, mxx, mxy = geoms[ks2[0]].bounds
+        cxp, cyp = (mnx + mxx) / 2, (mny + mxy) / 2
+        span = min(mxx - mnx, mxy - mny)
+        motif = geoms[ks2[min(2, len(ks2) - 1)]]
+        safe = Polygon([(mnx, mny), (mxx, mny), (mxx, mxy), (mnx, mxy)])
+        safe = safe.buffer(-(a.margin + 6))
+        sizes = [16.0, 12.0, 12.0, 12.0, 8.0, 8.0, 8.0, 8.0, 5.0, 5.0,
+                 5.0, 5.0, 5.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
+        placed = 0
+        for i in range(a.punch):
+            d = sizes[i % len(sizes)]
+            ang = (i * 137.508) % 360.0
+            rad = span * (0.30 + 0.16 * ((i * 7) % 5) / 4.0)
+            px = cxp + rad * math.cos(math.radians(ang))
+            py = cyp + rad * math.sin(math.radians(ang))
+            hole = Point(px, py).buffer(d / 2, 48)
+            if not safe.contains(hole) or motif.intersects(hole.buffer(4)):
+                continue
+            # Cut DOWN FROM THE TOP. ks2 is ascending and layer 1 is the floor,
+            # so slicing from the front of the list drilled through the backing
+            # and left the visible top sheet intact - the exact opposite of a
+            # dot you can see into.
+            depth = 1 + (i % (len(ks2) - 1))
+            for k in ks2[len(ks2) - depth:]:
+                geoms[k] = geoms[k].difference(hole).buffer(0)
+            placed += 1
+        print(f"[i] {placed} kerek nyilas utve, valtozo merettel es melyseggel")
 
     enforce_nesting()
     heal_all()

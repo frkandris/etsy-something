@@ -16,6 +16,8 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 - [[longtail]] — **hosszú farok szógyűjtemény** (412 kifejezés, 8 család, bővíthető)
 
+- [[workflows/recessed-papercut-pipeline]] — **a süllyesztett papírvágás-lánc** (a tényleges termékszerkezet)
+
 ## Eredmények — `findings/`
 
 - [[findings/layered-niche-size-and-structure]] — mekkora és mennyire zsúfolt a piac

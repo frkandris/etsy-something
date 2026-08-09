@@ -538,34 +538,38 @@ def main():
         motif = geoms[ks2[min(2, len(ks2) - 1)]]
         safe = Polygon([(mnx, mny), (mxx, mny), (mxx, mxy), (mnx, mxy)])
         safe = safe.buffer(-(a.margin + 6))
-        sizes = [16.0, 12.0, 12.0, 12.0, 8.0, 8.0, 8.0, 8.0, 5.0, 5.0,
-                 5.0, 5.0, 5.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
-        # Break the ring. Constant-radius placement read as polka dots; the
-        # references scatter to ONE SIDE, hugging the silhouette, with a few
-        # touching pairs. Deterministic pseudo-random, no RNG needed.
-        lean = 1.0 if (hash(str(sorted(geoms))) % 2 == 0) else -1.0
-        placed, pts_done = 0, []
-        for i in range(a.punch * 4):
+        # 6-40 px on a 1024 canvas ~= 2-12 mm at 300 mm. The old set was
+        # 3-16 mm but bunched in the middle, so the scatter read as uniform
+        # confetti rather than a few big wells among small ones.
+        sizes = [12.0, 11.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.5, 4.0, 3.5,
+                 3.2, 3.0, 2.8, 2.6, 2.4, 2.2, 2.0, 2.0, 2.0, 2.0]
+        # 70% inside ONE 140 deg sector: the references cluster the dots to one
+        # side of the motif instead of ringing it.
+        base_ang = 40.0 if (len(geoms) % 2 == 0) else 215.0
+        placed, done = 0, []
+        for i in range(a.punch * 6):
             if placed >= a.punch:
                 break
             d = sizes[placed % len(sizes)]
             u = ((i * 0.6180339887) % 1.0)
             v = ((i * 0.7548776662) % 1.0)
-            ang = 360.0 * u
-            rad = span * (0.26 + 0.22 * v)
-            px = cxp + rad * math.cos(math.radians(ang)) + lean * span * 0.06
+            if placed < int(a.punch * 0.7):
+                ang = base_ang + 140.0 * (u - 0.5)
+            else:
+                ang = 360.0 * u
+            rad = span * (0.20 + 0.25 * v)
+            px = cxp + rad * math.cos(math.radians(ang))
             py = cyp + rad * math.sin(math.radians(ang))
             hole = Point(px, py).buffer(d / 2, 48)
-            if not safe.contains(hole) or motif.intersects(hole.buffer(3)):
+            if not safe.contains(hole) or motif.intersects(hole.buffer(2.5)):
                 continue
-            # allow a few touching pairs, but never overlap
-            if any(hole.buffer(1.0).intersects(q) for q in pts_done[:-3]):
+            # allow the last few to merge into peanut shapes, block the rest
+            if any(hole.buffer(0.8).intersects(q) for q in done[:-4]):
                 continue
-            pts_done.append(hole)
-            # depth 1-3 sheets from the TOP, never down to the floor, so every
-            # dot bottoms out on a coloured layer rather than a dark hole
-            depth = 1 + (placed % 3)
-            depth = min(depth, len(ks2) - 2)
+            done.append(hole)
+            # floor on one of the TOP TWO coloured sheets so gold or orange
+            # flashes in the well instead of black
+            depth = 1 + (placed % 2)
             for k in ks2[len(ks2) - depth:]:
                 geoms[k] = geoms[k].difference(hole).buffer(0)
             placed += 1

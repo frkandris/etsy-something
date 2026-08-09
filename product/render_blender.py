@@ -209,11 +209,14 @@ PALETTES = {
     # up: L* 38/52/64/76/90 was chromatic and monotonic, yet so compressed that
     # everything read as one mid-brown. L* 30-90 with higher chroma keeps the
     # warmth and gets the contrast back.
-    "well":  [(0.102, 0.028, 0.007, 1),   # L*30  #5A2F14 deep saturated brown
-              (0.253, 0.068, 0.013, 1),   # L*45  #8A4A1E
-              (0.474, 0.171, 0.033, 1),   # L*60  #B87334
-              (0.716, 0.368, 0.142, 1),   # L*75  #DDA469
-              (0.887, 0.761, 0.630, 1)],  # L*90  #F2E3D0 warm top sheet
+    # HUE variation, not a lightness ramp. Five stops that were merely lighter
+    # versions of one brown read as a single string; the references alternate
+    # three or four distinct hues. Adjacent layers differ by >=12 deg of hue.
+    "well":  [(0.027, 0.007, 0.004, 1),   # #2E1710 near-black, H15
+              (0.087, 0.033, 0.011, 1),   # #55341C deep chocolate, H32
+              (0.546, 0.097, 0.015, 1),   # #C85A22 burnt orange, H17
+              (0.716, 0.389, 0.028, 1),   # #DDA82F mustard gold, H47
+              (0.930, 0.863, 0.738, 1)],  # #F7F0E4 warm off-white sheet L*95
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,

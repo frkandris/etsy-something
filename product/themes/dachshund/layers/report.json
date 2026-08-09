@@ -9,30 +9,30 @@
  },
  "note": "web_target_mm is the design target the chain heals to, not a guaranteed floor; thin_area_worst_pct is how much of the worst layer measured below it.",
  "levels": 4,
- "levels_requested": 6,
- "levels_merged": 2,
+ "levels_requested": 7,
+ "levels_merged": 3,
  "layers": {
   "1": {
    "pieces": 1,
-   "holes": 1,
+   "holes": 0,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
   "2": {
    "pieces": 1,
-   "holes": 17,
+   "holes": 18,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
   "3": {
    "pieces": 1,
-   "holes": 20,
+   "holes": 17,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
   "4": {
    "pieces": 1,
-   "holes": 20,
+   "holes": 23,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   }

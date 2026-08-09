@@ -43,12 +43,15 @@ Therefore:
 - Each level is 3 to 8 LARGE liquid shapes. No filaments, no fur strands, no
   whiskers thinner than 1/70 of the width - if a detail cannot be that thick,
   leave it out.
-- CRITICAL - the shapes must NOT stay inside the animal's outline. On every
-  level, 2 to 4 bands must CROSS the outline and run out into the empty field,
-  ending in a rounded teardrop tip. Roughly a quarter of the topmost coloured
-  level should lie OUTSIDE the subject's silhouette. Think spilled poured
-  paint that happens to form an animal, not an animal with drips attached to
-  its chin. No closed, self-contained outline anywhere on the lower levels.
+- CRITICAL - the shapes must NOT stay inside the subject's outline. On every
+  level, 2 or 3 bands must CROSS the outline and SWEEP FAR out into the empty
+  field: each band is HALF THE WIDTH OF THE PICTURE long, curving through two
+  or three S-bends, tapering steadily from full width down to a fine rounded
+  teardrop tip, and finishing well out in the open - at least a quarter of the
+  picture width clear of the subject. Short stubs beside the outline are wrong.
+  Think a long ribbon of poured paint flung across the sheet that happens to
+  form the subject where it pools, not an animal with drips on its chin.
+  No closed, self-contained outline anywhere on the lower levels.
 - Scatter about TWENTY small round openings across the empty field, sizes
   varying from tiny to medium, each reaching a different depth so a colour
   shows at its floor rather than blackness.

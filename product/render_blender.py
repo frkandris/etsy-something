@@ -149,14 +149,17 @@ PALETTES = {
                  (0.202, 0.584, 0.258, 1)],  # #7CC98C light green
     # tuned for the 0022 portrait: neutral panel, warm cat, two cold accents,
     # and a near-white top so the whiskers read as whiskers rather than grass
-    "catref": [(0.62, 0.58, 0.51, 1),    # panel - a warm neutral mat
-               (0.008, 0.021, 0.069, 1), # navy field inside the circle
-               (0.761, 0.133, 0.011, 1), # orange - the cat
-               (0.028, 0.212, 0.527, 1), # cerulean markings
-               (0.871, 0.280, 0.042, 1), # light orange
-               (0.577, 0.041, 0.027, 1), # red accents
-               (0.88, 0.86, 0.80, 1),    # near-white: whiskers, highlights
-               (0.95, 0.93, 0.88, 1)],
+    # 8 distinct hues, none repeating on adjacent layers (the reviewer counted
+    # only 3 in the previous round). Values are sRGB converted to linear.
+    "catref": [(0.60, 0.59, 0.57, 1),    # neutral panel, no warm tint
+               (0.008, 0.021, 0.069, 1), # #17284A navy
+               (0.761, 0.133, 0.011, 1), # #E2661C orange
+               (0.011, 0.159, 0.462, 1), # #1B6FB5 cobalt
+               (0.887, 0.445, 0.033, 1), # #F2B233 warm yellow
+               (0.578, 0.037, 0.024, 1), # #C8362B deep red - the whisker layer;
+                                         # leaf green here read as grass
+               (0.049, 0.328, 0.087, 1), # #3F9C52 leaf green
+               (0.080, 0.394, 0.731, 1)],# #4FA9DE sky
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -296,8 +299,8 @@ if FRAME:
     # the reviewer measured the motif at 79% of the opening; the reference is
     # 62%. Shrink the art, not the frame.
     for o in objs:
-        o.scale = tuple(c * 0.88 for c in o.scale)
-        o.location = (o.location.x * 0.88, o.location.y * 0.88, o.location.z)
+        o.scale = tuple(c * 0.72 for c in o.scale)
+        o.location = (o.location.x * 0.72, o.location.y * 0.72, o.location.z)
 
 WHITE_TOP = "--white-top" in argv
 DOTS = "--dots" in argv
@@ -324,7 +327,7 @@ if WHITE_TOP and objs:
     bpy.context.view_layer.objects.active = plate
     bpy.ops.object.modifier_apply(modifier="cut")
     bpy.data.objects.remove(dup, do_unlink=True)
-    plate.data.materials.append(wood("whitetop", (0.94, 0.938, 0.930, 1), 0.62,
+    plate.data.materials.append(wood("whitetop", (0.965, 0.965, 0.962, 1), 0.62,
                                      grain=False))
     objs.append(plate)
     print("[render] feher fedolap a motivum nyilasaval")
@@ -362,10 +365,10 @@ if FRAME and not WHITE_TOP:
     _bk.data.materials.append(wood("backing", (0.965, 0.962, 0.955, 1), 0.75,
                                    grain=False))
     FRAME_OBJS.append(_bk)
-    fw = SIZE * 0.115
-    fd = SIZE * 0.14
+    fw = SIZE * 0.075                  # 11% of the image was too heavy; ~6-7%
+    fd = SIZE * 0.13
     inner, outer = SIZE / 2 * 1.06, SIZE / 2 * 1.06 + fw
-    _fm = wood("frame", (0.955, 0.95, 0.94, 1), 0.55, grain=False)
+    _fm = wood("frame", (0.975, 0.973, 0.968, 1), 0.5, grain=False)
     for sx, sy, cx_, cy_ in ((outer, fw / 2, 0, outer - fw / 2),
                              (outer, fw / 2, 0, -(outer - fw / 2)),
                              (fw / 2, inner, outer - fw / 2, 0),
@@ -416,17 +419,37 @@ if VIEW == "lifestyle":
     # front right: a small stack of books, like the reference
     # everything sits CLOSER to the frame and partly in front of it, otherwise
     # the props fall outside the crop and the scene reads as an empty sweep
-    prop("book", SIZE * 0.72, -SIZE * 0.62, 0.13, (0.36, 0.19, 0.10), 9)
-    prop("book", SIZE * 0.76, -SIZE * 0.59, 0.12, (0.28, 0.14, 0.08), -6)
-    prop("cyl", -SIZE * 0.66, -SIZE * 0.58, 0.085, (0.34, 0.20, 0.11))
-    prop("sphere", -SIZE * 0.64, -SIZE * 0.58, 0.062, (0.38, 0.23, 0.13))
-    prop("cyl", -SIZE * 0.80, SIZE * 0.30, 0.20, (0.63, 0.45, 0.27))
-    prop("cyl", -SIZE * 1.00, SIZE * 0.16, 0.13, (0.56, 0.34, 0.19))
-    prop("sphere", -SIZE * 0.95, SIZE * 0.80, 0.30, (0.15, 0.30, 0.14))
-    prop("sphere", -SIZE * 0.72, SIZE * 0.92, 0.22, (0.19, 0.35, 0.17))
-    prop("cyl", SIZE * 0.85, SIZE * 0.40, 0.24, (0.59, 0.41, 0.23))
-    prop("cyl", SIZE * 1.05, SIZE * 0.80, 0.34, (0.45, 0.29, 0.16))
-    prop("sphere", SIZE * 0.95, SIZE * 1.00, 0.26, (0.17, 0.32, 0.15))
+    # recognisable objects, not abstract blocks: a real book stack (thin slabs
+    # of different sizes), a potted plant (pot + leaf clumps on stems) and a
+    # small carved figure
+    for k, (dz, w_, col, rot) in enumerate([
+            (0.00, 0.135, (0.42, 0.16, 0.11), 6),
+            (0.05, 0.125, (0.24, 0.28, 0.34), -4),
+            (0.10, 0.115, (0.55, 0.42, 0.22), 9)]):
+        bpy.ops.mesh.primitive_cube_add(
+            size=1, location=(SIZE * 0.78, -SIZE * 0.55, SIZE * (dz + 0.025)))
+        b = bpy.context.object
+        b.scale = (SIZE * w_ * 2.4, SIZE * w_ * 1.6, SIZE * 0.048)
+        b.rotation_euler = (0, 0, math.radians(rot))
+        b.data.materials.append(wood(f"bk{k}", (*col, 1), 0.55, grain=True))
+    # potted plant, left
+    bpy.ops.mesh.primitive_cone_add(radius1=SIZE * 0.13, radius2=SIZE * 0.17,
+                                    depth=SIZE * 0.26,
+                                    location=(-SIZE * 0.82, SIZE * 0.20, SIZE * 0.13))
+    bpy.context.object.data.materials.append(
+        wood("pot", (0.52, 0.26, 0.15, 1), 0.7, grain=False))
+    for lx, ly, lz, lr in [(-0.86, 0.22, 0.42, 0.15), (-0.74, 0.16, 0.36, 0.12),
+                           (-0.90, 0.14, 0.30, 0.11), (-0.78, 0.26, 0.50, 0.10)]:
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=SIZE * lr,
+                                             location=(SIZE * lx, SIZE * ly, SIZE * lz))
+        bpy.context.object.scale = (1.0, 0.8, 0.55)
+        bpy.context.object.data.materials.append(
+            wood(f"leaf{lx}", (0.10, 0.26, 0.11, 1), 0.75, grain=False))
+    # small carved figure, front left
+    prop("cyl", -SIZE * 0.60, -SIZE * 0.52, 0.075, (0.33, 0.19, 0.10))
+    prop("sphere", -SIZE * 0.59, -SIZE * 0.52, 0.058, (0.37, 0.22, 0.12))
+    # a tall vessel, right background
+    prop("cyl", SIZE * 0.98, SIZE * 0.72, 0.30, (0.47, 0.31, 0.18))
     # a patterned runner under everything, just catching the bottom edge
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 5, location=(0, -SIZE * 0.75, 0.0006),
                                      rotation=(0, 0, 0))
@@ -452,7 +475,7 @@ if VIEW == "lifestyle":
     cam.data.lens = LENS
     cam.data.dof.use_dof = True
     cam.data.dof.focus_distance = D
-    cam.data.dof.aperture_fstop = 1.6   # props must dissolve completely
+    cam.data.dof.aperture_fstop = 2.8   # recognisable but clearly out of focus
     scene.camera = cam
     print(f"[render] nezet=lifestyle tavolsag={D:.3f}")
 elif VIEW == "shelf":
@@ -478,14 +501,14 @@ print(f"[render] nezet={VIEW} emelkedes={ELEV:.0f} tavolsag={D:.3f}")
 KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 110)
 key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E; key.size = SIZE * 1.5
 if VIEW == "lifestyle":
-    key.color = (1.0, 0.79, 0.56)          # ~3600K warm interior key
+    key.color = (1.0, 0.94, 0.86)          # ~4800K - 3600K tinted the mat cream
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
 ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5); ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
 
-FILL_E = SIZE * SIZE * (24 if VIEW == "lifestyle" else 22)   # 1:4 key:fill
+FILL_E = SIZE * SIZE * (26 if VIEW == "lifestyle" else 22)   # ~4:1 key:fill
 fill = bpy.data.lights.new("fill", "AREA"); fill.energy = FILL_E; fill.size = SIZE * 5
 if VIEW == "lifestyle":
-    fill.color = (0.98, 0.93, 0.86)
+    fill.color = (0.99, 0.98, 0.97)
 fo = bpy.data.objects.new("fill", fill); scene.collection.objects.link(fo)
 fo.location = (SIZE * 1.6, -SIZE * 0.9, SIZE * 0.9); fo.rotation_euler = (math.radians(65), 0, math.radians(60))
 

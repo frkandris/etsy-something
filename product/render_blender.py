@@ -194,9 +194,9 @@ PALETTES = {
     # so depth reads as shadow falling into the opening
     # Recessed well. Layer 1 is the deepest sheet and layer N the white top
     # sheet, so the palette runs DARK to LIGHT - the opposite of a relief.
-    "well":  [(0.10, 0.055, 0.03, 1), (0.30, 0.15, 0.07, 1), (0.55, 0.30, 0.13, 1),
-              (0.74, 0.50, 0.24, 1), (0.88, 0.78, 0.62, 1), (0.95, 0.93, 0.89, 1),
-              (0.97, 0.965, 0.955, 1), (0.98, 0.975, 0.97, 1)],
+    "well":  [(0.09, 0.048, 0.026, 1), (0.28, 0.14, 0.065, 1), (0.52, 0.28, 0.12, 1),
+              (0.74, 0.50, 0.24, 1), (0.90, 0.80, 0.64, 1),
+              (0.985, 0.982, 0.975, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -209,13 +209,18 @@ if PALETTE not in PALETTES:
 BASE = PALETTES.get(PALETTE, PALETTES["wood"])
 
 
+# Spot palettes are a SET of flat colours: blending them makes mud, so they are
+# truncated. Ramp palettes are a RANGE, and must always span end to end - taking
+# the first n entries left the white end of "well" unused at 5 layers, so the
+# top sheet came out cream instead of white.
+SPOT = {"splatter", "catrainbow"}
+
+
 def ramp(pal, n):
-    """Fit a palette to n layers. If the palette already has enough entries take
-    them as they are - blending them would turn a set of flat spot colours into
-    muddy pastels, which is exactly what happened to the splatter palette."""
+    """Fit a palette to n layers."""
     if n <= 1:
         return [pal[-1]]
-    if len(pal) >= n:
+    if PALETTE in SPOT and len(pal) >= n:
         return list(pal[:n])
     out = []
     for i in range(n):

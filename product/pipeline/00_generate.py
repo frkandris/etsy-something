@@ -23,6 +23,26 @@ import os, sys, base64, json, pathlib, argparse, urllib.request, uuid
 MODEL = "gpt-image-2"
 LEVELS = 6
 
+RECESSED = """
+CONSTRUCTION - READ THIS FIRST. This is a RECESSED paper-cut: a stack of
+sheets where the TOP sheet is a full panel and the picture is made by
+OPENINGS cut through it, each sheet below having its own smaller openings, so
+the eye looks DOWN into a stepped well.
+Therefore:
+- The empty field around the subject is the LIGHTEST level - it IS the top
+  sheet, and it is part of the picture.
+- Every darker level is a sheet further down. The deepest recesses are the
+  darkest.
+- PURE BLACK MUST NOT APPEAR ANYWHERE except as the very deepest recess.
+- THE TOP SHEET FILLS THE WHOLE SQUARE, EDGE TO EDGE. The lightest level runs
+  right off all four edges of the picture. There is NO margin, NO black border,
+  NO drawn frame and NO decorated corners - the sheet simply continues to the
+  edge, exactly like a mat board in a frame.
+- Scatter a few small round openings in the field beside the subject; each
+  shows a different depth level at its floor.
+
+"""
+
 PROMPT = """A design for LAYERED LASER-CUT WALL ART, drawn as a flat greyscale DEPTH MAP.
 
 Subject: {subject}
@@ -193,7 +213,7 @@ def _multipart(fields, files):
 
 
 def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
-             levels=LEVELS, subject_text=None, name=None):
+             levels=LEVELS, subject_text=None, name=None, recessed=False):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
@@ -202,6 +222,8 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
     else:
         subj, fmt = SUBJECTS[subject_key]
     prompt = PROMPT.format(subject=subj, levels=levels, format=FORMATS[fmt])
+    if recessed:
+        prompt = RECESSED + prompt
     if ref:
         from PIL import Image
         import io
@@ -244,6 +266,8 @@ if __name__ == "__main__":
     ap.add_argument("--subject", default="celtic-tree", choices=list(SUBJECTS))
     ap.add_argument("--subject-text", default=None, help="szabad tema, a SUBJECTS helyett")
     ap.add_argument("--name", default=None, help="fajlnev-toredek")
+    ap.add_argument("--recessed", action="store_true",
+                    help="sullyesztett szerkezet: a mezo a legfelso, legvilagosabb lap")
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--n", type=int, default=1)
     ap.add_argument("--levels", type=int, default=LEVELS)
@@ -253,4 +277,4 @@ if __name__ == "__main__":
     a = ap.parse_args()
     crop = tuple(int(v) for v in a.crop.split(",")) if a.crop else None
     generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop, a.levels,
-             a.subject_text, a.name)
+             a.subject_text, a.name, a.recessed)

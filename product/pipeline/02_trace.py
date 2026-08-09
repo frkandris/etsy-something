@@ -331,6 +331,8 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--recessed", action="store_true",
+                    help="sullyesztett szerkezet: felul teljes lap, lefele szukulo nyilasok")
     ap.add_argument("--solid-back", action="store_true",
                     help="a hatlap lyukai kitoltve - tomor hatter a csipke moge, "
                          "ahogy a keretezett shadow boxoknal szokas")
@@ -342,6 +344,13 @@ def main():
     src = pathlib.Path(a.src)
     out = pathlib.Path(a.out or src.parent / "layers"); out.mkdir(parents=True, exist_ok=True)
     img = Image.open(src)
+    if a.recessed:
+        # The reference product is INTAGLIO, not relief: the top sheet is a full
+        # white panel with the motif punched through it, and each sheet below
+        # has a smaller opening, so you look DOWN a stepped well that darkens
+        # with depth. Inverting the depth map turns our nesting machinery around:
+        # layer 1 becomes the whole panel and every later layer a smaller hole.
+        img = Image.eval(img.convert("L"), lambda v: 255 - v)
     g, edges, cent = posterise(img, a.levels)
 
     print(f"forras: {src.name}  {img.width}x{img.height}px")

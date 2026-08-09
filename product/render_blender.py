@@ -16,6 +16,8 @@ is what makes the thumbnail different (wiki/findings/keyword-demand-sweep.md).
 import bpy, sys, math, pathlib
 
 argv = sys.argv[sys.argv.index("--") + 1:]
+# Every flag must be read BEFORE argv is filtered. Reading one afterwards
+# silently yields False - that is why --white-top and --recessed did nothing.
 GRAIN = "--grain" in argv
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
@@ -24,6 +26,11 @@ for i, a in enumerate(argv):
         ORBIT = int(argv[i + 1])
 FRAME = "--frame" in argv
 ACCENT_ON = "--accent" in argv
+PAPER = "--paper" in argv
+RECESSED = "--recessed" in argv
+WHITE_TOP = "--white-top" in argv
+WOODFRAME = "--wood-frame" in argv
+DOTS = "--dots" in argv
 skip = set()
 for i, a in enumerate(argv):
     if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top", "--dots", "--wood-frame", "--outline"):
@@ -38,9 +45,10 @@ PALETTE = argv[3] if len(argv) > 3 else "wood"
 ELEV = float(argv[4]) if len(argv) > 4 else (80.0 if VIEW == "hero" else 34.0)
 # a dead-on 0 deg yaw reads as a scan; the winning listings tilt 8-15 deg
 AZIM = 10.0 if VIEW == "hero" else 24.0
-PAPER = "--paper" in argv
-THICK = 0.0009 if PAPER else 0.003     # cardstock stack vs 3 mm plywood
-GAP = 0.00005 if PAPER else 0.0002
+# 0.9 mm was physically honest for cardstock but read as a flat print; 2 mm
+# still says "paper" and gives every edge its own visible contact shadow
+THICK = 0.002 if PAPER else 0.003
+GAP = 0.00012 if PAPER else 0.0002
 
 # ------------------------------------------------------------------ scene
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -182,6 +190,13 @@ PALETTES = {
                (0.95, 0.92, 0.85, 1),   # bright cream
                (0.85, 0.42, 0.12, 1),   # bright rust
                (0.20, 0.11, 0.06, 1)],
+    # recessed well: the top sheet is white and every sheet below is darker,
+    # so depth reads as shadow falling into the opening
+    # Recessed well. Layer 1 is the deepest sheet and layer N the white top
+    # sheet, so the palette runs DARK to LIGHT - the opposite of a relief.
+    "well":  [(0.10, 0.055, 0.03, 1), (0.30, 0.15, 0.07, 1), (0.55, 0.30, 0.13, 1),
+              (0.74, 0.50, 0.24, 1), (0.88, 0.78, 0.62, 1), (0.95, 0.93, 0.89, 1),
+              (0.97, 0.965, 0.955, 1), (0.98, 0.975, 0.97, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -238,7 +253,9 @@ for i, f in enumerate(svgs):
             sl.material = mat
         FRONT.append((i, o))
         APPLIED.append(o.data.materials[0].name if o.data.materials else "NINCS")
-        o.location.z = i * (THICK + GAP)
+        # recessed: layer 1 is the top sheet and every later layer sits BEHIND
+        # it, so the stack reads as a well you look into
+        o.location.z = (-i if RECESSED else i) * (THICK + GAP)
 
 print(f"[render] anyagok: {sorted(set(APPLIED))}")
 
@@ -326,9 +343,6 @@ if FRAME:
         o.scale = tuple(c * 0.72 for c in o.scale)
         o.location = (o.location.x * 0.72, o.location.y * 0.72, o.location.z)
 
-WHITE_TOP = "--white-top" in argv
-WOODFRAME = "--wood-frame" in argv
-DOTS = "--dots" in argv
 if WHITE_TOP and objs:
     # The reference is not a motif sitting ON white - it is a WHITE TOP SHEET
     # with the motif's silhouette cut out of it, and the colour layers showing

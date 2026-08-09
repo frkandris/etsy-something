@@ -23,6 +23,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/off-etsy-monetisation]] — külső kutatás: hol pénz a pipeline az Etsyn kívül
 - [[findings/geographic-motifs]] — városok/tavak/hegyek/államok/országok: mi él és mi halott
 - [[findings/laser-vs-paper-split]] — **lézer vs papír**: a kínálat szétválik, a fájdalom nem
+- [[findings/paper-layered-market]] — **a papíros piac**: övé a legjobb kulcsszó, de távtartó és keretméret kell
 - [[findings/verified-shop-list]] — a bolt-lista (a 33-as szűrő hibás volt, dedupolva 21)
 - [[findings/functional-segment-comparison]] — a felmért alternatíva, és miért nem váltunk
 - [[findings/independent-second-opinion]] — **független elemzés** ugyanabból az adatból

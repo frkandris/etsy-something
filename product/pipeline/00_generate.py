@@ -36,7 +36,12 @@ STRICT RENDERING RULES - these matter more than beauty:
 - Shapes must be clean, closed silhouettes with smooth outlines, like cut paper.
 - Every lighter region must sit fully INSIDE a darker region - the levels nest like a
   contour map, never overlapping partially.
-- Keep all detail thicker than about 1/200 of the image width, so it survives cutting.
+- CUTTABILITY IS A HARD CONSTRAINT. Every shape must be a solid area, never a line.
+  No hairlines, no outlines, no thin strokes anywhere. Minimum thickness of ANY
+  feature is 1/90 of the image width - if a detail cannot be drawn that thick,
+  leave it out instead. Whiskers must be long TAPERED SOLID WEDGES, thick where
+  they meet the face. Dots must be at least 1/60 of the image width across.
+  Ornament inside the fur must be broad ribbons, not pen strokes.
 - Perfectly centred, {format}.
 - Flat front view, orthographic, no perspective.
 - No text, no numbers, no signature, no watermark, no frame, no border decoration outside the circle."""
@@ -52,6 +57,16 @@ SUBJECTS = {
     # The two winning cat listings (50 and 49 listing-level reviews) are both
     # PORTRAITS with no background scene at all - the ornament lives inside the
     # fur as swirls and dots. Round 1 built a moon scene and was wrong.
+    "cat-portrait-eye": (
+        "A cat head-and-shoulders portrait in three-quarter profile, looking "
+        "slightly upward, with long whiskers extending outward past the edges. "
+        "NO background scene: the decoration is drawn INTO the fur as "
+        "art-nouveau swirls, spirals and rows of dots. "
+        "IMPORTANT: the EYE and the NOSE must each be their own separate small "
+        "region at the very brightest level, clearly ringed by a darker level "
+        "so they read as isolated pieces - they are the accent colour in the "
+        "finished piece. Keep a clear margin: no shape may touch the outer edge.",
+        "square"),
     "cat-portrait": (
         "A cat head-and-shoulders portrait in three-quarter profile, looking "
         "slightly upward, with long whiskers extending outward past the edges. "

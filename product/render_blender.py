@@ -205,21 +205,29 @@ SIZE = max(maxv.x - minv.x, maxv.y - minv.y)
 print(f"[render] darab merete: {SIZE:.4f} egyseg")
 
 if ACCENT_ON:
-    # A warm accent on the frontmost layers' smallest pieces reads as eye and
-    # nose. Only decidable here, once the real object span is known.
+    # The trace writes ONE <path> per layer, so a whole layer arrives as a single
+    # multi-spline curve - assigning material per OBJECT painted every piece at
+    # once, which is why the eyes AND the nose came out the same colour. Curve
+    # splines carry their own material_index, so colour them individually.
     top = max(i for i, _ in FRONT)
     n = 0
     for i, o in FRONT:
-        if i < top - 2:
+        if i < top - 2 or o.type != "CURVE":
             continue
-        d = max(o.dimensions.x, o.dimensions.y)
-        if d < 0.26 * SIZE:
-            m = ACCENT if d > 0.07 * SIZE else ACCENT2
-            o.data.materials.clear(); o.data.materials.append(m)
-            for sl in o.material_slots:
-                sl.material = m
-            n += 1
-    print(f"[render] akcentus {n} apro darabon")
+        base = o.data.materials[0] if o.data.materials else None
+        o.data.materials.clear()
+        for m in (base, ACCENT, ACCENT2):
+            o.data.materials.append(m)
+        for sp in o.data.splines:
+            pts = [p.co for p in (sp.bezier_points if sp.type == "BEZIER" else sp.points)]
+            if not pts:
+                continue
+            d = max(max(q[0] for q in pts) - min(q[0] for q in pts),
+                    max(q[1] for q in pts) - min(q[1] for q in pts)) * max(o.scale)
+            if d < 0.10 * SIZE:              # eye-or-nose scale on a 300 mm piece
+                sp.material_index = 1 if d > 0.055 * SIZE else 2
+                n += 1
+    print(f"[render] akcentus {n} spline-on")
 
 # ------------------------------------------------------------------ backdrop
 if VIEW == "shelf":
@@ -245,6 +253,11 @@ else:
     # whitewashed board, not a 60% grey sweep - the grey read as CGI
     bpy.context.object.data.materials.append(
         wood("wall", (0.885, 0.870, 0.845, 1), 0.72, grain=GRAIN))
+
+if FRAME and VIEW == "shelf":
+    print("[render] FIGYELEM: --frame shelf nezetben nem tamogatott "
+          "(a keret a polc sikjaban maradna) - kihagyva")
+    FRAME = False
 
 if FRAME:
     # Both winning listings sit in a WIDE WHITE deep shadow-box frame filling

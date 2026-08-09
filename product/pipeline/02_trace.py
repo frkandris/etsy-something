@@ -574,10 +574,20 @@ def main():
     # it is blind to the 2 mm bridges that actually break. The honest statement
     # is the narrowest guaranteed web (the chain heals everything to MIN_WEB and
     # drops what it cannot) and what that becomes at each scale.
-    scale_table = {f"{int(p*100)}%": round(MIN_WEB * p, 2) for p in (1.0, .75, .5, .25)}
+    # NOT a guarantee. The OK status tolerates up to 2% of a layer's area being
+    # thinner than the target, so "minimum web = 2 mm" would be a false claim -
+    # this is the second time that wording had to be walked back. Report the
+    # design TARGET and the MEASURED worst-layer thin fraction side by side, and
+    # let the reader see both.
+    worst_thin = max((ta for *_, ta in rows), default=0.0)
     report = {
-        "min_web_mm": MIN_WEB,
-        "web_at_scale_mm": scale_table,
+        "web_target_mm": MIN_WEB,
+        "thin_area_worst_pct": round(worst_thin * 100, 2),
+        "web_target_at_scale_mm": {f"{int(p*100)}%": round(MIN_WEB * p, 2)
+                                   for p in (1.0, .75, .5, .25)},
+        "note": ("web_target_mm is the design target the chain heals to, not a "
+                 "guaranteed floor; thin_area_worst_pct is how much of the worst "
+                 "layer measured below it."),
         "levels": a.levels,
         "layers": {k: {"pieces": pc, "holes": ho, "weakest_mm": round(nw, 2),
                        "thin_pct": round(ta * 100, 2)}

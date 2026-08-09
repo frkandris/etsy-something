@@ -184,11 +184,15 @@ def _multipart(fields, files):
     return bytes(out), f"multipart/form-data; boundary={b}"
 
 
-def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None, levels=LEVELS):
+def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
+             levels=LEVELS, subject_text=None, name=None):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
-    subj, fmt = SUBJECTS[subject_key]
+    if subject_text:
+        subj, fmt = subject_text, "square"
+    else:
+        subj, fmt = SUBJECTS[subject_key]
     prompt = PROMPT.format(subject=subj, levels=levels, format=FORMATS[fmt])
     if ref:
         from PIL import Image
@@ -218,7 +222,7 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None, l
     paths = []
     for i, item in enumerate(data["data"]):
         raw = base64.b64decode(item["b64_json"])
-        p = out_dir / f"raw_{subject_key}_{i}.png"
+        p = out_dir / f"raw_{name or subject_key}_{i}.png"
         p.write_bytes(raw)
         paths.append(p)
         print(f"[gen] {p}  {len(raw)/1024:.0f} KB")
@@ -230,6 +234,8 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None, l
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--subject", default="celtic-tree", choices=list(SUBJECTS))
+    ap.add_argument("--subject-text", default=None, help="szabad tema, a SUBJECTS helyett")
+    ap.add_argument("--name", default=None, help="fajlnev-toredek")
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--n", type=int, default=1)
     ap.add_argument("--levels", type=int, default=LEVELS)
@@ -238,4 +244,5 @@ if __name__ == "__main__":
     ap.add_argument("--out", default=str(pathlib.Path(__file__).parent / "work"))
     a = ap.parse_args()
     crop = tuple(int(v) for v in a.crop.split(",")) if a.crop else None
-    generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop, a.levels)
+    generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop, a.levels,
+             a.subject_text, a.name)

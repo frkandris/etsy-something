@@ -432,6 +432,24 @@ def main():
             print(f"[i] {k}. reteg: {dropped[k].area:.0f} mm2 eldobva, ebbol "
                   f"{deeper.area:.0f} mm2 tobb mint egy lappal hatrebb latszik")
 
+    # Merge levels the image does not actually separate. k-means can put a
+    # boundary where almost no pixels differ, and the result is a layer that is
+    # a 1 mm rim around the one behind it: invisible in the product, but a real
+    # cut and a real glue step for the buyer. Anything that adds less than 4% of
+    # new area is not a layer, it is noise in the depth map.
+    ks = sorted(geoms)
+    drop = []
+    for i, k in enumerate(ks[1:], 1):
+        prev = geoms[ks[i - 1]]
+        if prev.area > 0 and (prev.area - geoms[k].area) / prev.area < 0.04:
+            drop.append((k, (prev.area - geoms[k].area) / prev.area))
+    for k, gain in drop:
+        print(f"[i] {k}. reteg osszevonva a mogotte levobe ({gain*100:.1f}% uj terulet)")
+        del geoms[k]
+    if drop:
+        geoms = {i + 1: geoms[k] for i, k in enumerate(sorted(geoms))}
+    MERGED = len(drop)
+
     if not a.no_keyhole:
         cut = keyhole(geoms[1])
         if cut is geoms[1]:
@@ -460,9 +478,13 @@ def main():
               f"{ta*100:>8.2f}%{nk:>6}  {st}")
         rows.append((k, geom, len(pieces), holes, nw, ta))
 
-    if len(geoms) < a.levels:
+    # a deliberately merged level is not a missing one
+    if len(geoms) + MERGED < a.levels:
         all_ok = False
-        print(f"[!] {a.levels} szintbol csak {len(geoms)} adott reteget")
+        print(f"[!] {a.levels} szintbol csak {len(geoms) + MERGED} adott reteget")
+    elif MERGED:
+        print(f"[i] {a.levels} kert szintbol {len(geoms)} valodi reteg "
+              f"({MERGED} osszevonva)")
     if not all_ok and not a.draft:
         raise SystemExit("HIBAS RETEG - nem irok ki fajlokat. Reszeredmenyhez: --draft")
 
@@ -588,7 +610,9 @@ def main():
         "note": ("web_target_mm is the design target the chain heals to, not a "
                  "guaranteed floor; thin_area_worst_pct is how much of the worst "
                  "layer measured below it."),
-        "levels": a.levels,
+        "levels": len(rows),
+        "levels_requested": a.levels,
+        "levels_merged": MERGED,
         "layers": {k: {"pieces": pc, "holes": ho, "weakest_mm": round(nw, 2),
                        "thin_pct": round(ta * 100, 2)}
                    for k, _, pc, ho, nw, ta in rows},

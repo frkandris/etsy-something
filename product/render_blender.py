@@ -26,7 +26,7 @@ FRAME = "--frame" in argv
 ACCENT_ON = "--accent" in argv
 skip = set()
 for i, a in enumerate(argv):
-    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top", "--dots", "--wood-frame"):
+    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top", "--dots", "--wood-frame", "--outline"):
         skip.add(i)
         if a == "--orbit":
             skip.add(i + 1)
@@ -390,7 +390,7 @@ if FRAME and not WHITE_TOP:
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 1.10,
                                      location=(0, 0, -THICK * 1.6))
     _bk = bpy.context.object
-    _bk.data.materials.append(wood("backing", (0.965, 0.962, 0.955, 1), 0.75,
+    _bk.data.materials.append(wood("backing", (0.99, 0.988, 0.982, 1), 0.72,
                                    grain=False))
     FRAME_OBJS.append(_bk)
 

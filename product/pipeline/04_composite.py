@@ -57,7 +57,8 @@ def shoot(scene, out):
     print(f"[bg] {out}  {out.stat().st_size/1024:.0f} KB")
 
 
-def place(bg_path, art_path, out_path, cx=0.5, base=0.78, height=0.62, warm=1.0):
+def place(bg_path, art_path, out_path, cx=0.5, base=0.78, height=0.62, warm=1.0,
+          square=False):
     """cx/base: where the frame's bottom centre sits, as a fraction of the photo.
     height: the frame's height as a fraction of the photo height."""
     bg = Image.open(bg_path).convert("RGB")
@@ -117,6 +118,14 @@ def place(bg_path, art_path, out_path, cx=0.5, base=0.78, height=0.62, warm=1.0)
     out = Image.blend(out.convert("RGB"),
                       Image.merge("RGB", (g, g, g)), 0.030)
     out = ImageEnhance.Color(out).enhance(1.03)
+    if square:
+        # the reference listings are square crops in which the framed piece
+        # carries most of the picture; a 3:2 plate with wide empty sides is a
+        # different photograph entirely
+        side = min(W, H)
+        left = int(max(0, min(W - side, W * cx - side / 2)))
+        top = int(max(0, min(H - side, y0 - side * 0.14)))
+        out = out.crop((left, top, left + side, top + side))
     out.save(out_path)
     print(f"[bg] kesz: {out_path}  ({W}x{H})")
 
@@ -131,8 +140,9 @@ if __name__ == "__main__":
     ap.add_argument("--base", type=float, default=0.78)
     ap.add_argument("--height", type=float, default=0.62)
     ap.add_argument("--warm", type=float, default=1.0)
+    ap.add_argument("--square", action="store_true")
     a = ap.parse_args()
     if a.shoot:
         shoot(a.shoot, pathlib.Path(a.out))
     else:
-        place(a.bg, a.art, a.out, a.cx, a.base, a.height, a.warm)
+        place(a.bg, a.art, a.out, a.cx, a.base, a.height, a.warm, a.square)

@@ -50,9 +50,16 @@ scene.cycles.samples = 128
 scene.cycles.use_denoising = True
 scene.render.resolution_x = 2000
 scene.render.resolution_y = 2000
-scene.render.film_transparent = False
+scene.render.film_transparent = (VIEW == "plate")
 scene.view_settings.look = "AgX - Base Contrast"
 scene.view_settings.exposure = -0.4
+if VIEW == "plate":
+    # Lit to match a photographed backdrop rather than a modelled one: warm key
+    # from the upper left, gentle fill, neutral transform so the composite step
+    # can grade it against the photo.
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = -0.75
 if "lifestyle" in sys.argv:
     # AgX rolls saturated colour off toward pastel. The reference is flat
     # printed spot colour, so use the untouched Standard transform instead.
@@ -289,9 +296,11 @@ if VIEW == "shelf":
                                      rotation=(math.radians(90), 0, 0))
     bpy.context.object.data.materials.append(wood("wall", (0.84, 0.80, 0.74, 1), 0.8,
                                                   grain=False))
-else:
+elif VIEW != "plate":
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
-    # whitewashed board, not a 60% grey sweep - the grey read as CGI
+    # whitewashed board, not a 60% grey sweep - the grey read as CGI.
+    # NEVER in plate view: the piece stands up there, and a horizontal plane
+    # would slice straight through it.
     bpy.context.object.data.materials.append(
         wood("wall", (0.885, 0.870, 0.845, 1), 0.72, grain=GRAIN))
 
@@ -378,6 +387,13 @@ if FRAME and not WHITE_TOP:
         b.scale = (sx * 2, sy * 2, fd)
         b.data.materials.append(_fm)
         FRAME_OBJS.append(b)
+
+if VIEW == "plate":
+    # stand the piece up, nothing else in the scene
+    for o in objs + FRAME_OBJS:
+        o.rotation_euler = (math.radians(88), 0, 0)
+        ox, oy, oz = o.location.x, o.location.y, o.location.z
+        o.location = (ox, -oz, oy)
 
 if VIEW == "lifestyle":
     # A warm styled shelf with out-of-focus props. The winning listings put the
@@ -467,7 +483,14 @@ if FRAME:
     # object is bigger - otherwise it fits the art and crops the frame away.
     # 1.34 filled 88% of the canvas; the reference frame fills ~73%.
     MARGIN *= 1.45
-if VIEW == "lifestyle":
+if VIEW == "plate":
+    D = SIZE * MARGIN * LENS / 36.0 * 1.0
+    bpy.ops.object.camera_add(location=(0, -D, 0), rotation=(math.radians(90), 0, 0))
+    cam = bpy.context.object
+    cam.data.lens = LENS
+    scene.camera = cam
+    print(f"[render] nezet=plate (atlatszo) tavolsag={D:.3f}")
+elif VIEW == "lifestyle":
     D = SIZE * MARGIN * LENS / 36.0 * 1.02
     bpy.ops.object.camera_add(location=(0, -D, SIZE * 0.62),
                               rotation=(math.radians(90), 0, 0))
@@ -498,14 +521,19 @@ scene.camera = cam
 print(f"[render] nezet={VIEW} emelkedes={ELEV:.0f} tavolsag={D:.3f}")
 
 # tighter key = sharper layer-edge shadows, which is what sells the depth
-KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 110)
+KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 70 if VIEW == "plate" else 110)
 key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E; key.size = SIZE * 1.5
-if VIEW == "lifestyle":
-    key.color = (1.0, 0.94, 0.86)          # ~4800K - 3600K tinted the mat cream
+if VIEW in ("lifestyle", "plate"):
+    key.color = (1.0, 0.93, 0.84)          # warm daylight, matching the backdrop
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
-ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5); ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
+if VIEW == "plate":
+    ko.location = (-SIZE * 1.4, -SIZE * 1.5, SIZE * 1.1)
+    ko.rotation_euler = (math.radians(58), 0, math.radians(-38))
+else:
+    ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5)
+    ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
 
-FILL_E = SIZE * SIZE * (26 if VIEW == "lifestyle" else 22)   # ~4:1 key:fill
+FILL_E = SIZE * SIZE * (26 if VIEW == "lifestyle" else 20 if VIEW == "plate" else 22)
 fill = bpy.data.lights.new("fill", "AREA"); fill.energy = FILL_E; fill.size = SIZE * 5
 if VIEW == "lifestyle":
     fill.color = (0.99, 0.98, 0.97)

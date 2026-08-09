@@ -223,7 +223,23 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
         subj, fmt = SUBJECTS[subject_key]
     prompt = PROMPT.format(subject=subj, levels=levels, format=FORMATS[fmt])
     if recessed:
-        prompt = RECESSED + prompt
+        # the base prompt's "pure black background" and "outside the circular
+        # piece" directly contradict a full light panel, and the model obeyed
+        # them - that is why black background kept coming back
+        prompt = (RECESSED + prompt)
+        prompt = prompt.replace(
+            "- Pure black (#000000) is the area cut away entirely, outside the "
+            "circular piece.\n", "")
+        prompt = prompt.replace(
+            "- Use EXACTLY {levels} flat shades of grey plus pure black background. "
+            "Nothing else.".format(levels=levels),
+            "- Use EXACTLY {levels} flat shades of grey. No pure black anywhere "
+            "except the deepest recess.".format(levels=levels))
+        prompt = prompt.replace(
+            "- Darker grey = further back, lighter grey = closer to the viewer. "
+            "White is the frontmost element.",
+            "- Lighter grey = closer to the viewer; the LIGHTEST grey is the top "
+            "sheet and fills the whole square.")
     if ref:
         from PIL import Image
         import io

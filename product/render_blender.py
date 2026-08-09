@@ -33,7 +33,8 @@ WOODFRAME = "--wood-frame" in argv
 DOTS = "--dots" in argv
 skip = set()
 for i, a in enumerate(argv):
-    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top", "--dots", "--wood-frame", "--outline"):
+    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
+             "--dots", "--wood-frame", "--recessed"):
         skip.add(i)
         if a == "--orbit":
             skip.add(i + 1)
@@ -194,9 +195,11 @@ PALETTES = {
     # so depth reads as shadow falling into the opening
     # Recessed well. Layer 1 is the deepest sheet and layer N the white top
     # sheet, so the palette runs DARK to LIGHT - the opposite of a relief.
-    "well":  [(0.09, 0.048, 0.026, 1), (0.28, 0.14, 0.065, 1), (0.52, 0.28, 0.12, 1),
-              (0.74, 0.50, 0.24, 1), (0.90, 0.80, 0.64, 1),
-              (0.985, 0.982, 0.975, 1)],
+    "well":  [(0.027, 0.019, 0.015, 1),   # #2E2622 espresso - the floor
+              (0.253, 0.056, 0.015, 1),   # #8A4322
+              (0.532, 0.130, 0.028, 1),   # #C1652F saturated orange
+              (0.760, 0.546, 0.270, 1),   # #E3C48F ochre
+              (0.930, 0.912, 0.878, 1)],  # #F7F5F1 the white top sheet
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -258,9 +261,11 @@ for i, f in enumerate(svgs):
             sl.material = mat
         FRONT.append((i, o))
         APPLIED.append(o.data.materials[0].name if o.data.materials else "NINCS")
-        # recessed: layer 1 is the top sheet and every later layer sits BEHIND
-        # it, so the stack reads as a well you look into
-        o.location.z = (-i if RECESSED else i) * (THICK + GAP)
+        # No z-inversion here. The depth map is already recessed at GENERATION
+        # time (the field is the lightest level), so layer 1 is the deepest
+        # sheet and the normal order is correct. Flipping z as well double-
+        # inverted it and put the solid floor in front of everything.
+        o.location.z = i * (THICK + GAP)
 
 print(f"[render] anyagok: {sorted(set(APPLIED))}")
 
@@ -420,8 +425,10 @@ if FRAME:
     # with --white-top no frame was built at all and the white sheet's own edge
     # was standing in for it.
     fw = SIZE * 0.085
-    fd = SIZE * 0.17
-    inner = SIZE / 2 * 1.06
+    # a recessed sheet sits right up against the rabbet; a deep empty well in
+    # front of it reads as a floating tile
+    fd = SIZE * (0.055 if RECESSED else 0.17)
+    inner = SIZE / 2 * (1.005 if RECESSED else 1.06)
     outer = inner + fw
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2 - 0.0006))
     shell = bpy.context.object

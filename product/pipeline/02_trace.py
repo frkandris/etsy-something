@@ -331,6 +331,9 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--min-feature", type=float, default=0.0,
+                    help="mm: ennel vekonyabb nyulvanyt a lanc levagja "
+                         "(a referencia formanyelve durvabb, mint a MIN_WEB)")
     ap.add_argument("--full-panel", action="store_true",
                     help="minden lap teljes negyzet legyen, csak nyilasokkal")
     ap.add_argument("--recessed", action="store_true",
@@ -347,12 +350,19 @@ def main():
     out = pathlib.Path(a.out or src.parent / "layers"); out.mkdir(parents=True, exist_ok=True)
     img = Image.open(src)
     if a.recessed:
+        # normalise BEFORE inverting: a 0..6 index map inverted becomes 249..255,
+        # hi is then 255 and the index-map branch never fires, so k-means sees a
+        # single occupied cluster and the run dies
         # The reference product is INTAGLIO, not relief: the top sheet is a full
         # white panel with the motif punched through it, and each sheet below
         # has a smaller opening, so you look DOWN a stepped well that darkens
         # with depth. Inverting the depth map turns our nesting machinery around:
         # layer 1 becomes the whole panel and every later layer a smaller hole.
-        img = Image.eval(img.convert("L"), lambda v: 255 - v)
+        _g = img.convert("L")
+        _lo, _hi = _g.getextrema()
+        if _hi > _lo and _hi <= a.levels + 2:
+            _g = _g.point(lambda v: min(255, int((v - _lo) * 255 / (_hi - _lo))))
+        img = Image.eval(_g, lambda v: 255 - v)
     g, edges, cent = posterise(img, a.levels)
 
     print(f"forras: {src.name}  {img.width}x{img.height}px")
@@ -434,7 +444,11 @@ def main():
         ks0 = sorted(geoms)
         minx, miny, maxx, maxy = geoms[ks0[0]].bounds
         panel = Polygon([(minx, miny), (maxx, miny), (maxx, maxy), (minx, maxy)])
-        outside = panel.difference(geoms[ks0[0]]).buffer(0)
+        # only the region OUTSIDE the design's outer boundary. Subtracting the
+        # whole layer would also hand back all of its interior holes, which
+        # made layer 1 a solid sheet with zero openings.
+        shell = unary_union([Polygon(p.exterior) for p in parts_of(geoms[ks0[0]])])
+        outside = panel.difference(shell).buffer(0)
         if not outside.is_empty:
             for k in ks0:
                 # close the hairline ring between the disc edge and this sheet's
@@ -444,6 +458,18 @@ def main():
                 geoms[k] = g
             print(f"[i] teljes panel kikenyszeritve ({outside.area:,.0f} mm2 "
                   f"kerult minden lapra)")
+
+    if a.min_feature > 0:
+        # The reference shape language is far coarser than our 2 mm cut limit:
+        # its thinnest element is ~2.5% of the panel. A morphological opening
+        # removes whiskers and fur strands that are cuttable but stylistically
+        # wrong.
+        r = a.min_feature / 2.0
+        for k in sorted(geoms):
+            g = geoms[k].buffer(-r).buffer(r * 1.05).buffer(0)
+            g = unary_union([p for p in parts_of(g) if p.area >= a.min_part])
+            if not g.is_empty:
+                geoms[k] = g
 
     enforce_nesting()
     heal_all()

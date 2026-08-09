@@ -26,7 +26,7 @@ FRAME = "--frame" in argv
 ACCENT_ON = "--accent" in argv
 skip = set()
 for i, a in enumerate(argv):
-    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top", "--dots"):
+    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top", "--dots", "--wood-frame"):
         skip.add(i)
         if a == "--orbit":
             skip.add(i + 1)
@@ -167,6 +167,21 @@ PALETTES = {
                                          # leaf green here read as grass
                (0.049, 0.328, 0.087, 1), # #3F9C52 leaf green
                (0.080, 0.394, 0.731, 1)],# #4FA9DE sky
+    # The seller's whole catalogue runs on one restrained earthy scheme: cream
+    # field, sand, rust, warm brown, deep brown. Layer 1 being cream is what
+    # gives the "white field" - no boolean top sheet needed, which is also far
+    # more robust than cutting a plate with the motif outline.
+    # The catalogue's portraits ALTERNATE light and dark rather than ramping:
+    # that is what keeps every band readable. A cream layer 1 on a white backing
+    # merged into it and the piece read as a blank field with a few brown chips.
+    "earthy": [(0.30, 0.16, 0.08, 1),   # warm brown - outer silhouette
+               (0.92, 0.87, 0.78, 1),   # cream
+               (0.72, 0.26, 0.06, 1),   # rust
+               (0.80, 0.68, 0.52, 1),   # sand
+               (0.14, 0.07, 0.04, 1),   # deep brown
+               (0.95, 0.92, 0.85, 1),   # bright cream
+               (0.85, 0.42, 0.12, 1),   # bright rust
+               (0.20, 0.11, 0.06, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -312,6 +327,7 @@ if FRAME:
         o.location = (o.location.x * 0.72, o.location.y * 0.72, o.location.z)
 
 WHITE_TOP = "--white-top" in argv
+WOODFRAME = "--wood-frame" in argv
 DOTS = "--dots" in argv
 if WHITE_TOP and objs:
     # The reference is not a motif sitting ON white - it is a WHITE TOP SHEET
@@ -366,27 +382,47 @@ if DOTS and objs:
 
 FRAME_OBJS = []
 if FRAME and not WHITE_TOP:
-    # White backing sheet. In the real product the cut layers are mounted on a
-    # plain sheet inside the frame - it is not one of the cut layers, so it must
-    # not be palette-coloured.
-    bpy.ops.mesh.primitive_plane_add(size=SIZE * 1.10, location=(0, 0, -0.0004))
+    # White backing sheet - only needed when there is no white top sheet; in the
+    # real product the cut layers are mounted on a plain sheet inside the frame.
+    # tie the backing to THICK: a fixed -0.4 mm sat INSIDE the layer-1 extrusion
+    # once paper thickness went to 2 mm, and the plane won the z-fight over the
+    # largest, darkest layers - they vanished and the piece read as empty
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 1.10,
+                                     location=(0, 0, -THICK * 1.6))
     _bk = bpy.context.object
     _bk.data.materials.append(wood("backing", (0.965, 0.962, 0.955, 1), 0.75,
                                    grain=False))
     FRAME_OBJS.append(_bk)
-    fw = SIZE * 0.075                  # 11% of the image was too heavy; ~6-7%
-    fd = SIZE * 0.13
-    inner, outer = SIZE / 2 * 1.06, SIZE / 2 * 1.06 + fw
-    _fm = wood("frame", (0.975, 0.973, 0.968, 1), 0.5, grain=False)
-    for sx, sy, cx_, cy_ in ((outer, fw / 2, 0, outer - fw / 2),
-                             (outer, fw / 2, 0, -(outer - fw / 2)),
-                             (fw / 2, inner, outer - fw / 2, 0),
-                             (fw / 2, inner, -(outer - fw / 2), 0)):
-        bpy.ops.mesh.primitive_cube_add(size=1, location=(cx_, cy_, fd / 2 - 0.0006))
-        b = bpy.context.object
-        b.scale = (sx * 2, sy * 2, fd)
-        b.data.materials.append(_fm)
-        FRAME_OBJS.append(b)
+
+if FRAME:
+    # ONE mitred body (outer box minus inner box), not four overlapping bars.
+    # The bar version showed a detached left panel and a floating top rail from
+    # any angle off dead-on. It was also nested in the "no white top" branch, so
+    # with --white-top no frame was built at all and the white sheet's own edge
+    # was standing in for it.
+    fw = SIZE * 0.085
+    fd = SIZE * 0.17
+    inner = SIZE / 2 * 1.06
+    outer = inner + fw
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2 - 0.0006))
+    shell = bpy.context.object
+    shell.scale = (outer * 2, outer * 2, fd)
+    # the opening must go ALL THE WAY THROUGH. Starting it at 0.28*depth left
+    # the back of the shell solid, and that slab sat in front of the artwork:
+    # only the two frontmost layers poked out and the piece looked empty.
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2))
+    hole = bpy.context.object
+    hole.scale = (inner * 2, inner * 2, fd * 3)
+    bm = shell.modifiers.new("cut", "BOOLEAN")
+    bm.operation = "DIFFERENCE"
+    bm.object = hole
+    bpy.context.view_layer.objects.active = shell
+    bpy.ops.object.modifier_apply(modifier="cut")
+    bpy.data.objects.remove(hole, do_unlink=True)
+    fc = (0.20, 0.11, 0.055, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
+    shell.data.materials.append(wood("frame", fc, 0.55 if WOODFRAME else 0.42,
+                                     grain=WOODFRAME))
+    FRAME_OBJS.append(shell)
 
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene

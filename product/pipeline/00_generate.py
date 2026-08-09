@@ -54,6 +54,16 @@ FORMATS = {
 }
 
 SUBJECTS = {
+    "abstract-cat": (
+        "A cat head seen straight on, built entirely from nested MELTING, "
+        "DRIPPING organic shapes - like thick paint poured in layers, each level "
+        "an irregular blob with rounded lobes and soft drips running downward. "
+        "NO border, NO frame, NO ornament: the area around the head is one flat "
+        "empty background level filling at least a third of the picture. "
+        "The outermost, largest level is the plain background. Big rounded eyes "
+        "and a small muzzle stay clearly readable near the centre; long tapered "
+        "whiskers sweep out sideways. Few, LARGE, simple shapes - bold poster "
+        "art, not fine detail.", "square"),
     "cat-splatter": (
         "A cat head floating in the middle of a completely EMPTY white field. "
         "CRITICAL: there must be NO border, NO frame, NO ring, NO margin band "

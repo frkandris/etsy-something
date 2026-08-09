@@ -23,9 +23,10 @@ for i, a in enumerate(argv):
     if a == "--orbit":
         ORBIT = int(argv[i + 1])
 FRAME = "--frame" in argv
+ACCENT_ON = "--accent" in argv
 skip = set()
 for i, a in enumerate(argv):
-    if a in ("--grain", "--orbit", "--frame"):
+    if a in ("--grain", "--orbit", "--frame", "--accent"):
         skip.add(i)
         if a == "--orbit":
             skip.add(i + 1)
@@ -34,8 +35,9 @@ SRC = pathlib.Path(argv[0])
 OUT = argv[1]
 VIEW = argv[2] if len(argv) > 2 else "hero"
 PALETTE = argv[3] if len(argv) > 3 else "wood"
-ELEV = float(argv[4]) if len(argv) > 4 else (74.0 if VIEW == "hero" else 34.0)
-AZIM = 0.0 if VIEW == "hero" else 24.0
+ELEV = float(argv[4]) if len(argv) > 4 else (80.0 if VIEW == "hero" else 34.0)
+# a dead-on 0 deg yaw reads as a scan; the winning listings tilt 8-15 deg
+AZIM = 10.0 if VIEW == "hero" else 24.0
 THICK = 0.003          # 3 mm plywood, in metres (SVG imports in metres-ish)
 GAP = 0.0002
 
@@ -108,14 +110,18 @@ PALETTES = {
     # thatSVGplace recipe (50 listing reviews): matt black back plate carries all
     # the contrast, cool petrol/teal/sage climb through the middle, pure white on
     # top, one warm accent. This is the palette that wins the category.
-    "catteal": [(0.045, 0.045, 0.05, 1), (0.06, 0.16, 0.20, 1), (0.09, 0.27, 0.30, 1),
-                (0.16, 0.40, 0.40, 1), (0.34, 0.55, 0.50, 1), (0.72, 0.82, 0.80, 1),
-                (0.97, 0.97, 0.96, 1)],
+    # value ladder: each step is a clear jump in lightness. The first version
+    # kept the top three layers within ~4 L* of each other and they merged.
+    "catteal": [(0.006, 0.006, 0.008, 1), (0.02, 0.09, 0.12, 1), (0.04, 0.19, 0.22, 1),
+                (0.09, 0.33, 0.33, 1), (0.22, 0.50, 0.46, 1), (0.50, 0.70, 0.66, 1),
+                (0.90, 0.93, 0.92, 1)],
     # PaperCutMari recipe (49 listing reviews): white top, saturated rainbow mids,
     # contrast from complementary colours rather than a dark plate
-    "catrainbow": [(0.55, 0.06, 0.30, 1), (0.36, 0.10, 0.55, 1), (0.10, 0.25, 0.72, 1),
-                   (0.06, 0.55, 0.60, 1), (0.85, 0.62, 0.06, 1), (0.88, 0.32, 0.08, 1),
-                   (0.98, 0.98, 0.97, 1)],
+    # saturated, not pastel: the first version sat near S=0.35 and read as
+    # "easter". Dark anchor at the back, white on top, S 0.75-0.90 between.
+    "catrainbow": [(0.006, 0.006, 0.009, 1), (0.60, 0.02, 0.32, 1), (0.26, 0.04, 0.55, 1),
+                   (0.02, 0.10, 0.62, 1), (0.00, 0.42, 0.26, 1), (0.92, 0.58, 0.02, 1),
+                   (0.90, 0.28, 0.03, 1), (0.98, 0.98, 0.97, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -148,6 +154,10 @@ TONES = ramp(BASE, len(svgs))
 print(f"[render] {len(svgs)} reteg")
 APPLIED = []
 
+FRONT = []
+ACCENT = wood("accent_eye", (0.30, 0.62, 0.20, 1), 0.4, grain=False)
+ACCENT2 = wood("accent_nose", (0.94, 0.55, 0.62, 1), 0.4, grain=False)
+
 for i, f in enumerate(svgs):
     before = set(bpy.data.objects)
     bpy.ops.import_curve.svg(filepath=str(f))
@@ -163,6 +173,7 @@ for i, f in enumerate(svgs):
         o.data.materials.append(mat)
         for sl in o.material_slots:
             sl.material = mat
+        FRONT.append((i, o))
         APPLIED.append(o.data.materials[0].name if o.data.materials else "NINCS")
         o.location.z = i * (THICK + GAP)
 
@@ -175,8 +186,12 @@ for o in objs:
     o.select_set(True)
 bpy.context.view_layer.objects.active = objs[0]
 bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="BOUNDS")
-xs = [o.location.x for o in objs]; ys = [o.location.y for o in objs]
-cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+# centre on the real bounding box, not the mean of object origins - the mean
+# drifts toward whichever layer has more pieces and left the panel off-centre
+import mathutils as _mu
+_p = [o.matrix_world @ _mu.Vector(c) for o in objs for c in o.bound_box]
+cx = (min(q.x for q in _p) + max(q.x for q in _p)) / 2
+cy = (min(q.y for q in _p) + max(q.y for q in _p)) / 2
 for o in objs:
     o.location.x -= cx
     o.location.y -= cy
@@ -188,6 +203,23 @@ minv = mathutils.Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z f
 maxv = mathutils.Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
 SIZE = max(maxv.x - minv.x, maxv.y - minv.y)
 print(f"[render] darab merete: {SIZE:.4f} egyseg")
+
+if ACCENT_ON:
+    # A warm accent on the frontmost layers' smallest pieces reads as eye and
+    # nose. Only decidable here, once the real object span is known.
+    top = max(i for i, _ in FRONT)
+    n = 0
+    for i, o in FRONT:
+        if i < top - 2:
+            continue
+        d = max(o.dimensions.x, o.dimensions.y)
+        if d < 0.26 * SIZE:
+            m = ACCENT if d > 0.07 * SIZE else ACCENT2
+            o.data.materials.clear(); o.data.materials.append(m)
+            for sl in o.material_slots:
+                sl.material = m
+            n += 1
+    print(f"[render] akcentus {n} apro darabon")
 
 # ------------------------------------------------------------------ backdrop
 if VIEW == "shelf":
@@ -210,14 +242,16 @@ if VIEW == "shelf":
                                                   grain=False))
 else:
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
-    bpy.context.object.data.materials.append(wood("wall", (0.80, 0.75, 0.68, 1), 0.7, grain=False))
+    # whitewashed board, not a 60% grey sweep - the grey read as CGI
+    bpy.context.object.data.materials.append(
+        wood("wall", (0.885, 0.870, 0.845, 1), 0.72, grain=GRAIN))
 
 if FRAME:
     # Both winning listings sit in a WIDE WHITE deep shadow-box frame filling
     # ~75-80% of the hero. Without it our render reads as a bare cut-out.
-    fw = SIZE * 0.085                     # frame width
-    fd = SIZE * 0.10                      # how far it stands toward the viewer
-    inner, outer = SIZE / 2 * 1.04, SIZE / 2 * 1.04 + fw
+    fw = SIZE * 0.115                     # frame width ~9% of the framed image
+    fd = SIZE * 0.14                      # deep shadow-box profile
+    inner, outer = SIZE / 2 * 1.06, SIZE / 2 * 1.06 + fw
     mat = wood("frame", (0.955, 0.95, 0.94, 1), 0.55, grain=False)
     for sx, sy, cx_, cy_ in ((outer, fw / 2, 0, outer - fw / 2),
                              (outer, fw / 2, 0, -(outer - fw / 2)),
@@ -234,6 +268,10 @@ if FRAME:
 # a margin, then add back what the tilt foreshortens. The earlier fixed 1.75x
 # multiplier cropped the piece.
 LENS, MARGIN = 85.0, 1.22
+if FRAME:
+    # the frame is built after the bounding box, so the camera must be told the
+    # object is bigger - otherwise it fits the art and crops the frame away
+    MARGIN *= 1.34
 if VIEW == "shelf":
     D = SIZE * MARGIN * LENS / 36.0 * 1.06
     az = math.radians(14)
@@ -253,7 +291,8 @@ cam.data.lens = LENS
 scene.camera = cam
 print(f"[render] nezet={VIEW} emelkedes={ELEV:.0f} tavolsag={D:.3f}")
 
-key = bpy.data.lights.new("key", "AREA"); key.energy = SIZE * SIZE * 85; key.size = SIZE * 1.6
+# tighter key = sharper layer-edge shadows, which is what sells the depth
+key = bpy.data.lights.new("key", "AREA"); key.energy = SIZE * SIZE * 110; key.size = SIZE * 0.85
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
 ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5); ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
 

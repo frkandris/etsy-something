@@ -12,6 +12,10 @@ oldalon.
 
 A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: **[[_log]]**.
 
+## Referencia
+
+- [[longtail]] — **hosszú farok szógyűjtemény** (412 kifejezés, 8 család, bővíthető)
+
 ## Eredmények — `findings/`
 
 - [[findings/layered-niche-size-and-structure]] — mekkora és mennyire zsúfolt a piac

@@ -1,0 +1,223 @@
+{
+ "family": "us-states",
+ "note": "Családként halott (state svg 0,7), egyenként él (texas svg 11,3 / florida svg 9,2).",
+ "query_pattern": "{term} svg",
+ "entries": [
+  {
+   "term": "alabama",
+   "measurements": []
+  },
+  {
+   "term": "alaska",
+   "measurements": []
+  },
+  {
+   "term": "arizona",
+   "measurements": []
+  },
+  {
+   "term": "arkansas",
+   "measurements": []
+  },
+  {
+   "term": "california",
+   "measurements": []
+  },
+  {
+   "term": "colorado",
+   "measurements": []
+  },
+  {
+   "term": "connecticut",
+   "measurements": []
+  },
+  {
+   "term": "delaware",
+   "measurements": []
+  },
+  {
+   "term": "florida",
+   "measurements": [
+    {
+     "date": "2026-08-09",
+     "searches": 203,
+     "results": 22000,
+     "per_1000": 9.2,
+     "trend_pct": "+24.4"
+    }
+   ]
+  },
+  {
+   "term": "georgia",
+   "measurements": []
+  },
+  {
+   "term": "hawaii",
+   "measurements": []
+  },
+  {
+   "term": "idaho",
+   "measurements": []
+  },
+  {
+   "term": "illinois",
+   "measurements": []
+  },
+  {
+   "term": "indiana",
+   "measurements": []
+  },
+  {
+   "term": "iowa",
+   "measurements": []
+  },
+  {
+   "term": "kansas",
+   "measurements": []
+  },
+  {
+   "term": "kentucky",
+   "measurements": []
+  },
+  {
+   "term": "louisiana",
+   "measurements": []
+  },
+  {
+   "term": "maine",
+   "measurements": []
+  },
+  {
+   "term": "maryland",
+   "measurements": []
+  },
+  {
+   "term": "massachusetts",
+   "measurements": []
+  },
+  {
+   "term": "michigan",
+   "measurements": []
+  },
+  {
+   "term": "minnesota",
+   "measurements": []
+  },
+  {
+   "term": "mississippi",
+   "measurements": []
+  },
+  {
+   "term": "missouri",
+   "measurements": []
+  },
+  {
+   "term": "montana",
+   "measurements": []
+  },
+  {
+   "term": "nebraska",
+   "measurements": []
+  },
+  {
+   "term": "nevada",
+   "measurements": []
+  },
+  {
+   "term": "new hampshire",
+   "measurements": []
+  },
+  {
+   "term": "new jersey",
+   "measurements": []
+  },
+  {
+   "term": "new mexico",
+   "measurements": []
+  },
+  {
+   "term": "new york",
+   "measurements": []
+  },
+  {
+   "term": "north carolina",
+   "measurements": []
+  },
+  {
+   "term": "north dakota",
+   "measurements": []
+  },
+  {
+   "term": "ohio",
+   "measurements": []
+  },
+  {
+   "term": "oklahoma",
+   "measurements": []
+  },
+  {
+   "term": "oregon",
+   "measurements": []
+  },
+  {
+   "term": "pennsylvania",
+   "measurements": []
+  },
+  {
+   "term": "rhode island",
+   "measurements": []
+  },
+  {
+   "term": "south carolina",
+   "measurements": []
+  },
+  {
+   "term": "south dakota",
+   "measurements": []
+  },
+  {
+   "term": "tennessee",
+   "measurements": []
+  },
+  {
+   "term": "texas",
+   "measurements": [
+    {
+     "date": "2026-08-09",
+     "searches": 500,
+     "results": 44300,
+     "per_1000": 11.3,
+     "trend_pct": "+3.6"
+    }
+   ]
+  },
+  {
+   "term": "utah",
+   "measurements": []
+  },
+  {
+   "term": "vermont",
+   "measurements": []
+  },
+  {
+   "term": "virginia",
+   "measurements": []
+  },
+  {
+   "term": "washington",
+   "measurements": []
+  },
+  {
+   "term": "west virginia",
+   "measurements": []
+  },
+  {
+   "term": "wisconsin",
+   "measurements": []
+  },
+  {
+   "term": "wyoming",
+   "measurements": []
+  }
+ ]
+}

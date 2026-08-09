@@ -1,0 +1,203 @@
+{
+ "family": "us-national-parks",
+ "note": "A national park svg 12,8/1000 (+13,8%) — a hegy-család legjobb kifejezése.",
+ "query_pattern": "{term} national park svg",
+ "entries": [
+  {
+   "term": "acadia",
+   "measurements": []
+  },
+  {
+   "term": "arches",
+   "measurements": []
+  },
+  {
+   "term": "badlands",
+   "measurements": []
+  },
+  {
+   "term": "big bend",
+   "measurements": []
+  },
+  {
+   "term": "biscayne",
+   "measurements": []
+  },
+  {
+   "term": "bryce canyon",
+   "measurements": []
+  },
+  {
+   "term": "canyonlands",
+   "measurements": []
+  },
+  {
+   "term": "capitol reef",
+   "measurements": []
+  },
+  {
+   "term": "carlsbad caverns",
+   "measurements": []
+  },
+  {
+   "term": "channel islands",
+   "measurements": []
+  },
+  {
+   "term": "crater lake",
+   "measurements": []
+  },
+  {
+   "term": "cuyahoga valley",
+   "measurements": []
+  },
+  {
+   "term": "death valley",
+   "measurements": []
+  },
+  {
+   "term": "denali",
+   "measurements": []
+  },
+  {
+   "term": "dry tortugas",
+   "measurements": []
+  },
+  {
+   "term": "everglades",
+   "measurements": []
+  },
+  {
+   "term": "glacier",
+   "measurements": []
+  },
+  {
+   "term": "grand canyon",
+   "measurements": []
+  },
+  {
+   "term": "grand teton",
+   "measurements": []
+  },
+  {
+   "term": "great sand dunes",
+   "measurements": []
+  },
+  {
+   "term": "great smoky mountains",
+   "measurements": []
+  },
+  {
+   "term": "haleakala",
+   "measurements": []
+  },
+  {
+   "term": "hot springs",
+   "measurements": []
+  },
+  {
+   "term": "indiana dunes",
+   "measurements": []
+  },
+  {
+   "term": "isle royale",
+   "measurements": []
+  },
+  {
+   "term": "joshua tree",
+   "measurements": []
+  },
+  {
+   "term": "kings canyon",
+   "measurements": []
+  },
+  {
+   "term": "lassen volcanic",
+   "measurements": []
+  },
+  {
+   "term": "mammoth cave",
+   "measurements": []
+  },
+  {
+   "term": "mesa verde",
+   "measurements": []
+  },
+  {
+   "term": "mount rainier",
+   "measurements": []
+  },
+  {
+   "term": "new river gorge",
+   "measurements": []
+  },
+  {
+   "term": "north cascades",
+   "measurements": []
+  },
+  {
+   "term": "olympic",
+   "measurements": []
+  },
+  {
+   "term": "petrified forest",
+   "measurements": []
+  },
+  {
+   "term": "pinnacles",
+   "measurements": []
+  },
+  {
+   "term": "redwood",
+   "measurements": []
+  },
+  {
+   "term": "rocky mountain",
+   "measurements": []
+  },
+  {
+   "term": "saguaro",
+   "measurements": []
+  },
+  {
+   "term": "sequoia",
+   "measurements": []
+  },
+  {
+   "term": "shenandoah",
+   "measurements": []
+  },
+  {
+   "term": "voyageurs",
+   "measurements": []
+  },
+  {
+   "term": "white sands",
+   "measurements": []
+  },
+  {
+   "term": "wind cave",
+   "measurements": []
+  },
+  {
+   "term": "yellowstone",
+   "measurements": [
+    {
+     "date": "2026-08-09",
+     "searches": 276,
+     "results": 21500,
+     "per_1000": 12.8,
+     "trend_pct": "+13.8"
+    }
+   ]
+  },
+  {
+   "term": "yosemite",
+   "measurements": []
+  },
+  {
+   "term": "zion",
+   "measurements": []
+  }
+ ]
+}

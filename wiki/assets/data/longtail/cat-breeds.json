@@ -1,0 +1,187 @@
+{
+ "family": "cat-breeds",
+ "note": "Ugyanaz a hosszú farok logika, kisebb piac.",
+ "query_pattern": "{term} cat svg",
+ "entries": [
+  {
+   "term": "abyssinian",
+   "measurements": []
+  },
+  {
+   "term": "american curl",
+   "measurements": []
+  },
+  {
+   "term": "american shorthair",
+   "measurements": []
+  },
+  {
+   "term": "balinese",
+   "measurements": []
+  },
+  {
+   "term": "bengal",
+   "measurements": []
+  },
+  {
+   "term": "birman",
+   "measurements": []
+  },
+  {
+   "term": "black cat",
+   "measurements": []
+  },
+  {
+   "term": "bombay",
+   "measurements": []
+  },
+  {
+   "term": "british shorthair",
+   "measurements": []
+  },
+  {
+   "term": "burmese",
+   "measurements": []
+  },
+  {
+   "term": "calico",
+   "measurements": []
+  },
+  {
+   "term": "chartreux",
+   "measurements": []
+  },
+  {
+   "term": "cornish rex",
+   "measurements": []
+  },
+  {
+   "term": "devon rex",
+   "measurements": []
+  },
+  {
+   "term": "egyptian mau",
+   "measurements": []
+  },
+  {
+   "term": "exotic shorthair",
+   "measurements": []
+  },
+  {
+   "term": "havana brown",
+   "measurements": []
+  },
+  {
+   "term": "himalayan",
+   "measurements": []
+  },
+  {
+   "term": "japanese bobtail",
+   "measurements": []
+  },
+  {
+   "term": "korat",
+   "measurements": []
+  },
+  {
+   "term": "lykoi",
+   "measurements": []
+  },
+  {
+   "term": "maine coon",
+   "measurements": []
+  },
+  {
+   "term": "manx",
+   "measurements": []
+  },
+  {
+   "term": "munchkin",
+   "measurements": []
+  },
+  {
+   "term": "nebelung",
+   "measurements": []
+  },
+  {
+   "term": "norwegian forest cat",
+   "measurements": []
+  },
+  {
+   "term": "ocicat",
+   "measurements": []
+  },
+  {
+   "term": "orange cat",
+   "measurements": []
+  },
+  {
+   "term": "oriental shorthair",
+   "measurements": []
+  },
+  {
+   "term": "persian",
+   "measurements": []
+  },
+  {
+   "term": "ragdoll",
+   "measurements": []
+  },
+  {
+   "term": "russian blue",
+   "measurements": []
+  },
+  {
+   "term": "savannah",
+   "measurements": []
+  },
+  {
+   "term": "scottish fold",
+   "measurements": []
+  },
+  {
+   "term": "selkirk rex",
+   "measurements": []
+  },
+  {
+   "term": "siamese",
+   "measurements": []
+  },
+  {
+   "term": "siberian",
+   "measurements": []
+  },
+  {
+   "term": "singapura",
+   "measurements": []
+  },
+  {
+   "term": "somali",
+   "measurements": []
+  },
+  {
+   "term": "sphynx",
+   "measurements": []
+  },
+  {
+   "term": "tabby",
+   "measurements": []
+  },
+  {
+   "term": "tonkinese",
+   "measurements": []
+  },
+  {
+   "term": "turkish angora",
+   "measurements": []
+  },
+  {
+   "term": "turkish van",
+   "measurements": []
+  },
+  {
+   "term": "tuxedo",
+   "measurements": []
+  }
+ ]
+}

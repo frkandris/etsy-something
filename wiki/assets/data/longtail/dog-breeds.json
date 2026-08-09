@@ -1,0 +1,547 @@
+{
+ "family": "dog-breeds",
+ "note": "AKC-ismert fajták. A kutatás alaptézise: fajtánként külön listing (dachshund svg 45,9/1000).",
+ "query_pattern": "{term} svg",
+ "entries": [
+  {
+   "term": "affenpinscher",
+   "measurements": []
+  },
+  {
+   "term": "afghan hound",
+   "measurements": []
+  },
+  {
+   "term": "airedale terrier",
+   "measurements": []
+  },
+  {
+   "term": "akita",
+   "measurements": []
+  },
+  {
+   "term": "alaskan malamute",
+   "measurements": []
+  },
+  {
+   "term": "american eskimo dog",
+   "measurements": []
+  },
+  {
+   "term": "american foxhound",
+   "measurements": []
+  },
+  {
+   "term": "american staffordshire terrier",
+   "measurements": []
+  },
+  {
+   "term": "anatolian shepherd",
+   "measurements": []
+  },
+  {
+   "term": "australian cattle dog",
+   "measurements": []
+  },
+  {
+   "term": "australian shepherd",
+   "measurements": []
+  },
+  {
+   "term": "basenji",
+   "measurements": []
+  },
+  {
+   "term": "basset hound",
+   "measurements": []
+  },
+  {
+   "term": "beagle",
+   "measurements": []
+  },
+  {
+   "term": "beauceron",
+   "measurements": []
+  },
+  {
+   "term": "belgian malinois",
+   "measurements": []
+  },
+  {
+   "term": "bernese mountain dog",
+   "measurements": []
+  },
+  {
+   "term": "bichon frise",
+   "measurements": []
+  },
+  {
+   "term": "black russian terrier",
+   "measurements": []
+  },
+  {
+   "term": "bloodhound",
+   "measurements": []
+  },
+  {
+   "term": "bluetick coonhound",
+   "measurements": []
+  },
+  {
+   "term": "border collie",
+   "measurements": []
+  },
+  {
+   "term": "border terrier",
+   "measurements": []
+  },
+  {
+   "term": "borzoi",
+   "measurements": []
+  },
+  {
+   "term": "boston terrier",
+   "measurements": []
+  },
+  {
+   "term": "bouvier des flandres",
+   "measurements": []
+  },
+  {
+   "term": "boxer",
+   "measurements": []
+  },
+  {
+   "term": "briard",
+   "measurements": []
+  },
+  {
+   "term": "brittany",
+   "measurements": []
+  },
+  {
+   "term": "brussels griffon",
+   "measurements": []
+  },
+  {
+   "term": "bull terrier",
+   "measurements": []
+  },
+  {
+   "term": "bulldog",
+   "measurements": []
+  },
+  {
+   "term": "bullmastiff",
+   "measurements": []
+  },
+  {
+   "term": "cairn terrier",
+   "measurements": []
+  },
+  {
+   "term": "cane corso",
+   "measurements": []
+  },
+  {
+   "term": "cardigan welsh corgi",
+   "measurements": []
+  },
+  {
+   "term": "catahoula leopard dog",
+   "measurements": []
+  },
+  {
+   "term": "cavalier king charles spaniel",
+   "measurements": []
+  },
+  {
+   "term": "chesapeake bay retriever",
+   "measurements": []
+  },
+  {
+   "term": "chihuahua",
+   "measurements": [
+    {
+     "date": "2026-08-09",
+     "searches": 218,
+     "results": 5900,
+     "per_1000": 36.9,
+     "trend_pct": "-27.5"
+    }
+   ]
+  },
+  {
+   "term": "chinese shar pei",
+   "measurements": []
+  },
+  {
+   "term": "chow chow",
+   "measurements": []
+  },
+  {
+   "term": "cocker spaniel",
+   "measurements": []
+  },
+  {
+   "term": "collie",
+   "measurements": []
+  },
+  {
+   "term": "dachshund",
+   "measurements": [
+    {
+     "date": "2026-08-09",
+     "searches": 514,
+     "results": 11200,
+     "per_1000": 45.9,
+     "trend_pct": "-22.4"
+    }
+   ]
+  },
+  {
+   "term": "dalmatian",
+   "measurements": []
+  },
+  {
+   "term": "dandie dinmont terrier",
+   "measurements": []
+  },
+  {
+   "term": "doberman",
+   "measurements": []
+  },
+  {
+   "term": "english setter",
+   "measurements": []
+  },
+  {
+   "term": "english springer spaniel",
+   "measurements": []
+  },
+  {
+   "term": "finnish lapphund",
+   "measurements": []
+  },
+  {
+   "term": "flat coated retriever",
+   "measurements": []
+  },
+  {
+   "term": "french bulldog",
+   "measurements": []
+  },
+  {
+   "term": "german shepherd",
+   "measurements": []
+  },
+  {
+   "term": "german shorthaired pointer",
+   "measurements": []
+  },
+  {
+   "term": "german wirehaired pointer",
+   "measurements": []
+  },
+  {
+   "term": "golden retriever",
+   "measurements": [
+    {
+     "date": "2026-08-09",
+     "searches": 434,
+     "results": 11400,
+     "per_1000": 38.1,
+     "trend_pct": "+9.8"
+    }
+   ]
+  },
+  {
+   "term": "great dane",
+   "measurements": []
+  },
+  {
+   "term": "great pyrenees",
+   "measurements": []
+  },
+  {
+   "term": "great swiss mountain dog",
+   "measurements": []
+  },
+  {
+   "term": "greyhound",
+   "measurements": []
+  },
+  {
+   "term": "harrier",
+   "measurements": []
+  },
+  {
+   "term": "havanese",
+   "measurements": []
+  },
+  {
+   "term": "ibizan hound",
+   "measurements": []
+  },
+  {
+   "term": "icelandic sheepdog",
+   "measurements": []
+  },
+  {
+   "term": "irish setter",
+   "measurements": []
+  },
+  {
+   "term": "irish wolfhound",
+   "measurements": []
+  },
+  {
+   "term": "italian greyhound",
+   "measurements": []
+  },
+  {
+   "term": "jack russell terrier",
+   "measurements": []
+  },
+  {
+   "term": "japanese chin",
+   "measurements": []
+  },
+  {
+   "term": "keeshond",
+   "measurements": []
+  },
+  {
+   "term": "komondor",
+   "measurements": []
+  },
+  {
+   "term": "labrador retriever",
+   "measurements": []
+  },
+  {
+   "term": "leonberger",
+   "measurements": []
+  },
+  {
+   "term": "lhasa apso",
+   "measurements": []
+  },
+  {
+   "term": "maltese",
+   "measurements": []
+  },
+  {
+   "term": "manchester terrier",
+   "measurements": []
+  },
+  {
+   "term": "mastiff",
+   "measurements": []
+  },
+  {
+   "term": "miniature pinscher",
+   "measurements": []
+  },
+  {
+   "term": "miniature schnauzer",
+   "measurements": []
+  },
+  {
+   "term": "newfoundland",
+   "measurements": []
+  },
+  {
+   "term": "norfolk terrier",
+   "measurements": []
+  },
+  {
+   "term": "norwegian elkhound",
+   "measurements": []
+  },
+  {
+   "term": "norwich terrier",
+   "measurements": []
+  },
+  {
+   "term": "nova scotia duck tolling retriever",
+   "measurements": []
+  },
+  {
+   "term": "old english sheepdog",
+   "measurements": []
+  },
+  {
+   "term": "otterhound",
+   "measurements": []
+  },
+  {
+   "term": "papillon",
+   "measurements": []
+  },
+  {
+   "term": "pekingese",
+   "measurements": []
+  },
+  {
+   "term": "pembroke welsh corgi",
+   "measurements": []
+  },
+  {
+   "term": "pharaoh hound",
+   "measurements": []
+  },
+  {
+   "term": "plott hound",
+   "measurements": []
+  },
+  {
+   "term": "pointer",
+   "measurements": []
+  },
+  {
+   "term": "pomeranian",
+   "measurements": []
+  },
+  {
+   "term": "poodle",
+   "measurements": []
+  },
+  {
+   "term": "portuguese water dog",
+   "measurements": []
+  },
+  {
+   "term": "pug",
+   "measurements": []
+  },
+  {
+   "term": "puli",
+   "measurements": []
+  },
+  {
+   "term": "pyrenean shepherd",
+   "measurements": []
+  },
+  {
+   "term": "rat terrier",
+   "measurements": []
+  },
+  {
+   "term": "redbone coonhound",
+   "measurements": []
+  },
+  {
+   "term": "rhodesian ridgeback",
+   "measurements": []
+  },
+  {
+   "term": "rottweiler",
+   "measurements": []
+  },
+  {
+   "term": "saint bernard",
+   "measurements": []
+  },
+  {
+   "term": "saluki",
+   "measurements": []
+  },
+  {
+   "term": "samoyed",
+   "measurements": []
+  },
+  {
+   "term": "schipperke",
+   "measurements": []
+  },
+  {
+   "term": "scottish terrier",
+   "measurements": []
+  },
+  {
+   "term": "sealyham terrier",
+   "measurements": []
+  },
+  {
+   "term": "shetland sheepdog",
+   "measurements": []
+  },
+  {
+   "term": "shiba inu",
+   "measurements": []
+  },
+  {
+   "term": "shih tzu",
+   "measurements": []
+  },
+  {
+   "term": "siberian husky",
+   "measurements": []
+  },
+  {
+   "term": "silky terrier",
+   "measurements": []
+  },
+  {
+   "term": "skye terrier",
+   "measurements": []
+  },
+  {
+   "term": "soft coated wheaten terrier",
+   "measurements": []
+  },
+  {
+   "term": "st bernard",
+   "measurements": []
+  },
+  {
+   "term": "staffordshire bull terrier",
+   "measurements": []
+  },
+  {
+   "term": "tibetan terrier",
+   "measurements": []
+  },
+  {
+   "term": "toy fox terrier",
+   "measurements": []
+  },
+  {
+   "term": "toy poodle",
+   "measurements": []
+  },
+  {
+   "term": "treeing walker coonhound",
+   "measurements": []
+  },
+  {
+   "term": "vizsla",
+   "measurements": []
+  },
+  {
+   "term": "weimaraner",
+   "measurements": []
+  },
+  {
+   "term": "west highland white terrier",
+   "measurements": []
+  },
+  {
+   "term": "whippet",
+   "measurements": []
+  },
+  {
+   "term": "wirehaired pointing griffon",
+   "measurements": []
+  },
+  {
+   "term": "xoloitzcuintli",
+   "measurements": []
+  },
+  {
+   "term": "yorkshire terrier",
+   "measurements": []
+  }
+ ]
+}

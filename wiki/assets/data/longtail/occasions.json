@@ -1,0 +1,115 @@
+{
+ "family": "occasions",
+ "note": "Szezonalis; augusztusban minden alacsonyan mer (lasd keyword-demand-sweep).",
+ "query_pattern": "{term} svg",
+ "entries": [
+  {
+   "term": "anniversary",
+   "measurements": []
+  },
+  {
+   "term": "baby shower",
+   "measurements": []
+  },
+  {
+   "term": "bar mitzvah",
+   "measurements": []
+  },
+  {
+   "term": "birthday",
+   "measurements": []
+  },
+  {
+   "term": "christmas",
+   "measurements": []
+  },
+  {
+   "term": "cinco de mayo",
+   "measurements": []
+  },
+  {
+   "term": "diwali",
+   "measurements": []
+  },
+  {
+   "term": "easter",
+   "measurements": []
+  },
+  {
+   "term": "fathers day",
+   "measurements": []
+  },
+  {
+   "term": "first communion",
+   "measurements": []
+  },
+  {
+   "term": "fourth of july",
+   "measurements": []
+  },
+  {
+   "term": "graduation",
+   "measurements": []
+  },
+  {
+   "term": "halloween",
+   "measurements": []
+  },
+  {
+   "term": "hanukkah",
+   "measurements": []
+  },
+  {
+   "term": "housewarming",
+   "measurements": []
+  },
+  {
+   "term": "lunar new year",
+   "measurements": []
+  },
+  {
+   "term": "mothers day",
+   "measurements": []
+  },
+  {
+   "term": "new year",
+   "measurements": []
+  },
+  {
+   "term": "nurse",
+   "measurements": []
+  },
+  {
+   "term": "oktoberfest",
+   "measurements": []
+  },
+  {
+   "term": "quinceanera",
+   "measurements": []
+  },
+  {
+   "term": "retirement",
+   "measurements": []
+  },
+  {
+   "term": "st patricks day",
+   "measurements": []
+  },
+  {
+   "term": "teacher appreciation",
+   "measurements": []
+  },
+  {
+   "term": "thanksgiving",
+   "measurements": []
+  },
+  {
+   "term": "valentines day",
+   "measurements": []
+  },
+  {
+   "term": "wedding",
+   "measurements": []
+  }
+ ]
+}

@@ -15,6 +15,15 @@ sources:
 
 # Lézervágott vs papír/karton layered
 
+> **KORREKCIÓ 2026-08-09.** Az alábbi „a fájdalom nem válik szét" állítás **átfedő mintán**
+> készült: a `mindketto` besorolású listingek mindkét oldal alapjába beleszámítottak, ami a kisebb
+> (papír) oldalt lézeres tartalommal hígította. Átfedésmentes újraszámolással (laser-only 886
+> review / 42 eladó, paper-only 196 review / 17 eladó) **két panasznál valódi különbség van**:
+> a **törékenység** (fa 0,68% vs papír **0,00%**, 95% CI [+0,14; +1,22] pp) és a **méretezés**
+> (fa 1,92% vs papír **0,00%**, CI [+1,02; +2,82] pp). Az összeszerelés és az illeszkedés
+> továbbra sem dönthető el (a CI átmegy a nullán). A javított kép a
+> [[pitfalls/2026-08-09-overlapping-side-buckets]] oldalon, a stratégiai következménnyel együtt.
+
 ## Lényeg
 
 A hipotézis — hogy a lézeres és a papíros layered nagyon más piac — **félig igazolódott, és a

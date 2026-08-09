@@ -166,10 +166,18 @@ SUBJECTS = {
 
 
 REF_NOTE = """
-STYLE REFERENCE: the attached image shows the exact drawing style, stroke
-weight and flat grey depth-level scheme to reproduce. Draw the NEW subject
-below as a complete new composition in that same visual voice - do not copy
-the reference's subject, only its style and its flat-grey depth convention."""
+
+STYLE REFERENCE: the attached image is a photograph of a finished layered
+paper-cut artwork. Study its SHAPE LANGUAGE and copy it exactly:
+- how few and how LARGE the shapes are, and how soft and rounded their lobes
+- how each colour region nests inside the one behind it as a stacked layer
+- the melting, poured, drip-like edges
+- how much empty field is left around the subject
+Do NOT copy its subject, its colours, its frame or its background.
+
+OUTPUT FORMAT IS UNCHANGED: give me the flat greyscale DEPTH MAP described
+above - each of the reference's colour layers becomes one flat grey level,
+darker further back, pure black outside the piece. Never output colour."""
 
 
 def _multipart(fields, files):

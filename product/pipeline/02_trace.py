@@ -501,7 +501,7 @@ def main():
         svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
                f'viewBox="0 0 {MM} {MM}">\n  <path d="{d_of(geom)}" fill-rule="evenodd" '
                f'fill="none" stroke="#000" stroke-width="0.3"/>\n</svg>\n')
-        (out / f"layer_{k}_of_{a.levels}.svg").write_text(svg)
+        (out / f"layer_{k}_of_{len(rows)}.svg").write_text(svg)
 
         # R12 with an explicit version header, mm units and a declared CUT
         # layer - LightBurn imports an unitless DXF at a guessed scale, and a
@@ -529,7 +529,7 @@ def main():
                     e += ["0", "VERTEX", "8", "CUT", "10", x, "20", y]
                 e += ["0", "SEQEND"]
         e += ["0", "ENDSEC", "0", "EOF"]
-        (out / f"layer_{k}_of_{a.levels}.dxf").write_text("\n".join(e) + "\n")
+        (out / f"layer_{k}_of_{len(rows)}.dxf").write_text("\n".join(e) + "\n")
 
     # stacked preview
     tones = ["#6b4f33", "#7b5d3e", "#8b6b49", "#9b7955", "#ab8761", "#bb956d", "#cba379"]

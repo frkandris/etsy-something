@@ -567,16 +567,17 @@ def main():
         gd.text((ox + 12, oy + PW + 8), f"{k}. reteg", fill=(60, 50, 40))
     guide.save(out / "assembly_guide.png")
 
-    # Safe scale range. The #1 avoidable failure in the review corpus is a buyer
-    # scaling a design down until the webs go under ~2 mm and it snaps
-    # ("the details are too small, some lines end up thinner than 0.5 mm").
-    # Nobody in the field states a floor, and it falls straight out of the
-    # weakest-piece measurement, so we can.
-    weakest = min(nw for *_, nw, _ in rows)
-    min_scale = MIN_WEB / weakest if weakest > 0 else 1.0
+    # Scaling guidance. The buyer's real failure is scaling down until the webs
+    # snap ("some lines end up thinner than 0.5 mm"). An earlier version derived
+    # a "safe down to X%" floor from frailest(), which is WRONG: frailest()
+    # measures each piece's WIDEST inscribed circle and saturates at 12 mm, so
+    # it is blind to the 2 mm bridges that actually break. The honest statement
+    # is the narrowest guaranteed web (the chain heals everything to MIN_WEB and
+    # drops what it cannot) and what that becomes at each scale.
+    scale_table = {f"{int(p*100)}%": round(MIN_WEB * p, 2) for p in (1.0, .75, .5, .25)}
     report = {
-        "min_scale_pct": round(min_scale * 100),
-        "min_safe_mm": round(MM * min_scale),
+        "min_web_mm": MIN_WEB,
+        "web_at_scale_mm": scale_table,
         "levels": a.levels,
         "layers": {k: {"pieces": pc, "holes": ho, "weakest_mm": round(nw, 2),
                        "thin_pct": round(ta * 100, 2)}

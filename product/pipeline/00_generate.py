@@ -49,6 +49,40 @@ FORMATS = {
 }
 
 SUBJECTS = {
+    # The two winning cat listings (50 and 49 listing-level reviews) are both
+    # PORTRAITS with no background scene at all - the ornament lives inside the
+    # fur as swirls and dots. Round 1 built a moon scene and was wrong.
+    "cat-portrait": (
+        "A cat head-and-shoulders portrait in three-quarter profile, looking "
+        "slightly upward, with long whiskers extending outward past the edges. "
+        "There is NO background scene and no border ornament - the decoration is "
+        "drawn INTO the fur itself: art-nouveau swirls, spirals, teardrops and "
+        "rows of dots flowing along the cheeks, brow and chest, each swirl a "
+        "distinct depth level. The muzzle, chest ruff and brow are the frontmost "
+        "levels; the outer fur and ears fall back level by level. Fill the frame "
+        "with the head; leave only a plain flat field behind it.", "square"),
+    "cat-frontal": (
+        "A fluffy long-haired cat face seen straight on and symmetrical, filling "
+        "the frame. NO background scene. The outline of each depth level is an "
+        "organic paint-splatter shape with soft drips, not a realistic fur "
+        "outline. Big round eyes, small nose, prominent cheek ruff. Each level "
+        "nests inside the one behind it like poured paint.", "square"),
+    "cat-moon": (
+        "A sitting cat seen in silhouette from behind, tail curled, looking up at "
+        "a large full moon. Behind the moon a night sky with stars; in the "
+        "foreground grasses and wildflowers, and framing the whole scene an arch "
+        "of leafy branches. The cat is the frontmost layer, the moon a large flat "
+        "disc behind it, the sky the deepest layer. A layered scene with clear "
+        "foreground, midground and background - not an ornament.", "square"),
+    "cat-window": (
+        "A cat sitting on a windowsill seen from inside a cosy room, viewed "
+        "through the window frame: potted plants on the sill, a hanging plant "
+        "above, a crescent moon and stars outside. Nested depth: window frame "
+        "frontmost, cat and plants next, night sky deepest.", "square"),
+    "cat-mandala": (
+        "A cat face centred in an ornate round mandala of interlacing petals, "
+        "paw prints and swirling filigree, with whiskers extending into the "
+        "pattern. Symmetrical, dense, carved-looking.", "circle"),
     "dachshund-longhair": (
         "A long-haired dachshund lying down elegantly, flowing feathered coat drawn "
         "as sweeping nested tone bands, long silky ear, gentle eye. Behind it a "

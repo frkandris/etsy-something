@@ -17,7 +17,19 @@ import bpy, sys, math, pathlib
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 GRAIN = "--grain" in argv
-argv = [a for a in argv if a != "--grain"]
+# --orbit N renders N frames on a short camera arc, for a listing video
+ORBIT = 0
+for i, a in enumerate(argv):
+    if a == "--orbit":
+        ORBIT = int(argv[i + 1])
+FRAME = "--frame" in argv
+skip = set()
+for i, a in enumerate(argv):
+    if a in ("--grain", "--orbit", "--frame"):
+        skip.add(i)
+        if a == "--orbit":
+            skip.add(i + 1)
+argv = [a for i, a in enumerate(argv) if i not in skip]
 SRC = pathlib.Path(argv[0])
 OUT = argv[1]
 VIEW = argv[2] if len(argv) > 2 else "hero"
@@ -88,6 +100,22 @@ PALETTES = {
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
                 (0.97, 0.97, 0.96, 1)],
+    # moonlit scene: deep night sky at the back, moon and mist in the middle,
+    # white cat frontmost - the paper market's contrast anchor is a DARK back
+    "moonlit": [(0.03, 0.05, 0.12, 1), (0.07, 0.11, 0.24, 1), (0.13, 0.20, 0.34, 1),
+                (0.22, 0.32, 0.42, 1), (0.42, 0.52, 0.58, 1), (0.72, 0.78, 0.80, 1),
+                (0.97, 0.97, 0.95, 1)],
+    # thatSVGplace recipe (50 listing reviews): matt black back plate carries all
+    # the contrast, cool petrol/teal/sage climb through the middle, pure white on
+    # top, one warm accent. This is the palette that wins the category.
+    "catteal": [(0.045, 0.045, 0.05, 1), (0.06, 0.16, 0.20, 1), (0.09, 0.27, 0.30, 1),
+                (0.16, 0.40, 0.40, 1), (0.34, 0.55, 0.50, 1), (0.72, 0.82, 0.80, 1),
+                (0.97, 0.97, 0.96, 1)],
+    # PaperCutMari recipe (49 listing reviews): white top, saturated rainbow mids,
+    # contrast from complementary colours rather than a dark plate
+    "catrainbow": [(0.55, 0.06, 0.30, 1), (0.36, 0.10, 0.55, 1), (0.10, 0.25, 0.72, 1),
+                   (0.06, 0.55, 0.60, 1), (0.85, 0.62, 0.06, 1), (0.88, 0.32, 0.08, 1),
+                   (0.98, 0.98, 0.97, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -97,9 +125,26 @@ PALETTES = {
 }
 if PALETTE not in PALETTES:
     print(f"[render] FIGYELEM: ismeretlen paletta '{PALETTE}', wood-ra esem vissza")
-TONES = PALETTES.get(PALETTE, PALETTES["wood"])
+BASE = PALETTES.get(PALETTE, PALETTES["wood"])
 
-svgs = sorted(SRC.glob("layer_*_of_*.svg"))
+
+def ramp(pal, n):
+    """Stretch a palette to n layers. Indexing with % would wrap a 7-colour
+    palette back to the dark end on layer 8, putting the darkest tone in front."""
+    if n <= 1:
+        return [pal[-1]]
+    out = []
+    for i in range(n):
+        x = i * (len(pal) - 1) / (n - 1)
+        lo, f = int(x), x - int(x)
+        hi = min(lo + 1, len(pal) - 1)
+        out.append(tuple(pal[lo][c] * (1 - f) + pal[hi][c] * f for c in range(4)))
+    return out
+
+# natural sort - lexicographic puts layer_10 before layer_2
+svgs = sorted(SRC.glob("layer_*_of_*.svg"),
+              key=lambda p: int(p.stem.split("_")[1]))
+TONES = ramp(BASE, len(svgs))
 print(f"[render] {len(svgs)} reteg")
 APPLIED = []
 
@@ -107,7 +152,7 @@ for i, f in enumerate(svgs):
     before = set(bpy.data.objects)
     bpy.ops.import_curve.svg(filepath=str(f))
     new = [o for o in bpy.data.objects if o not in before]
-    mat = wood(f"wood_{i}", TONES[i % len(TONES)])
+    mat = wood(f"wood_{i}", TONES[i])
     for o in new:
         if o.type != "CURVE":
             continue
@@ -167,6 +212,22 @@ else:
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
     bpy.context.object.data.materials.append(wood("wall", (0.80, 0.75, 0.68, 1), 0.7, grain=False))
 
+if FRAME:
+    # Both winning listings sit in a WIDE WHITE deep shadow-box frame filling
+    # ~75-80% of the hero. Without it our render reads as a bare cut-out.
+    fw = SIZE * 0.085                     # frame width
+    fd = SIZE * 0.10                      # how far it stands toward the viewer
+    inner, outer = SIZE / 2 * 1.04, SIZE / 2 * 1.04 + fw
+    mat = wood("frame", (0.955, 0.95, 0.94, 1), 0.55, grain=False)
+    for sx, sy, cx_, cy_ in ((outer, fw / 2, 0, outer - fw / 2),
+                             (outer, fw / 2, 0, -(outer - fw / 2)),
+                             (fw / 2, inner, outer - fw / 2, 0),
+                             (fw / 2, inner, -(outer - fw / 2), 0)):
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(cx_, cy_, fd / 2 - 0.0006))
+        b = bpy.context.object
+        b.scale = (sx * 2, sy * 2, fd)
+        b.data.materials.append(mat)
+
 # ------------------------------------------------------------------ camera + light
 # Distance from the framing we want, not a guessed multiplier: at focal length f
 # on a 36 mm sensor, a camera d away sees d*36/f across. Solve for the piece plus
@@ -205,6 +266,25 @@ world.use_nodes = True
 world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.52, 0.48, 1)
 world.node_tree.nodes["Background"].inputs[1].default_value = 0.06
 
-scene.render.filepath = OUT
-bpy.ops.render.render(write_still=True)
-print(f"[render] kesz: {OUT}")
+if ORBIT:
+    # a short left-right arc reads as "turning it in your hand" and shows the
+    # layer edges - a static hero cannot show depth, which is the whole product
+    import os
+    base = OUT[:-4] if OUT.endswith(".png") else OUT
+    scene.cycles.samples = 64
+    scene.render.resolution_x = scene.render.resolution_y = 1000
+    for f in range(ORBIT):
+        t = f / (ORBIT - 1) if ORBIT > 1 else 0.5
+        sway = math.radians(-16 + 32 * (0.5 - 0.5 * math.cos(2 * math.pi * t)))
+        el2 = math.radians(ELEV) - math.radians(6) * math.sin(2 * math.pi * t)
+        cam.location = (D * math.sin(sway) * math.cos(el2),
+                        -D * math.cos(sway) * math.cos(el2),
+                        D * math.sin(el2))
+        cam.rotation_euler = (math.pi / 2 - el2, 0, sway)
+        scene.render.filepath = f"{base}_f{f:03d}"
+        bpy.ops.render.render(write_still=True)
+    print(f"[render] orbit kesz: {ORBIT} kocka -> {base}_fNNN.png")
+else:
+    scene.render.filepath = OUT
+    bpy.ops.render.render(write_still=True)
+    print(f"[render] kesz: {OUT}")

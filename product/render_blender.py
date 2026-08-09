@@ -195,11 +195,16 @@ PALETTES = {
     # so depth reads as shadow falling into the opening
     # Recessed well. Layer 1 is the deepest sheet and layer N the white top
     # sheet, so the palette runs DARK to LIGHT - the opposite of a relief.
-    "well":  [(0.027, 0.019, 0.015, 1),   # #2E2622 espresso - the floor
-              (0.253, 0.056, 0.015, 1),   # #8A4322
-              (0.532, 0.130, 0.028, 1),   # #C1652F saturated orange
-              (0.760, 0.546, 0.270, 1),   # #E3C48F ochre
-              (0.930, 0.912, 0.878, 1)],  # #F7F5F1 the white top sheet
+    # Strictly monotonic: brightness may only DECREASE with depth, no
+    # exceptions. Layer 1 is the floor, the last is the top sheet. Values are
+    # the reviewer's L*-spaced ramp, sRGB -> linear.
+    "well":  [(0.019, 0.010, 0.007, 1),   # 40,28,22   floor
+              (0.093, 0.024, 0.010, 1),   # 86,44,28
+              (0.221, 0.055, 0.020, 1),   # 130,66,40
+              (0.417, 0.128, 0.038, 1),   # 176,101,55
+              (0.653, 0.297, 0.079, 1),   # 214,150,80
+              (0.787, 0.567, 0.297, 1),   # 232,200,150
+              (0.911, 0.887, 0.822, 1)],  # 246,243,235  top sheet
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -450,7 +455,9 @@ if FRAME:
     # a recessed sheet sits right up against the rabbet; a deep empty well in
     # front of it reads as a floating tile
     fd = ART * (0.055 if RECESSED else 0.17)
-    inner = ART / 2 * (1.005 if RECESSED else 1.06)
+    # overlap the sheet edge slightly: a 0.5% gap read as a scribed line 1.5%
+    # inside the opening, which made the sheet look like an inserted plate
+    inner = ART / 2 * (0.994 if RECESSED else 1.06)
     outer = inner + fw
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2 - 0.0006))
     shell = bpy.context.object
@@ -640,10 +647,12 @@ if ORBIT:
     # layer edges - a static hero cannot show depth, which is the whole product
     import os
     base = OUT[:-4] if OUT.endswith(".png") else OUT
-    scene.cycles.samples = 64
-    scene.render.resolution_x = scene.render.resolution_y = 1000
+    scene.cycles.samples = 48
+    scene.render.resolution_x = scene.render.resolution_y = 1100
     for f in range(ORBIT):
-        t = f / (ORBIT - 1) if ORBIT > 1 else 0.5
+        # f/ORBIT, not f/(ORBIT-1): the last frame must NOT repeat the first,
+        # or the loop stutters on every cycle
+        t = f / ORBIT if ORBIT > 1 else 0.5
         sway = math.radians(-16 + 32 * (0.5 - 0.5 * math.cos(2 * math.pi * t)))
         el2 = math.radians(ELEV) - math.radians(6) * math.sin(2 * math.pi * t)
         cam.location = (D * math.sin(sway) * math.cos(el2),

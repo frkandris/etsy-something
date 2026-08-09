@@ -25,6 +25,14 @@ MIN_HOLE = 4.0      # mm^2 - drop pinholes smaller than this
 MIN_FRAG = 20.0     # mm^2 - a region this big hanging on a thin neck is a defect
 
 
+class ToneShortfall(Exception):
+    """The image has fewer usable tones than the caller asked for."""
+
+    def __init__(self, available):
+        super().__init__(f"csak {available} szint van a kepben")
+        self.available = available
+
+
 def posterise(img, levels):
     """1-D k-means on the grey histogram -> levels+1 clusters (0 = background).
 
@@ -53,12 +61,16 @@ def posterise(img, levels):
             cent = new
             break
         cent = new
-    if any(c == 0 for c in cnt):
-        raise SystemExit(f"a kep csak {sum(1 for c in cnt if c)} tonust hasznal, "
-                         f"{k} kell - futtasd kevesebb --levels ertekkel")
+    # An empty cluster means the initial centroids were badly spaced, not that
+    # the image is unusable - the model draws soft shadows into the wells and
+    # they smear the histogram. Drop the empty ones and continue with what is
+    # actually there; the level-merge step downstream tidies the rest.
+    cent = [c for c, n in zip(cent, cnt) if n > 0]
+    if len(cent) < 4:
+        raise ToneShortfall(len(cent) - 1)
     cent.sort()
     # threshold between cluster i-1 and i
-    edges = [0.0] + [(cent[i - 1] + cent[i]) / 2 for i in range(1, k)]
+    edges = [0.0] + [(cent[i - 1] + cent[i]) / 2 for i in range(1, len(cent))]
     return g, edges, cent
 
 
@@ -363,7 +375,20 @@ def main():
         if _hi > _lo and _hi <= a.levels + 2:
             _g = _g.point(lambda v: min(255, int((v - _lo) * 255 / (_hi - _lo))))
         img = Image.eval(_g, lambda v: 255 - v)
-    g, edges, cent = posterise(img, a.levels)
+    # Step down until the image actually supports the level count. One retry
+    # was not enough: each reposterisation can reveal fewer usable tones again.
+    while True:
+        try:
+            g, edges, cent = posterise(img, a.levels)
+            a.levels = len(cent) - 1      # what the image really supports
+            break
+        except ToneShortfall as e:
+            nxt = min(e.available, a.levels - 1)
+            if nxt < 4:
+                raise SystemExit(f"a kep csak {e.available} szintet ad - "
+                                 f"hasznalhatatlan")
+            print(f"[i] {a.levels} szint helyett {nxt} - a kep csak ennyit ad")
+            a.levels = nxt
 
     print(f"forras: {src.name}  {img.width}x{img.height}px")
     print("tonusszintek: " + ", ".join(f"{c:.0f}" for c in cent))

@@ -38,8 +38,14 @@ Therefore:
   right off all four edges of the picture. There is NO margin, NO black border,
   NO drawn frame and NO decorated corners - the sheet simply continues to the
   edge, exactly like a mat board in a frame.
-- Scatter a few small round openings in the field beside the subject; each
-  shows a different depth level at its floor.
+- The subject occupies only the MIDDLE 70 PERCENT of the width. A wide band of
+  the plain top sheet stays empty on all four sides.
+- Each level is 3 to 8 LARGE liquid droplet-shaped blobs. No filaments, no fur
+  strands, no whiskers thinner than 1/70 of the width - if a detail cannot be
+  that thick, leave it out.
+- Scatter about TWENTY small round openings across the empty field, sizes
+  varying from tiny to medium, each reaching a different depth so a colour
+  shows at its floor rather than blackness.
 
 """
 

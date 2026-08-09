@@ -331,6 +331,8 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--full-panel", action="store_true",
+                    help="minden lap teljes negyzet legyen, csak nyilasokkal")
     ap.add_argument("--recessed", action="store_true",
                     help="sullyesztett szerkezet: felul teljes lap, lefele szukulo nyilasok")
     ap.add_argument("--solid-back", action="store_true",
@@ -424,6 +426,25 @@ def main():
 
     # the clip is what CREATES necks (it cuts pieces at the previous layer's
     # boundary), so the chain must END on a heal, never on a clip
+    if a.full_panel and geoms:
+        # In the recessed construction every sheet is a FULL PANEL with openings
+        # cut in it - the outer edge is solid material on every layer. The image
+        # model keeps drawing a disc instead, so square it off here: whatever
+        # lies outside the design belongs to every sheet.
+        ks0 = sorted(geoms)
+        minx, miny, maxx, maxy = geoms[ks0[0]].bounds
+        panel = Polygon([(minx, miny), (maxx, miny), (maxx, maxy), (minx, maxy)])
+        outside = panel.difference(geoms[ks0[0]]).buffer(0)
+        if not outside.is_empty:
+            for k in ks0:
+                # close the hairline ring between the disc edge and this sheet's
+                # own outer boundary, otherwise the union leaves 0.8 mm wedges
+                g = unary_union([geoms[k], outside]).buffer(0)
+                g = g.buffer(MIN_WEB * 0.6).buffer(-MIN_WEB * 0.6).buffer(0)
+                geoms[k] = g
+            print(f"[i] teljes panel kikenyszeritve ({outside.area:,.0f} mm2 "
+                  f"kerult minden lapra)")
+
     enforce_nesting()
     heal_all()
     enforce_nesting()

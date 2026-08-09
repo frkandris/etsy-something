@@ -278,8 +278,22 @@ bpy.context.view_layer.objects.active = objs[0]
 bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="BOUNDS")
 # centre on the real bounding box, not the mean of object origins - the mean
 # drifts toward whichever layer has more pieces and left the panel off-centre
-import mathutils as _mu
-_p = [o.matrix_world @ _mu.Vector(c) for o in objs for c in o.bound_box]
+import mathutils
+
+
+def world_bbox(objects):
+    """True world-space bounds. o.bound_box is the UNEVALUATED cage: for curves
+    with extrude/bevel it lags behind, and the frame built from it opened 1.8x
+    too wide. Only the evaluated depsgraph copy is correct."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    pts = []
+    for o in objects:
+        oe = o.evaluated_get(dg)
+        pts += [oe.matrix_world @ mathutils.Vector(c) for c in oe.bound_box]
+    return pts
+
+
+_p = world_bbox(objs)
 cx = (min(q.x for q in _p) + max(q.x for q in _p)) / 2
 cy = (min(q.y for q in _p) + max(q.y for q in _p)) / 2
 for o in objs:
@@ -287,8 +301,7 @@ for o in objs:
     o.location.y -= cy
 
 # ---- fit the camera to the actual bounding box ---------------------------
-import mathutils
-pts = [o.matrix_world @ mathutils.Vector(c) for o in objs for c in o.bound_box]
+pts = world_bbox(objs)
 minv = mathutils.Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
 maxv = mathutils.Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
 SIZE = max(maxv.x - minv.x, maxv.y - minv.y)
@@ -405,8 +418,10 @@ if DOTS and objs:
     print(f"[render] {len(_sc)} potty elhelyezve")
 
 FRAME_OBJS = []
-if FRAME and not WHITE_TOP:
-    # White backing sheet - only needed when there is no white top sheet; in the
+if FRAME and not WHITE_TOP and not RECESSED:
+    # White backing sheet - not needed when the panel IS the sheet. Leaving it
+    # in put a visible mat ring around the recessed panel, which is exactly the
+    # "floating tile" the reviewer marked down. in the
     # real product the cut layers are mounted on a plain sheet inside the frame.
     # tie the backing to THICK: a fixed -0.4 mm sat INSIDE the layer-1 extrusion
     # once paper thickness went to 2 mm, and the plane won the z-fight over the
@@ -424,11 +439,18 @@ if FRAME:
     # any angle off dead-on. It was also nested in the "no white top" branch, so
     # with --white-top no frame was built at all and the white sheet's own edge
     # was standing in for it.
-    fw = SIZE * 0.085
+    # Measure the artwork HERE. SIZE was read from bound_box before the
+    # depsgraph had re-evaluated the curves, and came out 39% too large - the
+    # frame opening was then built to that stale figure and the panel filled
+    # only 72% of it.
+    _ab = world_bbox(objs)
+    ART = max(max(q.x for q in _ab) - min(q.x for q in _ab),
+              max(q.y for q in _ab) - min(q.y for q in _ab))
+    fw = ART * 0.085
     # a recessed sheet sits right up against the rabbet; a deep empty well in
     # front of it reads as a floating tile
-    fd = SIZE * (0.055 if RECESSED else 0.17)
-    inner = SIZE / 2 * (1.005 if RECESSED else 1.06)
+    fd = ART * (0.055 if RECESSED else 0.17)
+    inner = ART / 2 * (1.005 if RECESSED else 1.06)
     outer = inner + fw
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2 - 0.0006))
     shell = bpy.context.object
@@ -448,6 +470,8 @@ if FRAME:
     fc = (0.20, 0.11, 0.055, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
     shell.data.materials.append(wood("frame", fc, 0.55 if WOODFRAME else 0.42,
                                      grain=WOODFRAME))
+    print(f"[render] mu={ART:.4f} keret-nyilas={inner*2:.4f} "
+          f"kitoltes={ART/(inner*2)*100:.0f}%")
     FRAME_OBJS.append(shell)
 
 if VIEW == "plate":
@@ -541,10 +565,9 @@ if VIEW == "lifestyle":
 # multiplier cropped the piece.
 LENS, MARGIN = 85.0, 1.22
 if FRAME:
-    # the frame is built after the bounding box, so the camera must be told the
-    # object is bigger - otherwise it fits the art and crops the frame away.
-    # 1.34 filled 88% of the canvas; the reference frame fills ~73%.
-    MARGIN *= 1.45
+    # the frame extends past the art, so the camera must be told the object is
+    # bigger - otherwise it fits the art and crops the frame away
+    MARGIN *= 1.45 * (SIZE / ART if ART else 1.0)
 if VIEW == "plate":
     D = SIZE * MARGIN * LENS / 36.0 * 1.0
     bpy.ops.object.camera_add(location=(0, -D, 0), rotation=(math.radians(90), 0, 0))

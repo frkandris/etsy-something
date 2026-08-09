@@ -54,6 +54,18 @@ FORMATS = {
 }
 
 SUBJECTS = {
+    "cat-splatter": (
+        "A cat head seen straight on, floating alone in the middle of a large "
+        "EMPTY field. There is no border, no frame ornament, no background "
+        "scene - the area around the head is one single flat empty level "
+        "occupying at least 40 percent of the picture, like white paper. "
+        "The head is built from nested PAINT-SPLATTER shapes: every depth level "
+        "is an organic blob with rounded lobes and a few soft drips running "
+        "downward, stacked so each level sits inside the one behind it. "
+        "Ears, muzzle and eyes are clearly readable. Scatter a handful of "
+        "separate round DOTS of assorted sizes in the empty field around the "
+        "head, each dot its own level. Bold and simple - few, large shapes.",
+        "square"),
     # The two winning cat listings (50 and 49 listing-level reviews) are both
     # PORTRAITS with no background scene at all - the ornament lives inside the
     # fur as swirls and dots. Round 1 built a moon scene and was wrong.

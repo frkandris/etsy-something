@@ -52,6 +52,10 @@ scene.render.resolution_y = 2000
 scene.render.film_transparent = False
 scene.view_settings.look = "AgX - Base Contrast"
 scene.view_settings.exposure = -0.4
+if "lifestyle" in sys.argv:
+    # AgX desaturates hard; the reference look is flat saturated spot colour
+    scene.view_settings.look = "AgX - Punchy"
+    scene.view_settings.exposure = 0.15
 
 
 def wood(name, base, rough=0.45, grain=None):
@@ -122,6 +126,11 @@ PALETTES = {
     "catrainbow": [(0.006, 0.006, 0.009, 1), (0.60, 0.02, 0.32, 1), (0.26, 0.04, 0.55, 1),
                    (0.02, 0.10, 0.62, 1), (0.00, 0.42, 0.26, 1), (0.92, 0.58, 0.02, 1),
                    (0.90, 0.28, 0.03, 1), (0.98, 0.98, 0.97, 1)],
+    # reference look: the field is WHITE paper, the motif is a scatter of
+    # saturated flat colours - not a dark-to-light ramp
+    "splatter": [(0.96, 0.96, 0.95, 1), (0.06, 0.13, 0.30, 1), (0.05, 0.42, 0.72, 1),
+                 (0.78, 0.14, 0.10, 1), (0.03, 0.52, 0.30, 1), (0.94, 0.55, 0.05, 1),
+                 (0.97, 0.78, 0.10, 1), (0.20, 0.62, 0.85, 1)],
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -135,10 +144,13 @@ BASE = PALETTES.get(PALETTE, PALETTES["wood"])
 
 
 def ramp(pal, n):
-    """Stretch a palette to n layers. Indexing with % would wrap a 7-colour
-    palette back to the dark end on layer 8, putting the darkest tone in front."""
+    """Fit a palette to n layers. If the palette already has enough entries take
+    them as they are - blending them would turn a set of flat spot colours into
+    muddy pastels, which is exactly what happened to the splatter palette."""
     if n <= 1:
         return [pal[-1]]
+    if len(pal) >= n:
+        return list(pal[:n])
     out = []
     for i in range(n):
         x = i * (len(pal) - 1) / (n - 1)
@@ -235,9 +247,9 @@ if VIEW == "shelf":
     for o in objs:
         # +90 about X keeps the artwork upright with its front toward the
         # camera; a few degrees SHORT of 90 leans the top toward the wall
-        # (+Y) like a framed print - past 90 it would topple forward
         o.rotation_euler = (math.radians(84), 0, 0)
-        o.location.y, o.location.z = -o.location.z, SIZE / 2
+        ox, oy, oz = o.location.x, o.location.y, o.location.z
+        o.location = (ox, -oz, oy + SIZE / 2)
     # sideboard top
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.25, -SIZE * 0.016))
     top = bpy.context.object
@@ -254,18 +266,12 @@ else:
     bpy.context.object.data.materials.append(
         wood("wall", (0.885, 0.870, 0.845, 1), 0.72, grain=GRAIN))
 
-if FRAME and VIEW == "shelf":
-    print("[render] FIGYELEM: --frame shelf nezetben nem tamogatott "
-          "(a keret a polc sikjaban maradna) - kihagyva")
-    FRAME = False
-
+FRAME_OBJS = []
 if FRAME:
-    # Both winning listings sit in a WIDE WHITE deep shadow-box frame filling
-    # ~75-80% of the hero. Without it our render reads as a bare cut-out.
-    fw = SIZE * 0.115                     # frame width ~9% of the framed image
-    fd = SIZE * 0.14                      # deep shadow-box profile
+    fw = SIZE * 0.115
+    fd = SIZE * 0.14
     inner, outer = SIZE / 2 * 1.06, SIZE / 2 * 1.06 + fw
-    mat = wood("frame", (0.955, 0.95, 0.94, 1), 0.55, grain=False)
+    _fm = wood("frame", (0.955, 0.95, 0.94, 1), 0.55, grain=False)
     for sx, sy, cx_, cy_ in ((outer, fw / 2, 0, outer - fw / 2),
                              (outer, fw / 2, 0, -(outer - fw / 2)),
                              (fw / 2, inner, outer - fw / 2, 0),
@@ -273,7 +279,39 @@ if FRAME:
         bpy.ops.mesh.primitive_cube_add(size=1, location=(cx_, cy_, fd / 2 - 0.0006))
         b = bpy.context.object
         b.scale = (sx * 2, sy * 2, fd)
-        b.data.materials.append(mat)
+        b.data.materials.append(_fm)
+        FRAME_OBJS.append(b)
+
+if VIEW == "lifestyle":
+    # A warm styled shelf with out-of-focus props. The winning listings put the
+    # frame in a room, not on a sweep; the bokeh is what makes it read as a
+    # photograph instead of a render.
+    for o in objs + FRAME_OBJS:
+        # the frame must stand up WITH the artwork. Rotating +90 deg about X maps
+        # (x,y,z) -> (x,-z,y); the earlier version pinned z to a constant, which
+        # was harmless for the flat art (y~0) but collapsed the frame bars onto
+        # the centre line.
+        o.rotation_euler = (math.radians(90), 0, 0)
+        ox, oy, oz = o.location.x, o.location.y, o.location.z
+        o.location = (ox, -oz, oy + SIZE * 0.60)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, SIZE * 0.1, -SIZE * 0.02))
+    tb = bpy.context.object
+    tb.scale = (SIZE * 6, SIZE * 3, SIZE * 0.05)
+    tb.data.materials.append(wood("table", (0.40, 0.26, 0.15, 1), 0.35, grain=True))
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 10, location=(0, SIZE * 1.5, 0),
+                                     rotation=(math.radians(90), 0, 0))
+    bpy.context.object.data.materials.append(
+        wood("backwall", (0.52, 0.38, 0.24, 1), 0.85, grain=False))
+    props = [(-SIZE * 0.95, SIZE * 0.75, 0.22, (0.45, 0.30, 0.18)),
+             (-SIZE * 1.25, SIZE * 0.55, 0.15, (0.30, 0.42, 0.22)),
+             (SIZE * 1.00, SIZE * 0.70, 0.26, (0.55, 0.36, 0.20)),
+             (SIZE * 1.35, SIZE * 0.95, 0.34, (0.42, 0.28, 0.16)),
+             (SIZE * 0.80, SIZE * 0.35, 0.10, (0.62, 0.48, 0.30))]
+    for i, (px, py, r, col) in enumerate(props):
+        bpy.ops.mesh.primitive_cylinder_add(radius=SIZE * r, depth=SIZE * r * 2.2,
+                                            location=(px, py, SIZE * r * 1.1))
+        bpy.context.object.data.materials.append(
+            wood(f"prop{i}", (*col, 1), 0.6, grain=False))
 
 # ------------------------------------------------------------------ camera + light
 # Distance from the framing we want, not a guessed multiplier: at focal length f
@@ -285,13 +323,24 @@ if FRAME:
     # the frame is built after the bounding box, so the camera must be told the
     # object is bigger - otherwise it fits the art and crops the frame away
     MARGIN *= 1.34
-if VIEW == "shelf":
+if VIEW == "lifestyle":
+    D = SIZE * MARGIN * LENS / 36.0 * 1.02
+    bpy.ops.object.camera_add(location=(0, -D, SIZE * 0.62),
+                              rotation=(math.radians(90), 0, 0))
+    cam = bpy.context.object
+    cam.data.lens = LENS
+    cam.data.dof.use_dof = True
+    cam.data.dof.focus_distance = D
+    cam.data.dof.aperture_fstop = 2.2
+    scene.camera = cam
+    print(f"[render] nezet=lifestyle tavolsag={D:.3f}")
+elif VIEW == "shelf":
     D = SIZE * MARGIN * LENS / 36.0 * 1.06
     az = math.radians(14)
     bpy.ops.object.camera_add(
         location=(D * math.sin(az), -D * math.cos(az), SIZE * 0.52),
         rotation=(math.radians(88), 0, az))
-else:
+elif True:
     D = SIZE * MARGIN * LENS / 36.0 / max(0.55, math.sin(math.radians(ELEV)) ** 0.35)
     el, az = math.radians(ELEV), math.radians(AZIM)
     bpy.ops.object.camera_add(

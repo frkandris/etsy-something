@@ -33,6 +33,8 @@ def main():
     ap.add_argument("--fps", type=int, default=24)
     ap.add_argument("--backdrop", default="warm-shelf")
     ap.add_argument("--flags", default="--frame --paper --recessed")
+    ap.add_argument("--keep-frames", action="store_true",
+                    help="tartsa meg a kockakat, hogy mas hatterre is menjen")
     ap.add_argument("--cx", type=float, default=0.44)
     ap.add_argument("--base", type=float, default=0.94)
     ap.add_argument("--height", type=float, default=0.88)
@@ -67,7 +69,8 @@ def main():
     run(["ffmpeg", "-y", "-framerate", str(a.fps), "-i", str(work / "c%04d.png"),
          "-vf", "scale=1080:-2:flags=lanczos", "-c:v", "libx264", "-crf", "18",
          "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)])
-    shutil.rmtree(work)
+    if not a.keep_frames:
+        shutil.rmtree(work)
     mb = out.stat().st_size / 1e6
     print(f"[video] kesz: {out}  {mb:.1f} MB  {a.seconds:g}s loop")
 

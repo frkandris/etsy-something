@@ -30,6 +30,21 @@ SCENES = {
         "shadows. THE CENTRE OF THE FRAME MUST BE EMPTY: leave a clear open "
         "space on the table for an object to be placed later. Nothing hanging "
         "on the wall, no picture frames anywhere. Natural photograph, no text."),
+    "cosy-yarn": (
+        "A photograph of a warm cosy shelf corner, 50mm at f/2.0. A worn oak "
+        "shelf runs across the bottom third in sharp focus. Behind it, clearly "
+        "out of focus: two balls of wool yarn, a small ceramic cat figurine, a "
+        "trailing plant and a stack of books, against a soft cream wall. Warm "
+        "afternoon light from the upper left. THE CENTRE MUST BE EMPTY - clear "
+        "space on the shelf for an object to be placed later. No frames on the "
+        "wall. Natural photograph, no text."),
+    "autumn-table": (
+        "A photograph of a rustic dark wood table against a deep plum wall, "
+        "50mm at f/2.0. The table runs across the bottom third in sharp focus. "
+        "Behind it, softly out of focus: two small pumpkins, scattered autumn "
+        "leaves, a lit candle and dried grasses. Warm low light from the left. "
+        "THE CENTRE MUST BE EMPTY - clear space for an object to be placed "
+        "later. No frames on the wall. Natural photograph, no text."),
     "nordic-desk": (
         "A photograph of a pale Scandinavian desk against a white wall, 50mm at "
         "f/2.0. A white oak desktop across the bottom third in sharp focus; "

@@ -20,13 +20,17 @@ argv = sys.argv[sys.argv.index("--") + 1:]
 # silently yields False - that is why --white-top and --recessed did nothing.
 GRAIN = "--grain" in argv
 SCENE_HDRI = ""
-SCENE_ZOOM = 1.30   # >1 pulls the camera back; the frame should sit IN a room,
-                    # not fill it - the props are what make the room read as real
+PROP_SET = "warm"
+SCENE_ZOOM = 0.82   # matched to the references, where the frame fills ~85% of
+                    # the picture. Wider than that and it reads as an interior
+                    # photo the frame happens to appear in.
 for _i, _a in enumerate(argv):
     if _a == "--scene" and _i + 1 < len(argv):
         SCENE_HDRI = argv[_i + 1]
     if _a == "--scene-zoom" and _i + 1 < len(argv):
         SCENE_ZOOM = float(argv[_i + 1])
+    if _a == "--props" and _i + 1 < len(argv):
+        PROP_SET = argv[_i + 1]
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
 for i, a in enumerate(argv):
@@ -42,9 +46,10 @@ DOTS = "--dots" in argv
 skip = set()
 for i, a in enumerate(argv):
     if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
-             "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom"):
+             "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom",
+             "--props"):
         skip.add(i)
-        if a in ("--orbit", "--scene", "--scene-zoom"):
+        if a in ("--orbit", "--scene", "--scene-zoom", "--props"):
             skip.add(i + 1)
 argv = [a for i, a in enumerate(argv) if i not in skip]
 SRC = pathlib.Path(argv[0])
@@ -462,6 +467,21 @@ if DOTS and objs:
         objs.append(d)
     print(f"[render] {len(_sc)} potty elhelyezve")
 
+
+# name, (x, y, z) in SIZE units, z-rotation, scale
+PROP_SETS = {
+    "warm": [("potted_plant_02",          (-1.30, 0.70, 0.0),  25, 0.85),
+             ("antique_ceramic_vase_01",  ( 1.12, 0.45, 0.0), -15, 0.80),
+             ("book_encyclopedia_set_01", ( 0.86, -0.55, 0.0),   8, 0.85),
+             ("wooden_candlestick",       (-0.80, -0.60, 0.0),   0, 0.85),
+             ("wicker_basket_01",         ( 1.70, 0.95, 0.0),  40, 0.85)],
+    # the layered-cat reference has exactly this: a little greenery at one
+    # corner and a cat figurine at the other, nothing else
+    "cat":  [("potted_plant_02",     (-0.86, 0.35, 0.0),  25, 0.62),
+             ("concrete_cat_statue", ( 0.84, 0.05, 0.0), -22, 0.90),
+             ("tea_set_01",          ( 0.92, -0.75, 0.0),  15, 0.55)],
+}
+
 FRAME_OBJS = []
 if FRAME and not WHITE_TOP and not RECESSED:
     # White backing sheet - not needed when the panel IS the sheet. Leaving it
@@ -593,13 +613,12 @@ if VIEW == "styled":
     tb.scale = (SIZE * 9, SIZE * 9, SIZE * 0.06)
     tb.data.materials.append(wood("tabletop", (0.36, 0.22, 0.12, 1), 0.28, grain=True))
 
-    # staggered in depth on purpose: something behind the frame, something
-    # beside it, something in front of its plane. That spread is the parallax.
-    bring("potted_plant_02",         (-1.30, 0.70, 0.0), rot_z=25,  scale=0.85)
-    bring("antique_ceramic_vase_01", ( 1.12, 0.45, 0.0), rot_z=-15, scale=0.80)
-    bring("book_encyclopedia_set_01",( 0.86, -0.55, 0.0), rot_z=8,  scale=0.85)
-    bring("wooden_candlestick",      (-0.80, -0.60, 0.0), rot_z=0,  scale=0.85)
-    bring("wicker_basket_01",        ( 1.70, 0.95, 0.0), rot_z=40,  scale=0.85)
+    # Staggered in depth on purpose - that spread is the parallax. Kept few
+    # and pushed to the edges: the references let one or two objects peek in at
+    # a corner, and a full shelf turns the listing into an interior photo the
+    # frame happens to appear in.
+    for name, loc, rz, sc in PROP_SETS.get(PROP_SET, PROP_SETS["warm"]):
+        bring(name, loc, rot_z=rz, scale=sc)
 
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene

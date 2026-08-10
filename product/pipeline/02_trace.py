@@ -726,6 +726,13 @@ def main():
                                 origin=(c3x, c3y))
             geoms[k] = base3.difference(sm).buffer(0)
 
+        # Fifth time this rule has bitten: a new geometric step landed AFTER
+        # the healing chain, and re-cutting the scaled opening out of the full
+        # sheet makes its own necks. Every geometric step goes before the
+        # chain, and the chain ends on a heal.
+        enforce_nesting()
+        heal_all()
+
     if not a.no_keyhole:
         cut = keyhole(geoms[1])
         if cut is geoms[1]:

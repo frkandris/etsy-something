@@ -64,6 +64,36 @@ Therefore:
 
 """
 
+
+FLAT = """A FLAT PAPERCUT ILLUSTRATION for layered wall art.
+
+Subject: {subject}
+
+Drawn as flat colour blocks only. This is the picture itself, not a plan for
+one - draw it the way a papercut artist would cut it.
+
+- EXACTLY {levels} flat tones, no more. Every tone is one sheet of paper.
+  Solid fill, hard edges. NO gradients, NO shading, NO drop shadows, NO
+  texture, NO grain, NO outlines, NO highlights.
+- The palette is a warm neutral ramp from cream to deep brown. Each tone is
+  clearly separable from its neighbours - if two tones could be confused at a
+  glance, push them apart.
+- The lightest tone is the field around the subject and RUNS OFF ALL FOUR
+  EDGES. No border, no frame, no decorated corners.
+- The lightest tone must also reach INTO the subject and form part of it - a
+  muzzle, a cheek, a chest - roughly a fifth of the subject's area.
+- Each tone is 3 to 8 LARGE liquid shapes. Nothing thinner than 1/70 of the
+  picture width: no filaments, no fur strands, no whiskers. If a detail cannot
+  be that thick, leave it out.
+- 2 or 3 bands per tone must CROSS the subject's outline and sweep far out
+  into the empty field, half the picture wide, tapering to a rounded teardrop
+  tip. Think poured paint that happens to pool into the subject.
+- Scatter about twenty small round dots of varying size across the field.
+- The subject occupies the middle 70 percent of the width.
+
+Square, flat, centred, no text, no signature, no background scene.
+"""
+
 PROMPT = """A design for LAYERED LASER-CUT WALL ART, drawn as a flat greyscale DEPTH MAP.
 
 Subject: {subject}
@@ -234,7 +264,7 @@ def _multipart(fields, files):
 
 
 def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
-             levels=LEVELS, subject_text=None, name=None, recessed=False):
+             levels=LEVELS, subject_text=None, name=None, recessed=False, flat=False):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
@@ -242,7 +272,14 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
         subj, fmt = subject_text, "square"
     else:
         subj, fmt = SUBJECTS[subject_key]
-    prompt = PROMPT.format(subject=subj, levels=levels, format=FORMATS[fmt])
+    if flat:
+        # the model draws the PICTURE, not a plan for one; 01b_depth.py works
+        # out which sheet sits in front of which. Asking one model to do both
+        # is what kept producing unreadable depth maps.
+        prompt = FLAT.format(subject=subj, levels=levels)
+        recessed = False
+    else:
+        prompt = PROMPT.format(subject=subj, levels=levels, format=FORMATS[fmt])
     if recessed:
         # the base prompt's "pure black background" and "outside the circular
         # piece" directly contradict a full light panel, and the model obeyed
@@ -303,6 +340,8 @@ if __name__ == "__main__":
     ap.add_argument("--subject", default="celtic-tree", choices=list(SUBJECTS))
     ap.add_argument("--subject-text", default=None, help="szabad tema, a SUBJECTS helyett")
     ap.add_argument("--name", default=None, help="fajlnev-toredek")
+    ap.add_argument("--flat", action="store_true",
+                    help="lapos papercut illusztracio (a melyseget 01b_depth.py adja)")
     ap.add_argument("--recessed", action="store_true",
                     help="sullyesztett szerkezet: a mezo a legfelso, legvilagosabb lap")
     ap.add_argument("--size", default="1024x1024")
@@ -314,4 +353,4 @@ if __name__ == "__main__":
     a = ap.parse_args()
     crop = tuple(int(v) for v in a.crop.split(",")) if a.crop else None
     generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop, a.levels,
-             a.subject_text, a.name, a.recessed)
+             a.subject_text, a.name, a.recessed, a.flat)

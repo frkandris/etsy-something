@@ -470,16 +470,12 @@ if DOTS and objs:
 
 # name, (x, y, z) in SIZE units, z-rotation, scale
 PROP_SETS = {
-    "warm": [("potted_plant_02",          (-1.30, 0.70, 0.0),  25, 0.85),
-             ("antique_ceramic_vase_01",  ( 1.12, 0.45, 0.0), -15, 0.80),
-             ("book_encyclopedia_set_01", ( 0.86, -0.55, 0.0),   8, 0.85),
-             ("wooden_candlestick",       (-0.80, -0.60, 0.0),   0, 0.85),
-             ("wicker_basket_01",         ( 1.70, 0.95, 0.0),  40, 0.85)],
-    # the layered-cat reference has exactly this: a little greenery at one
-    # corner and a cat figurine at the other, nothing else
-    "cat":  [("potted_plant_02",     (-0.86, 0.35, 0.0),  25, 0.62),
-             ("concrete_cat_statue", ( 0.84, 0.05, 0.0), -22, 0.90),
-             ("tea_set_01",          ( 0.92, -0.75, 0.0),  15, 0.55)],
+    # Three, small, pushed to the edges. The references let a little greenery
+    # and one ceramic thing peek in at a corner and nothing more; a full shelf
+    # turns the listing into an interior photo the frame happens to be in.
+    "warm": [("potted_plant_02",          (-0.88, 0.40, 0.0),  25, 0.62),
+             ("antique_ceramic_vase_01",  ( 0.86, 0.25, 0.0), -15, 0.60),
+             ("book_encyclopedia_set_01", ( 0.95, -0.70, 0.0),   8, 0.70)],
 }
 
 FRAME_OBJS = []
@@ -496,6 +492,23 @@ if FRAME and not WHITE_TOP and not RECESSED:
     _bk = bpy.context.object
     _bk.data.materials.append(wood("backing", (0.99, 0.988, 0.982, 1), 0.72,
                                    grain=False))
+    FRAME_OBJS.append(_bk)
+elif FRAME:
+    # The recessed branch used to have NO backing at all - the oversized white
+    # sheet above left a visible mat ring, so it was switched off entirely.
+    # That left the stack open at the back, and with real geometry in the room
+    # a plant leaf standing behind the frame showed THROUGH the deepest
+    # openings. A backing matched to the panel's own footprint fixes both: no
+    # ring, because it is not wider than the panel; nothing shows through,
+    # because it is opaque. Colour is the deepest sheet, so an opening that
+    # goes all the way down still reads as the bottom of the well.
+    _pts = world_bbox([o for o in bpy.data.objects if o.type == "CURVE"])
+    _xs = [p.x for p in _pts]; _ys = [p.y for p in _pts]
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=(
+        (min(_xs) + max(_xs)) / 2, (min(_ys) + max(_ys)) / 2, -THICK * 1.2))
+    _bk = bpy.context.object
+    _bk.scale = (max(_xs) - min(_xs), max(_ys) - min(_ys), 1.0)
+    _bk.data.materials.append(wood("backing", PALETTES[PALETTE][0], 0.85, grain=False))
     FRAME_OBJS.append(_bk)
 
 if FRAME:

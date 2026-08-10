@@ -1,0 +1,17 @@
+forras: depth_map.png  1024x1024px
+tonusszintek: 0, 42, 85, 127, 170, 212, 255
+[i] teljes panel kikenyszeritve (19 mm2 kerult minden lapra)
+[i] minta a biztonsagos zonara illesztve (0.853x, eltolas +0/-3 mm)
+[i] 22 mm-es erintetlen margosav minden lapon
+[i] szilank-szures: 11 darab es 0 nyilas beolvasztva (karcsusag > 4 vagy terulet < 0.5%)
+objektum: 300 mm (a hatlap befoglaloja, nem a vaszon)
+
+ reteg  darab  lyuk  terulet mm2   leggyengebb  vekony%  nyak  statusz
+     1      1     7       86,990        12.00mm    0.00%     0  OK
+     2      1    13       84,751        12.00mm    0.00%     0  OK
+     3      1    13       81,478        12.00mm    0.00%     0  OK
+     4      1    13       79,243        12.00mm    0.00%     0  OK
+     5      1    12       71,561        12.00mm    0.00%     0  OK
+     6      1    12       64,641        12.00mm    0.00%     0  OK
+
+kiirva: product/iterations/0041-cat-choices/v04/layers  (16 fajl)

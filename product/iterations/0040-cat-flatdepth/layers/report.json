@@ -1,6 +1,6 @@
 {
  "web_target_mm": 2.0,
- "thin_area_worst_pct": 0.03,
+ "thin_area_worst_pct": 0.0,
  "web_target_at_scale_mm": {
   "100%": 2.0,
   "75%": 1.5,
@@ -20,31 +20,31 @@
   },
   "2": {
    "pieces": 1,
-   "holes": 18,
+   "holes": 6,
    "weakest_mm": 12.0,
-   "thin_pct": 0.01
+   "thin_pct": 0.0
   },
   "3": {
    "pieces": 1,
-   "holes": 11,
+   "holes": 8,
    "weakest_mm": 12.0,
-   "thin_pct": 0.03
+   "thin_pct": 0.0
   },
   "4": {
-   "pieces": 1,
-   "holes": 11,
-   "weakest_mm": 12.0,
-   "thin_pct": 0.02
-  },
-  "5": {
    "pieces": 2,
    "holes": 13,
-   "weakest_mm": 12.0,
-   "thin_pct": 0.02
+   "weakest_mm": 10.91,
+   "thin_pct": 0.0
+  },
+  "5": {
+   "pieces": 3,
+   "holes": 13,
+   "weakest_mm": 10.91,
+   "thin_pct": 0.0
   }
  },
- "pieces_total": 6,
- "weakest_mm": 12.0,
+ "pieces_total": 8,
+ "weakest_mm": 10.91,
  "necks": 0,
  "keyhole": false,
  "draft": false,

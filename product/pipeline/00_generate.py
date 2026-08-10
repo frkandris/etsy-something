@@ -307,7 +307,7 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
             img = img.crop((x, y, x + w, y + h))
         buf = io.BytesIO(); img.save(buf, "PNG")
         body, ctype = _multipart(
-            {"model": MODEL, "prompt": prompt + REF_NOTE, "size": size, "n": str(n)},
+            {"model": MODEL, "prompt": prompt + ("" if flat else REF_NOTE), "size": size, "n": str(n)},
             {"image": ("ref.png", buf.getvalue(), "image/png")})
         url = "https://api.openai.com/v1/images/edits"
         print(f"[gen] {MODEL}  {size}  temaja: {subject_key}  ref: {ref}"

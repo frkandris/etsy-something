@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Macska — 10 változat</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 15px/1.5 -apple-system, system-ui, sans-serif; margin: 0;
+         padding: 28px clamp(16px, 4vw, 56px); background: #faf8f5; color: #241c14; }
+  @media (prefers-color-scheme: dark) { body { background: #16130f; color: #ece5dc; } }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.lead { margin: 0 0 26px; opacity: .72; max-width: 62ch; }
+  .grid { display: grid; gap: 22px;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .card { border: 1px solid #0002; border-radius: 12px; overflow: hidden;
+          background: #fff; }
+  @media (prefers-color-scheme: dark) { .card { background: #221d17; border-color: #fff2; } }
+  .card.pick { outline: 3px solid #b5651d; outline-offset: -3px; }
+  .imgs { display: grid; grid-template-columns: 1fr 1fr; }
+  .imgs img { width: 100%; display: block; background: #fff; cursor: zoom-in; }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+         border-top: 1px solid #0001; }
+  .name { font-weight: 600; }
+  .cap { font-size: 12px; opacity: .6; padding: 4px 12px 0; }
+  button { font: inherit; padding: 5px 12px; border-radius: 7px; cursor: pointer;
+           border: 1px solid #0003; background: #f2ece4; color: inherit; }
+  .card.pick button { background: #b5651d; color: #fff; border-color: #b5651d; }
+  #out { position: sticky; bottom: 0; margin-top: 26px; padding: 14px 16px;
+         background: #241c14; color: #f6f1ea; border-radius: 10px;
+         font-family: ui-monospace, monospace; font-size: 13px; }
+  dialog { border: none; border-radius: 12px; padding: 0; max-width: 94vw; }
+  dialog img { display: block; max-width: 94vw; max-height: 88vh; }
+</style>
+
+<h1>Macska — 10 változat</h1>
+<p class="lead">Bal oldalt a generált lapos illusztráció, jobb oldalt a belőle ténylegesen
+kivágott rétegek egymásra rakva. <strong>A jobb oldali a döntő</strong> — az mutatja, mi marad a
+formából, miután a vágásbiztonsági szűrés lefutott. Kattints a képre nagyításhoz.
+A választásod a lap alján megjelenő sorban látszik; azt másold vissza nekem.</p>
+
+<div class="grid" id="grid"></div>
+<div id="out">nincs kiválasztva</div>
+<dialog id="zoom" onclick="this.close()"><img id="zi"></dialog>
+
+<script>
+const N = 10, picks = new Set(), grid = document.getElementById('grid');
+for (let i = 1; i <= N; i++) {
+  const v = 'v' + String(i).padStart(2, '0');
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.innerHTML = `
+    <div class="imgs">
+      <img src="${v}/raw_v_0.png" alt="illusztráció ${v}">
+      <img src="${v}/preview_stacked.png" alt="rétegek ${v}">
+    </div>
+    <div class="cap">illusztráció · kivágott rétegek</div>
+    <div class="bar"><span class="name">${v}</span>
+      <button type="button">választom</button></div>`;
+  el.querySelectorAll('.imgs img').forEach(im => im.onclick = () => {
+    document.getElementById('zi').src = im.src;
+    document.getElementById('zoom').showModal();
+  });
+  el.querySelector('button').onclick = () => {
+    picks.has(v) ? picks.delete(v) : picks.add(v);
+    el.classList.toggle('pick', picks.has(v));
+    const s = [...picks].sort();
+    document.getElementById('out').textContent =
+      s.length ? 'kiválasztva: ' + s.join(', ') : 'nincs kiválasztva';
+  };
+  grid.appendChild(el);
+}
+</script>

@@ -518,6 +518,39 @@ def main():
             if not g.is_empty:
                 geoms[k] = g
 
+    if a.margin > 0 and geoms and len(geoms) > 1:
+        # FIT THE DESIGN INTO THE SAFE ZONE BEFORE THE BAND IS APPLIED.
+        # The band is a union, so anything reaching into it is sliced off along
+        # a perfectly straight line - a guillotine cut across the artwork that
+        # no amount of corner rounding disguises. Scaling the openings to fit
+        # first means the band has nothing left to cut.
+        ks0 = sorted(geoms)
+        mnx0, mny0, mxx0, mxy0 = geoms[ks0[0]].bounds
+        outer0 = Polygon([(mnx0, mny0), (mxx0, mny0), (mxx0, mxy0), (mnx0, mxy0)])
+        inner0 = outer0.buffer(-a.margin)
+        base0 = geoms[ks0[0]]
+        op_all = unary_union([base0.difference(geoms[k]).buffer(0)
+                              for k in ks0[1:]]).buffer(0)
+        if not op_all.is_empty and not inner0.is_empty:
+            omnx, omny, omxx, omxy = op_all.bounds
+            imnx, imny, imxx, imxy = inner0.bounds
+            fit = min(1.0,
+                      (imxx - imnx) / max(1e-6, omxx - omnx),
+                      (imxy - imny) / max(1e-6, omxy - omny)) * a.motif_scale
+            dx = (imnx + imxx) / 2 - (omnx + omxx) / 2
+            dy = (imny + imxy) / 2 - (omny + omxy) / 2
+            if fit < 0.999 or abs(dx) > 0.5 or abs(dy) > 0.5:
+                ox, oy = (imnx + imxx) / 2, (imny + imxy) / 2
+                for k in ks0[1:]:
+                    op = base0.difference(geoms[k]).buffer(0)
+                    if op.is_empty:
+                        continue
+                    op = affinity.translate(op, dx, dy)
+                    op = affinity.scale(op, xfact=fit, yfact=fit, origin=(ox, oy))
+                    geoms[k] = base0.difference(op).buffer(0)
+                print(f"[i] minta a biztonsagos zonara illesztve "
+                      f"({fit:.3f}x, eltolas {dx:+.0f}/{dy:+.0f} mm)")
+
     if a.margin > 0 and geoms:
         # The reference listings have NOTHING in the outer band: no corner
         # brackets, no wavy border cut, no dots. Filling that band on every
@@ -706,32 +739,6 @@ def main():
     if drop:
         geoms = {i + 1: geoms[k] for i, k in enumerate(sorted(geoms))}
     MERGED = len(drop)
-
-    if a.motif_scale < 1.0 and len(geoms) > 1:
-        # Shrink the CUT region, not the sheet: the references leave a wide,
-        # quiet band of untouched top sheet around the design.
-        ks3 = sorted(geoms)
-        mnx3, mny3, mxx3, mxy3 = geoms[ks3[0]].bounds
-        c3x, c3y = (mnx3 + mxx3) / 2, (mny3 + mxy3) / 2
-        base3 = geoms[ks3[0]]
-        for k in ks3[1:]:
-            # Scale the OPENINGS, not the sheets. Scaling the geometry shrank
-            # every sheet, so the full-size bottom sheet showed all round the
-            # design as a dark border. The opening is (bottom sheet - this
-            # sheet); shrink that and cut it out of the full sheet again.
-            opening = base3.difference(geoms[k]).buffer(0)
-            if opening.is_empty:
-                continue
-            sm = affinity.scale(opening, xfact=a.motif_scale, yfact=a.motif_scale,
-                                origin=(c3x, c3y))
-            geoms[k] = base3.difference(sm).buffer(0)
-
-        # Fifth time this rule has bitten: a new geometric step landed AFTER
-        # the healing chain, and re-cutting the scaled opening out of the full
-        # sheet makes its own necks. Every geometric step goes before the
-        # chain, and the chain ends on a heal.
-        enforce_nesting()
-        heal_all()
 
     if not a.no_keyhole:
         cut = keyhole(geoms[1])

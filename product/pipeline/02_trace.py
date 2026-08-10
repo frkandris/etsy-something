@@ -343,6 +343,12 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--sliver-ratio", type=float, default=0.0,
+                    help="ennel karcsubb komponenst beolvaszt (hossz / sajat "
+                         "legnagyobb beirt kore); a hajszalcsikok 10 folott vannak")
+    ap.add_argument("--min-area-pct", type=float, default=0.35,
+                    help="a panel teruletenek ennyi szazaleka alatti komponens "
+                         "beolvad a szomszed retegbe")
     ap.add_argument("--merge-below", type=float, default=0.04,
                     help="ekkoranal kisebb uj teruletet ado szintet osszevon; "
                          "4%% elnyelte az arcot hordozo szinteket")
@@ -517,6 +523,38 @@ def main():
         for k in ks1:
             geoms[k] = unary_union([geoms[k], band]).buffer(0)
         print(f"[i] {a.margin:.0f} mm-es erintetlen margosav minden lapon")
+
+    if a.sliver_ratio > 0 and geoms:
+        # Filter by COMPONENT SHAPE, not by morphology radius. Tuning the
+        # opening radius trades detail against noise and always loses one of
+        # them: 6 mm ate the wolf's eyes, 2.5 mm let hairline strips back in.
+        # A component's slenderness (extent / its own widest inscribed circle)
+        # separates the two cleanly - a teardrop scores 2-4, a contour hairline
+        # scores 10+.
+        panel_area = geoms[sorted(geoms)[0]].area
+        min_area = panel_area * a.min_area_pct / 100.0
+        cut_p = cut_h = 0
+        for k in sorted(geoms):
+            keep = []
+            for p in parts_of(geoms[k]):
+                w = widest_inscribed(p)
+                if p.area < min_area or (w > 0 and _extent(p.exterior) / w > a.sliver_ratio):
+                    cut_p += 1
+                    continue
+                holes = []
+                for r in p.interiors:
+                    hp = Polygon(r)
+                    hw = widest_inscribed(hp)
+                    if hp.area < min_area or (hw > 0 and _extent(r) / hw > a.sliver_ratio):
+                        cut_h += 1
+                        continue
+                    holes.append(r)
+                keep.append(Polygon(p.exterior, holes))
+            if keep:
+                geoms[k] = unary_union(keep).buffer(0)
+        if cut_p or cut_h:
+            print(f"[i] szilank-szures: {cut_p} darab es {cut_h} nyilas beolvasztva "
+                  f"(karcsusag > {a.sliver_ratio:.0f} vagy terulet < {a.min_area_pct}%)")
 
     if a.speckle > 0 and geoms:
         # open THEN close: the opening removes grainy specks, the closing fills

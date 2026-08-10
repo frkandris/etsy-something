@@ -32,7 +32,7 @@
   },
   "4": {
    "pieces": 1,
-   "holes": 20,
+   "holes": 19,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
@@ -45,18 +45,18 @@
   "6": {
    "pieces": 5,
    "holes": 28,
-   "weakest_mm": 11.05,
+   "weakest_mm": 11.02,
    "thin_pct": 0.0
   },
   "7": {
-   "pieces": 5,
-   "holes": 25,
-   "weakest_mm": 10.88,
+   "pieces": 2,
+   "holes": 0,
+   "weakest_mm": 11.43,
    "thin_pct": 0.0
   }
  },
- "pieces_total": 16,
- "weakest_mm": 10.88,
+ "pieces_total": 13,
+ "weakest_mm": 11.02,
  "necks": 0,
  "keyhole": false,
  "draft": false,

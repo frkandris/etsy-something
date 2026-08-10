@@ -212,11 +212,20 @@ PALETTES = {
     # HUE variation, not a lightness ramp. Five stops that were merely lighter
     # versions of one brown read as a single string; the references alternate
     # three or four distinct hues. Adjacent layers differ by >=12 deg of hue.
-    "well":  [(0.027, 0.007, 0.004, 1),   # #2E1710 near-black, H15
-              (0.087, 0.033, 0.011, 1),   # #55341C deep chocolate, H32
-              (0.546, 0.097, 0.015, 1),   # #C85A22 burnt orange, H17
-              (0.716, 0.389, 0.028, 1),   # #DDA82F mustard gold, H47
-              (0.965, 0.955, 0.935, 1)],  # near-white top sheet, L*98
+    # Even L* ladder 20/36/51/63/74/84/92 - the previous set collapsed in the
+    # dark half and the whole piece pressed flat. Deepest anchor #2A1B12.
+    # The light end is COMPRESSED on purpose. The depth map's brightest tone is
+    # only the small highlights, so a single bright stop landed there and the
+    # big field - the actual top sheet - got the next one down and rendered
+    # tan. The top two stops are both near-white so the field reads as the
+    # white sheet and the highlights sit just above it.
+    "well":  [(0.022, 0.010, 0.005, 1),   # L*20  #2A1B12 anchor
+              (0.079, 0.032, 0.013, 1),   # L*35
+              (0.201, 0.078, 0.021, 1),   # L*50
+              (0.386, 0.170, 0.044, 1),   # L*62
+              (0.610, 0.400, 0.210, 1),   # L*74
+              (0.880, 0.850, 0.795, 1),   # L*90  the top sheet itself
+              (0.965, 0.955, 0.938, 1)],  # L*96  highlights on the sheet
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,

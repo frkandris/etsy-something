@@ -57,6 +57,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 ## Mérési csapdák — `pitfalls/`
 
+- [[pitfalls/2026-08-11-a-szuro-torolte-a-felso-lapokat]] — a szűrő a felső lapokat és a nyílásokat is törölte
 - [[pitfalls/2026-08-07-single-listing-attribution]] — a populáció fele hamis pozitív volt
 - [[pitfalls/2026-08-07-duplicate-search-hits]] — ugyanaz a listing háromszor számolva
 - [[pitfalls/2026-08-07-whole-shop-revenue-attribution]] — −55% a mediánban
@@ -64,6 +65,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 ## Döntések — `decisions/`
 
+- [[decisions/2026-08-11-keret-eloszor]] — a rétegsorrend tervezői döntés, nem mérés
 - [[decisions/2026-08-10-keprogeneralas-iranya]] — lapos illusztráció + külön mélységbecslés
 - [[decisions/2026-08-10-cc0-eszkozok-a-hatterben]] — a háttér CC0 3D geometria, nem lapos fotó
 - [[decisions/2026-08-07-pursue-layered]] — marad a layered

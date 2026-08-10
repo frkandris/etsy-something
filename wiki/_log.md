@@ -2,6 +2,9 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-11 — A szilankszuro ket egymast takaro hibaja: eloszor a felso lapokat torolte (nagy nyilasu panel = vekony gyuru = magas karcsusag), majd a nyilasokat is (egy LYUK nem tud kiesni, ra a karcsusagi teszt ertelmetlen). Ez volt az oka, hogy a render nem hasonlitott a rajzra (pitfalls/2026-08-11-a-szuro-torolte-a-felso-lapokat)
+2026-08-11 — Keret-eloszor: a kutatas szerint a valodi eladok nem bontanak kepet retegekre, hanem keretbol epitenek fel, es minden elem kapcsolodik a kerethez. A retegsorrend tervezoi dontes, ezert nem is lehetett kimerni (decisions/2026-08-11-keret-eloszor)
+
 2026-08-10 — A hatter valodi CC0 3D geometria lett (Poly Haven modellek + HDRI), mert a lapos fotohatter nem parallaxolt: a videoban csak a keret fordult, a szoba allt (decisions/2026-08-10-cc0-eszkozok-a-hatterben)
 2026-08-10 — Kutatas: a generalt melysegterkep rossz alap; a lanc lapos papercut illusztraciora + kulon melysegbecslesre (Depth Anything V2 Small, Apache-2.0) valt, regio-median rendezessel (decisions/2026-08-10-keprogeneralas-iranya)
 

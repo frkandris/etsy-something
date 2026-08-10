@@ -58,6 +58,31 @@ def estimate_depth(img):
     return (d - lo) / (hi - lo) if hi > lo else np.zeros_like(d)
 
 
+def field_mask(img, tol=14.0):
+    """The empty field around the subject, flood-filled from the border.
+
+    This has to be found BEFORE quantising, and it is the whole ball game. The
+    field and the subject's lightest passages - a muzzle, a cheek, a chest -
+    are close enough in tone that any k-means with a realistic number of levels
+    puts them in the same cluster. They are NOT the same sheet: the field is the
+    top panel and the muzzle is a shape cut into it, and merging them deletes
+    the muzzle. Flood-filling from the border separates them by CONNECTIVITY
+    instead of by colour, which is the one thing that cannot confuse them.
+    """
+    from skimage.segmentation import flood
+    a = np.asarray(img.convert("RGB"), dtype=np.float32)
+    h, w, _ = a.shape
+    corner = np.median(np.stack([a[2, 2], a[2, w - 3], a[h - 3, 2], a[h - 3, w - 3]]),
+                       axis=0)
+    near = (np.linalg.norm(a - corner, axis=2) < tol)
+    m = np.zeros((h, w), dtype=bool)
+    for seed in ((1, 1), (1, w - 2), (h - 2, 1), (h - 2, w - 2)):
+        if near[seed]:
+            m |= flood(near, seed, connectivity=1)
+    print(f"[depth] mezo (peremrol arasztva): {m.mean()*100:.1f}%")
+    return m
+
+
 def quantise(img, levels):
     """Collapse the illustration onto exactly `levels` flat tones.
 
@@ -66,17 +91,27 @@ def quantise(img, levels):
     light, which for a papercut is deepest sheet to top sheet.
     """
     from sklearn.cluster import KMeans
-    a = np.asarray(img.convert("RGB"), dtype=np.float32).reshape(-1, 3)
-    km = KMeans(n_clusters=levels, n_init=6, random_state=0).fit(a[::5])
+    a = np.asarray(img.convert("RGB"), dtype=np.float32)
+    field = field_mask(img)
+    sub = a[~field]                                  # cluster the SUBJECT only
+    if sub.size == 0 or not field.any():
+        field = np.zeros(a.shape[:2], dtype=bool)
+        sub = a.reshape(-1, 3)
+    n = levels - 1 if field.any() else levels
+    km = KMeans(n_clusters=n, n_init=6, random_state=0).fit(sub[::5])
     cent = km.cluster_centers_
-    order = np.argsort(cent @ LUMA)                 # dark -> light
-    remap = np.zeros(levels, dtype=np.int32)
-    remap[order] = np.arange(levels)
-    q = remap[km.predict(a)].reshape(img.height, img.width)
+    order = np.argsort(cent @ LUMA)                  # dark -> light
+    remap = np.zeros(n, dtype=np.int32)
+    remap[order] = np.arange(n)
+    q = np.zeros(a.shape[:2], dtype=np.int32)
+    q[~field] = remap[km.predict(sub)]
+    q[field] = levels - 1                            # the field IS the top sheet
     for i, k in enumerate(order):
-        share = float((q == i).mean()) * 100
-        print(f"[depth]   szint {i}  luma {float(cent[k] @ LUMA):5.1f}  {share:5.1f}%")
-    return q.astype(np.int32)
+        print(f"[depth]   szint {i}  luma {float(cent[k] @ LUMA):5.1f}  "
+              f"{float((q == i).mean())*100:5.1f}%")
+    print(f"[depth]   szint {levels-1}  MEZO            "
+          f"{float((q == levels-1).mean())*100:5.1f}%")
+    return q
 
 
 def clean(q, levels, min_px):
@@ -104,6 +139,61 @@ def clean(q, levels, min_px):
     return q
 
 
+def by_nesting(img, colours):
+    """Depth = how many region boundaries you cross walking in from the field.
+
+    This is the measurement that finally explained the failures. The
+    illustration's tone IS very nearly monotone with nesting depth (1 of 33
+    regions violates it), but its actual nesting depth is only FOUR - while we
+    were forcing it into an eight-deep strictly-nested well. The extra levels
+    had to come from somewhere, so side-by-side ribbons that belong on the SAME
+    sheet were pushed to different depths, and the nesting constraint then
+    dilated and clipped them into mush.
+
+    In a real multilayer papercut, several differently coloured pieces sit on
+    ONE sheet. Colour and depth are independent. Deriving depth from the
+    picture's own containment structure is what respects that.
+
+    Returns the depth map and the depth actually found.
+    """
+    import collections
+    from skimage.measure import label
+    from skimage.segmentation import flood
+    from sklearn.cluster import KMeans
+
+    a = np.asarray(img.convert("RGB"), dtype=np.float32)
+    h, w, _ = a.shape
+    km = KMeans(n_clusters=colours, n_init=6, random_state=0).fit(a.reshape(-1, 3)[::5])
+    q = km.predict(a.reshape(-1, 3)).reshape(h, w)
+
+    lab = label(q, connectivity=1, background=-1)
+    adj = collections.defaultdict(set)
+    for A, B in ((lab[:, :-1], lab[:, 1:]), (lab[:-1, :], lab[1:, :])):
+        d = A != B
+        for x, y in zip(A[d].ravel(), B[d].ravel()):
+            adj[x].add(y); adj[y].add(x)
+
+    seed = lab[1, 1]
+    fields = {seed}
+    depth = {seed: 0}
+    frontier, d0 = {seed}, 0
+    while frontier:
+        d0 += 1
+        nxt = set()
+        for r in frontier:
+            for t in adj[r]:
+                if t > 0 and t not in depth:
+                    depth[t] = d0
+                    nxt.add(t)
+        frontier = nxt
+    mx = max(depth.values())
+    out = np.zeros((h, w), dtype=np.int32)
+    for r, d in depth.items():
+        out[lab == r] = mx - d          # field = mx (top sheet), inner = deeper
+    print(f"[depth] beagyazasi melyseg a kepben: {mx}  -> {mx + 1} lap")
+    return out, mx + 1
+
+
 def by_depth(img, q, levels):
     """Re-rank the tone clusters by the depth model's median instead of luma."""
     d = estimate_depth(img)
@@ -121,14 +211,19 @@ def main():
     ap.add_argument("--art", required=True, help="lapos papercut illusztracio")
     ap.add_argument("--out", required=True)
     ap.add_argument("--levels", type=int, default=6)
-    ap.add_argument("--order", choices=["tone", "depth"], default="tone")
+    ap.add_argument("--order", choices=["tone", "depth", "nesting"], default="tone")
+    ap.add_argument("--colours", type=int, default=8,
+                    help="nesting: hany lapos szinre kvantaljon a szegmentalas elott")
     ap.add_argument("--min-region-pct", type=float, default=0.03,
                     help="ennel kisebb folt beolvad a szomszedjaba (a kep %-aban)")
     ap.add_argument("--debug", action="store_true")
     a = ap.parse_args()
 
     img = Image.open(a.art).convert("RGB")
-    q = quantise(img, a.levels)
+    if a.order == "nesting":
+        q, a.levels = by_nesting(img, a.colours)
+    else:
+        q = quantise(img, a.levels)
     d = None
     if a.order == "depth":
         q, d = by_depth(img, q, a.levels)

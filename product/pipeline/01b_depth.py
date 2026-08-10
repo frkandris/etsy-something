@@ -205,6 +205,7 @@ def by_depth(img, q, levels):
     remap = np.zeros(levels, dtype=np.int32)
     remap[order] = np.arange(levels)
     print("[depth] melyseg-sorrend:", " ".join(f"{c}->{remap[c]}" for c in range(levels)))
+    by_depth.remap = remap
     return remap[q], d
 
 
@@ -233,6 +234,14 @@ def main():
     d = None
     if a.order == "depth":
         q, d = by_depth(img, q, a.levels)
+        # the sheets were re-ranked; their colours have to follow, or the
+        # geometry is right and every sheet wears the wrong paper
+        pal0 = getattr(quantise, "palette", None)
+        if pal0 and getattr(by_depth, "remap", None) is not None:
+            new = [None] * len(pal0)
+            for c, t in enumerate(by_depth.remap):
+                new[t] = pal0[c]
+            quantise.palette = new
     q = clean(q, a.levels, int(img.width * img.height * a.min_region_pct / 100))
 
     used = len(np.unique(q))
@@ -245,7 +254,12 @@ def main():
     pal = getattr(quantise, "palette", None)
     if pal:
         import json
-        (out.parent / "palette.json").write_text(json.dumps(pal))
+        # Level 0 is what the tracer treats as cut away - it never becomes a
+        # sheet, only the colour you see at the bottom of the deepest well. The
+        # SHEETS start at level 1, so handing the renderer the whole list shifted
+        # every sheet's colour by one and made it interpolate the difference.
+        (out.parent / "palette.json").write_text(json.dumps(pal[1:]))
+        (out.parent / "palette_floor.json").write_text(json.dumps(pal[0]))
         print("[depth] paletta: " + "  ".join(
             "#%02x%02x%02x" % tuple(c) for c in pal))
     print(f"[depth] kesz: {out}")

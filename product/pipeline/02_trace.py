@@ -599,24 +599,36 @@ def main():
         for k in sorted(geoms):
             keep = []
             for p in parts_of(geoms[k]):
-                if p.intersects(frame_rim):
-                    keep.append(p)
-                    continue
-                w = widest_inscribed(p)
-                if p.area < min_area or (w > 0 and _extent(p.exterior) / w > a.sliver_ratio):
-                    cut_p += 1
-                    continue
+                # The frame body is exempt from the SLENDERNESS test, not from
+                # the hole test. Skipping both let every hairline opening in
+                # the panel through unchecked - the exemption is about the
+                # piece not falling out, which says nothing about its holes.
+                if not p.intersects(frame_rim):
+                    w = widest_inscribed(p)
+                    if p.area < min_area or (w > 0
+                                             and _extent(p.exterior) / w > a.sliver_ratio):
+                        cut_p += 1
+                        continue
                 holes = []
                 for r in p.interiors:
-                    hp = Polygon(r)
-                    hw = widest_inscribed(hp)
-                    if hp.area < min_area or (hw > 0 and _extent(r) / hw > a.sliver_ratio):
+                    # A HOLE CANNOT FALL OUT. Slenderness is a structural test
+                    # for pieces, and applying it to openings deleted the whole
+                    # design language of this product - every ribbon-shaped
+                    # opening scores as a sliver. Openings get an area floor and
+                    # nothing else; whether one is long and thin is the
+                    # designer's business, not the cutter's.
+                    if Polygon(r).area < min_area:
                         cut_h += 1
                         continue
                     holes.append(r)
                 keep.append(Polygon(p.exterior, holes))
             if keep:
                 geoms[k] = unary_union(keep).buffer(0)
+            elif parts_of(geoms[k]):
+                # every component failed. Saying "filtered" and leaving the
+                # layer untouched would let a wholly bad layer through.
+                raise SystemExit(f"a(z) {k}. reteg minden darabja szilank - "
+                                 f"lazitsd a --sliver-ratio / --min-area-pct erteket")
         if cut_p or cut_h:
             print(f"[i] szilank-szures: {cut_p} darab es {cut_h} nyilas beolvasztva "
                   f"(karcsusag > {a.sliver_ratio:.0f} vagy terulet < {a.min_area_pct}%)")
@@ -741,6 +753,8 @@ def main():
             attached = [p for p in parts if p.intersects(rim)]
             if not attached:                       # nothing reaches the border
                 attached = [max(parts, key=lambda p: p.area)]
+                print(f"[!] {k}. reteg: egyetlen darab sem eri el a keretet, "
+                      f"a legnagyobbat tartom meg")
             loose = sum(p.area for p in parts) - sum(p.area for p in attached)
             if loose > 0:
                 loose_total += loose

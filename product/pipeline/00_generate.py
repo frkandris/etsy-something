@@ -91,6 +91,20 @@ one - draw it the way a papercut artist would cut it.
 - Scatter about twenty small round dots of varying size across the field.
 - The subject occupies the middle 70 percent of the width.
 
+CONNECTIVITY - THIS IS A CUTTING CONSTRAINT, NOT A STYLE NOTE. The picture is
+going to be cut as stacked sheets of paper, and a shape that floats with
+nothing touching it has nothing holding it up. So:
+- NO ISLANDS. Every shape must touch at least one other shape of the SAME tone,
+  or run off the edge of the picture. A patch of one tone completely
+  surrounded by a different tone is the one thing that cannot be made.
+- The face must survive this. Draw the eye as ONE large solid shape - a wide
+  almond at least a tenth of the picture wide - and let it MERGE into the dark
+  marking that runs back from it, so the eye and the marking are one connected
+  piece rather than a dot sitting alone in a light cheek. Same for the nose:
+  join it to the mouth line or to the muzzle's edge.
+- Prefer long connected bands over scattered spots. The scattered round dots
+  are the only exception, and they must be simple holes, all of one tone.
+
 Square, flat, centred, no text, no signature, no background scene.
 """
 

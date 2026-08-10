@@ -83,13 +83,16 @@ scene = bpy.context.scene
 # video work already ran on Eevee for exactly this reason; the stills were
 # still quietly on Cycles.
 scene.render.engine = "BLENDER_EEVEE"
-try:
-    scene.eevee.taa_render_samples = 96
-    scene.eevee.use_gtao = True                # ambient occlusion in the recesses
-    scene.eevee.gtao_distance = 0.008
-    scene.eevee.use_soft_shadows = True
-except AttributeError:
-    pass
+# One try block around all four meant the first name Blender dropped silently
+# skipped the rest - use_gtao is gone in 5.x, so the AO distance and the soft
+# shadows were never being set at all.
+for _k, _v in (("taa_render_samples", 96), ("use_gtao", True),
+               ("gtao_distance", 0.008), ("use_soft_shadows", True),
+               ("use_raytracing", True)):
+    try:
+        setattr(scene.eevee, _k, _v)
+    except (AttributeError, TypeError):
+        pass
 scene.render.resolution_x = 2000
 scene.render.resolution_y = 2000
 scene.render.film_transparent = (VIEW == "plate")

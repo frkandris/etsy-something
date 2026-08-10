@@ -219,13 +219,16 @@ PALETTES = {
     # big field - the actual top sheet - got the next one down and rendered
     # tan. The top two stops are both near-white so the field reads as the
     # white sheet and the highlights sit just above it.
+    # Saturated warm midtones (terracotta, gold) so the three near-identical
+    # browns separate, and NO pure white inside: the L*96 highlight slivers
+    # round the eyes read as paint splatter, not paper. Interior ceiling L*90.
     "well":  [(0.022, 0.010, 0.005, 1),   # L*20  #2A1B12 anchor
               (0.079, 0.032, 0.013, 1),   # L*35
-              (0.201, 0.078, 0.021, 1),   # L*50
-              (0.386, 0.170, 0.044, 1),   # L*62
-              (0.610, 0.400, 0.210, 1),   # L*74
-              (0.880, 0.850, 0.795, 1),   # L*90  the top sheet itself
-              (0.965, 0.955, 0.938, 1)],  # L*96  highlights on the sheet
+              (0.430, 0.117, 0.043, 1),   # L*50  #B5643C terracotta
+              (0.727, 0.376, 0.048, 1),   # L*62  #E0A63F gold
+              (0.610, 0.430, 0.250, 1),   # L*74
+              (0.795, 0.775, 0.735, 1),   # L*88  interior light
+              (0.930, 0.912, 0.878, 1)],  # L*96  #F7F3EC the top sheet
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -476,7 +479,14 @@ if FRAME:
     fw = ART * 0.085
     # a recessed sheet sits right up against the rabbet; a deep empty well in
     # front of it reads as a floating tile
-    fd = ART * (0.085 if RECESSED else 0.17)
+    if RECESSED:
+        # Depth follows the STACK, not a fixed fraction. A frame deeper than the
+        # paper left a wide unlit wall around the sheet, which read as the panel
+        # floating in a dark well instead of sitting in the rabbet.
+        _stack = len(svgs) * (THICK + GAP)
+        fd = _stack + THICK * 1.6
+    else:
+        fd = ART * 0.17
     # overlap the sheet edge slightly: a 0.5% gap read as a scribed line 1.5%
     # inside the opening, which made the sheet look like an inserted plate
     inner = ART / 2 * (0.994 if RECESSED else 1.06)
@@ -497,7 +507,29 @@ if FRAME:
     bpy.ops.object.modifier_apply(modifier="cut")
     bpy.data.objects.remove(hole, do_unlink=True)
     fc = (0.115, 0.052, 0.022, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
-    _fmat = wood("frame", fc, 0.5, grain=False)
+    # A flat matte plane reads as plastic. Real frame stock has grain running
+    # one way, a slight sheen, and a bevel that catches a warm highlight.
+    _fmat = wood("frame", fc, 0.34 if WOODFRAME else 0.42, grain=WOODFRAME)
+    if WOODFRAME:
+        _b = _fmat.node_tree.nodes["Principled BSDF"]
+        _b.inputs["Specular IOR Level"].default_value = 0.42 \
+            if "Specular IOR Level" in _b.inputs else None
+    # inner bevel: a thin lighter lip around the opening
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd - fd * 0.06))
+    _lip = bpy.context.object
+    _lip.scale = ((inner + fw * 0.16) * 2, (inner + fw * 0.16) * 2, fd * 0.12)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd))
+    _lh = bpy.context.object
+    _lh.scale = (inner * 2, inner * 2, fd)
+    _bm2 = _lip.modifiers.new("cut", "BOOLEAN")
+    _bm2.operation = "DIFFERENCE"; _bm2.object = _lh
+    bpy.context.view_layer.objects.active = _lip
+    bpy.ops.object.modifier_apply(modifier="cut")
+    bpy.data.objects.remove(_lh, do_unlink=True)
+    _lipmat = wood("framelip", tuple(min(1.0, c * 1.5) for c in fc[:3]) + (1,),
+                   0.28, grain=False)
+    _lip.data.materials.append(_lipmat)
+    FRAME_OBJS.append(_lip)
     shell.data.materials.clear()
     shell.data.materials.append(_fmat)
     for _sl in shell.material_slots:

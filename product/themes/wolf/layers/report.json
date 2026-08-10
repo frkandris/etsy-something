@@ -1,6 +1,6 @@
 {
  "web_target_mm": 2.0,
- "thin_area_worst_pct": 0.0,
+ "thin_area_worst_pct": 0.01,
  "web_target_at_scale_mm": {
   "100%": 2.0,
   "75%": 1.5,
@@ -14,49 +14,49 @@
  "layers": {
   "1": {
    "pieces": 1,
-   "holes": 23,
+   "holes": 1,
    "weakest_mm": 12.0,
    "thin_pct": 0.0
   },
   "2": {
-   "pieces": 1,
-   "holes": 25,
-   "weakest_mm": 12.0,
-   "thin_pct": 0.0
+   "pieces": 2,
+   "holes": 12,
+   "weakest_mm": 5.82,
+   "thin_pct": 0.01
   },
   "3": {
-   "pieces": 1,
-   "holes": 29,
-   "weakest_mm": 12.0,
+   "pieces": 2,
+   "holes": 17,
+   "weakest_mm": 5.82,
    "thin_pct": 0.0
   },
   "4": {
-   "pieces": 1,
-   "holes": 19,
-   "weakest_mm": 12.0,
+   "pieces": 2,
+   "holes": 13,
+   "weakest_mm": 5.82,
    "thin_pct": 0.0
   },
   "5": {
-   "pieces": 2,
-   "holes": 17,
-   "weakest_mm": 12.0,
+   "pieces": 3,
+   "holes": 11,
+   "weakest_mm": 5.82,
    "thin_pct": 0.0
   },
   "6": {
-   "pieces": 5,
-   "holes": 28,
-   "weakest_mm": 11.02,
+   "pieces": 3,
+   "holes": 18,
+   "weakest_mm": 5.82,
    "thin_pct": 0.0
   },
   "7": {
-   "pieces": 2,
-   "holes": 0,
-   "weakest_mm": 11.43,
+   "pieces": 6,
+   "holes": 15,
+   "weakest_mm": 5.82,
    "thin_pct": 0.0
   }
  },
- "pieces_total": 13,
- "weakest_mm": 11.02,
+ "pieces_total": 19,
+ "weakest_mm": 5.82,
  "necks": 0,
  "keyhole": false,
  "draft": false,

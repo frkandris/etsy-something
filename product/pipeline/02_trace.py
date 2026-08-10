@@ -343,6 +343,12 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--motif-scale", type=float, default=1.0,
+                    help="a vagott resz kicsinyitese a lapon belul")
+    ap.add_argument("--max-parts", type=int, default=0,
+                    help="retegenkenti komponens-plafon; a tobbi beolvad")
+    ap.add_argument("--round-corners", type=float, default=0.0,
+                    help="mm: minimalis sarok-lekerekitesi sugar")
     ap.add_argument("--sliver-ratio", type=float, default=0.0,
                     help="ennel karcsubb komponenst beolvaszt (hossz / sajat "
                          "legnagyobb beirt kore); a hajszalcsikok 10 folott vannak")
@@ -521,7 +527,18 @@ def main():
         outer = Polygon([(mnx, mny), (mxx, mny), (mxx, mxy), (mnx, mxy)])
         band = outer.difference(outer.buffer(-a.margin))
         for k in ks1:
-            geoms[k] = unary_union([geoms[k], band]).buffer(0)
+            g = unary_union([geoms[k], band]).buffer(0)
+            # A ribbon running into the band gets sliced off flat, and those
+            # blunt stubs at the border read as render errors. Round them, then
+            # drop whatever fragment is left stranded against the band.
+            g = g.buffer(2.5).buffer(-2.5).buffer(0)
+            inner_zone = outer.buffer(-a.margin)
+            keep = [p for p in parts_of(g)
+                    if p.intersection(inner_zone).area > p.area * 0.25
+                    or p.area > outer.area * 0.5]
+            if keep:
+                g = unary_union(keep).buffer(0)
+            geoms[k] = g
         print(f"[i] {a.margin:.0f} mm-es erintetlen margosav minden lapon")
 
     if a.sliver_ratio > 0 and geoms:
@@ -555,6 +572,45 @@ def main():
         if cut_p or cut_h:
             print(f"[i] szilank-szures: {cut_p} darab es {cut_h} nyilas beolvasztva "
                   f"(karcsusag > {a.sliver_ratio:.0f} vagy terulet < {a.min_area_pct}%)")
+
+        if a.max_parts > 0:
+            # Cap the component count. Fifty small openings per layer read as
+            # noise no matter how clean each one is; the references run 8-20
+            # large shapes. Keep the biggest and let the rest fall back to the
+            # sheet behind.
+            drop_p = drop_h = 0
+            for k in sorted(geoms):
+                ps = sorted(parts_of(geoms[k]), key=lambda q: -q.area)[:a.max_parts]
+                out2 = []
+                for p in ps:
+                    hs = sorted(p.interiors, key=lambda r: -Polygon(r).area)
+                    drop_h += max(0, len(hs) - a.max_parts)
+                    out2.append(Polygon(p.exterior, hs[:a.max_parts]))
+                drop_p += len(parts_of(geoms[k])) - len(ps)
+                if out2:
+                    geoms[k] = unary_union(out2).buffer(0)
+            if drop_p or drop_h:
+                print(f"[i] komponens-plafon {a.max_parts}: {drop_p} darab es "
+                      f"{drop_h} nyilas beolvasztva")
+
+        if a.round_corners > 0:
+            # Round every corner to a minimum radius. Straight runs and sharp
+            # interior angles are what still made the shapes read as traced
+            # clip-art rather than poured paint.
+            r = a.round_corners
+            for k in sorted(geoms):
+                g = geoms[k].buffer(r, join_style=1).buffer(-2 * r, join_style=1) \
+                            .buffer(r, join_style=1).buffer(0)
+                if g.is_empty:
+                    continue
+                # The panel's own square outline must survive untouched: the
+                # rounding chain nicked its corner and left a diagonal seam
+                # across the sheet.
+                base_ring = max(parts_of(geoms[k]), key=lambda q: q.area)
+                square = Polygon(base_ring.exterior).envelope
+                g = unary_union([g, square.difference(
+                    square.buffer(-a.margin if a.margin > 0 else -1.0))]).buffer(0)
+                geoms[k] = g
 
     if a.speckle > 0 and geoms:
         # open THEN close: the opening removes grainy specks, the closing fills
@@ -650,6 +706,25 @@ def main():
     if drop:
         geoms = {i + 1: geoms[k] for i, k in enumerate(sorted(geoms))}
     MERGED = len(drop)
+
+    if a.motif_scale < 1.0 and len(geoms) > 1:
+        # Shrink the CUT region, not the sheet: the references leave a wide,
+        # quiet band of untouched top sheet around the design.
+        ks3 = sorted(geoms)
+        mnx3, mny3, mxx3, mxy3 = geoms[ks3[0]].bounds
+        c3x, c3y = (mnx3 + mxx3) / 2, (mny3 + mxy3) / 2
+        base3 = geoms[ks3[0]]
+        for k in ks3[1:]:
+            # Scale the OPENINGS, not the sheets. Scaling the geometry shrank
+            # every sheet, so the full-size bottom sheet showed all round the
+            # design as a dark border. The opening is (bottom sheet - this
+            # sheet); shrink that and cut it out of the full sheet again.
+            opening = base3.difference(geoms[k]).buffer(0)
+            if opening.is_empty:
+                continue
+            sm = affinity.scale(opening, xfact=a.motif_scale, yfact=a.motif_scale,
+                                origin=(c3x, c3y))
+            geoms[k] = base3.difference(sm).buffer(0)
 
     if not a.no_keyhole:
         cut = keyhole(geoms[1])

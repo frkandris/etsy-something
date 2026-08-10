@@ -358,6 +358,9 @@ def main():
     ap.add_argument("--merge-below", type=float, default=0.04,
                     help="ekkoranal kisebb uj teruletet ado szintet osszevon; "
                          "4%% elnyelte az arcot hordozo szinteket")
+    ap.add_argument("--palette", default=None,
+                    help="a rajzbol szarmazo szinek (01b palette_full.json); a "
+                         "tulelt lapokhoz tartozokat a kimenetbe irja")
     ap.add_argument("--connected", action="store_true",
                     help="keret-eloszor: minden reteg egyetlen, a keretig ero darab")
     ap.add_argument("--margin", type=float, default=0.0,
@@ -428,12 +431,18 @@ def main():
     scale = MM / max(rmaxx - rminx, rmaxy - rminy)
 
     # pass 1: trace + clean every level at final physical scale
-    geoms, dropped = {}, {}
+    # src_level[k] = which tone of the depth map this sheet came from. Without
+    # it the palette silently shifts: the tracer drops empty tones and merges
+    # thin ones, then the renderer spreads the ORIGINAL colour list evenly over
+    # however many sheets survived and interpolates colours that are in neither
+    # the drawing nor the product.
+    geoms, dropped, src_level = {}, {}, {}
     for k in range(1, a.levels + 1):
         geom, drp = clean(trace(mask_at(g, edges[k])), scale, a.thicken,
                           a.min_part, img.height * scale)
         if geom is not None:
             geoms[k] = geom
+            src_level[k] = k
             if drp is not None:
                 dropped[k] = drp
     if 1 not in geoms:
@@ -798,8 +807,11 @@ def main():
     for k, gain in drop:
         print(f"[i] {k}. reteg osszevonva a mogotte levobe ({gain*100:.1f}% uj terulet)")
         del geoms[k]
+        src_level.pop(k, None)
     if drop:
-        geoms = {i + 1: geoms[k] for i, k in enumerate(sorted(geoms))}
+        ks_before = sorted(geoms)
+        src_level = {i + 1: src_level.get(k, k) for i, k in enumerate(ks_before)}
+        geoms = {i + 1: geoms[k] for i, k in enumerate(ks_before)}
     MERGED = len(drop)
 
     if not a.no_keyhole:
@@ -975,6 +987,15 @@ def main():
         "draft": a.draft,
         "size_mm": MM,
     }
+    if a.palette:
+        src = json.loads(pathlib.Path(a.palette).read_text())
+        # src[0] is the floor of the deepest well - never a sheet
+        out_pal = []
+        for k in sorted(geoms):
+            i = src_level.get(k, k)
+            out_pal.append(src[min(i, len(src) - 1)])
+        (out / "palette.json").write_text(json.dumps(out_pal))
+        print(f"[i] paletta: {len(out_pal)} lap a forras {len(src)} tonusabol")
     (out / "report.json").write_text(json.dumps(report, indent=1))
 
     if final_out.exists():

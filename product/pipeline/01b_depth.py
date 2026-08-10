@@ -258,8 +258,9 @@ def main():
         # sheet, only the colour you see at the bottom of the deepest well. The
         # SHEETS start at level 1, so handing the renderer the whole list shifted
         # every sheet's colour by one and made it interpolate the difference.
-        (out.parent / "palette.json").write_text(json.dumps(pal[1:]))
-        (out.parent / "palette_floor.json").write_text(json.dumps(pal[0]))
+        # the FULL list, level 0 first. Slicing it here was guesswork about how
+        # many sheets would survive; the tracer knows, so it does the slicing.
+        (out.parent / "palette_full.json").write_text(json.dumps(pal))
         print("[depth] paletta: " + "  ".join(
             "#%02x%02x%02x" % tuple(c) for c in pal))
     print(f"[depth] kesz: {out}")

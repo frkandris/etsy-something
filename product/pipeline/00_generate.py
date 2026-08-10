@@ -105,6 +105,22 @@ nothing touching it has nothing holding it up. So:
 - Prefer long connected bands over scattered spots. The scattered round dots
   are the only exception, and they must be simple holes, all of one tone.
 
+THE EYE CARRIES THE WHOLE PICTURE. At thumbnail size the buyer sees one thing
+and decides: is that a cat. So:
+- Draw the eye BIG - a wide almond at least a tenth of the picture across - and
+  make it AT LEAST TWO TONE STEPS darker than every band touching it. A soft
+  eye one step from its surroundings disappears the moment the picture is
+  reduced.
+- Give it a light catchlight only if that highlight touches the eye's edge; a
+  dot floating inside the pupil is an island and cannot be made.
+
+COMPOSITION - TIGHT, NOT SPRAWLING. The head is the subject and the ribbons are
+its hair, not a separate splash pattern:
+- The HEAD ITSELF fills at least 55 percent of the picture width. Not the
+  ribbons - the head.
+- The ribbons stay inside a 15 percent margin from every edge; nothing runs
+  into the corners.
+
 Square, flat, centred, no text, no signature, no background scene.
 """
 

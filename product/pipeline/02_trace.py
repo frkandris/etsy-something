@@ -358,6 +358,8 @@ def main():
     ap.add_argument("--merge-below", type=float, default=0.04,
                     help="ekkoranal kisebb uj teruletet ado szintet osszevon; "
                          "4%% elnyelte az arcot hordozo szinteket")
+    ap.add_argument("--connected", action="store_true",
+                    help="keret-eloszor: minden reteg egyetlen, a keretig ero darab")
     ap.add_argument("--margin", type=float, default=0.0,
                     help="mm: ilyen szeles erintetlen sav a lap szelen")
     ap.add_argument("--speckle", type=float, default=0.0,
@@ -583,10 +585,23 @@ def main():
         # scores 10+.
         panel_area = geoms[sorted(geoms)[0]].area
         min_area = panel_area * a.min_area_pct / 100.0
+        # The frame body is exempt. A top sheet is by definition a panel with a
+        # large opening in it, so its ring is thin and its slenderness score is
+        # high - and this filter was quietly deleting it. That is what made the
+        # top one or two sheets vanish and the design read as flat: the filter
+        # was working exactly as written, on the one part it must never touch.
+        # A thin ring that is part of the frame cannot fall out; a thin ribbon
+        # floating in the middle can. That is the distinction, not thinness.
+        _pb = geoms[sorted(geoms)[0]].bounds
+        frame_rim = Polygon([(_pb[0], _pb[1]), (_pb[2], _pb[1]),
+                             (_pb[2], _pb[3]), (_pb[0], _pb[3])]).exterior.buffer(1.5)
         cut_p = cut_h = 0
         for k in sorted(geoms):
             keep = []
             for p in parts_of(geoms[k]):
+                if p.intersects(frame_rim):
+                    keep.append(p)
+                    continue
                 w = widest_inscribed(p)
                 if p.area < min_area or (w > 0 and _extent(p.exterior) / w > a.sliver_ratio):
                     cut_p += 1
@@ -704,6 +719,39 @@ def main():
                 geoms[k] = geoms[k].difference(hole).buffer(0)
             placed += 1
         print(f"[i] {placed} kerek nyilas utve, valtozo merettel es melyseggel")
+
+    if a.connected and geoms:
+        # FRAME-FIRST. The documented workshop rule for this product is that
+        # every element of every layer must connect to the frame, so the sheet
+        # comes off the cutter and glues down as ONE piece. We were producing
+        # layers of three and four separate islands and calling it fine.
+        #
+        # Dropping an island is not losing it: the layers are nested, so its
+        # footprint is still material on the plate behind, one step deeper.
+        # That is a depth change, not a hole.
+        ksc = sorted(geoms)
+        mnxc, mnyc, mxxc, mxyc = geoms[ksc[0]].bounds
+        rim = Polygon([(mnxc, mnyc), (mxxc, mnyc), (mxxc, mxyc), (mnxc, mxyc)]) \
+            .exterior.buffer(1.0)
+        loose_total = 0.0
+        for k in ksc:
+            parts = parts_of(geoms[k])
+            if len(parts) < 2:
+                continue
+            attached = [p for p in parts if p.intersects(rim)]
+            if not attached:                       # nothing reaches the border
+                attached = [max(parts, key=lambda p: p.area)]
+            loose = sum(p.area for p in parts) - sum(p.area for p in attached)
+            if loose > 0:
+                loose_total += loose
+                dropped[k] = unary_union(
+                    [dropped[k]] + [p for p in parts if p not in attached]) \
+                    if k in dropped else unary_union([p for p in parts
+                                                      if p not in attached])
+            geoms[k] = unary_union(attached).buffer(0)
+        if loose_total > 0:
+            print(f"[i] keret-eloszor: {loose_total:.0f} mm2 kulonallo sziget "
+                  f"egy lappal hatrebb kerult")
 
     enforce_nesting()
     heal_all()

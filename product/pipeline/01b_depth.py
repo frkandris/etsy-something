@@ -106,6 +106,16 @@ def quantise(img, levels):
     q = np.zeros(a.shape[:2], dtype=np.int32)
     q[~field] = remap[km.predict(sub)]
     q[field] = levels - 1                            # the field IS the top sheet
+    # Keep the illustration's OWN colours for the render. Deriving the sheet
+    # colours from a hand-tuned ramp made every piece look like a different
+    # product from the picture the buyer was shown - and the ramp's near-black
+    # deepest tone buried a design whose darkest brown is nowhere near black.
+    pal = [None] * levels
+    for i, k in enumerate(order):
+        pal[i] = [round(float(v)) for v in cent[k]]
+    fld = a[field].reshape(-1, 3).mean(axis=0) if field.any() else cent[order[-1]]
+    pal[levels - 1] = [round(float(v)) for v in fld]
+    quantise.palette = pal
     for i, k in enumerate(order):
         print(f"[depth]   szint {i}  luma {float(cent[k] @ LUMA):5.1f}  "
               f"{float((q == i).mean())*100:5.1f}%")
@@ -139,26 +149,20 @@ def clean(q, levels, min_px):
     return q
 
 
-def by_nesting(img, colours):
-    """Depth = how many region boundaries you cross walking in from the field.
+def nesting_depth(img, colours=8, min_pct=0.20):
+    """How many region boundaries you cross walking in from the field.
 
-    This is the measurement that finally explained the failures. The
-    illustration's tone IS very nearly monotone with nesting depth (1 of 33
-    regions violates it), but its actual nesting depth is only FOUR - while we
-    were forcing it into an eight-deep strictly-nested well. The extra levels
-    had to come from somewhere, so side-by-side ribbons that belong on the SAME
-    sheet were pushed to different depths, and the nesting constraint then
-    dilated and clipped them into mush.
+    This is the number the chain was getting wrong. Forcing eight strictly
+    nested sheets onto a picture whose real nesting depth is four means the
+    four surplus sheets have to be invented, so ribbons that sit SIDE BY SIDE -
+    one sheet, different coloured papers - get pushed to different depths, and
+    the nesting constraint then dilates and clips them into mush.
 
-    In a real multilayer papercut, several differently coloured pieces sit on
-    ONE sheet. Colour and depth are independent. Deriving depth from the
-    picture's own containment structure is what respects that.
-
-    Returns the depth map and the depth actually found.
+    Only regions above min_pct of the picture count. A chain of specks would
+    otherwise report a depth of fifteen.
     """
     import collections
     from skimage.measure import label
-    from skimage.segmentation import flood
     from sklearn.cluster import KMeans
 
     a = np.asarray(img.convert("RGB"), dtype=np.float32)
@@ -167,31 +171,29 @@ def by_nesting(img, colours):
     q = km.predict(a.reshape(-1, 3)).reshape(h, w)
 
     lab = label(q, connectivity=1, background=-1)
+    cnt = np.bincount(lab.ravel())
+    keep = set(np.nonzero(cnt >= h * w * min_pct / 100)[0].tolist()) - {0}
     adj = collections.defaultdict(set)
     for A, B in ((lab[:, :-1], lab[:, 1:]), (lab[:-1, :], lab[1:, :])):
         d = A != B
         for x, y in zip(A[d].ravel(), B[d].ravel()):
-            adj[x].add(y); adj[y].add(x)
+            if x in keep and y in keep:
+                adj[x].add(y); adj[y].add(x)
 
-    seed = lab[1, 1]
-    fields = {seed}
-    depth = {seed: 0}
-    frontier, d0 = {seed}, 0
+    seed = int(lab[1, 1])
+    if seed not in keep:
+        return 4
+    depth, frontier, d0 = {seed: 0}, {seed}, 0
     while frontier:
         d0 += 1
-        nxt = set()
-        for r in frontier:
-            for t in adj[r]:
-                if t > 0 and t not in depth:
-                    depth[t] = d0
-                    nxt.add(t)
+        nxt = {t for r in frontier for t in adj[r] if t not in depth}
+        for t in nxt:
+            depth[t] = d0
         frontier = nxt
     mx = max(depth.values())
-    out = np.zeros((h, w), dtype=np.int32)
-    for r, d in depth.items():
-        out[lab == r] = mx - d          # field = mx (top sheet), inner = deeper
-    print(f"[depth] beagyazasi melyseg a kepben: {mx}  -> {mx + 1} lap")
-    return out, mx + 1
+    print(f"[depth] a kep beagyazasi melysege: {mx}  "
+          f"({len(keep)} ertelmes regio, {colours} szinbol)")
+    return mx
 
 
 def by_depth(img, q, levels):
@@ -211,7 +213,9 @@ def main():
     ap.add_argument("--art", required=True, help="lapos papercut illusztracio")
     ap.add_argument("--out", required=True)
     ap.add_argument("--levels", type=int, default=6)
-    ap.add_argument("--order", choices=["tone", "depth", "nesting"], default="tone")
+    ap.add_argument("--order", choices=["tone", "depth"], default="tone")
+    ap.add_argument("--auto-levels", action="store_true",
+                    help="a szintszamot a kep sajat beagyazasi melysegebol vegye")
     ap.add_argument("--colours", type=int, default=8,
                     help="nesting: hany lapos szinre kvantaljon a szegmentalas elott")
     ap.add_argument("--min-region-pct", type=float, default=0.03,
@@ -220,10 +224,12 @@ def main():
     a = ap.parse_args()
 
     img = Image.open(a.art).convert("RGB")
-    if a.order == "nesting":
-        q, a.levels = by_nesting(img, a.colours)
-    else:
-        q = quantise(img, a.levels)
+    if a.auto_levels:
+        want = min(8, max(4, nesting_depth(img, a.colours) + 1))
+        if want != a.levels:
+            print(f"[depth] szintszam {a.levels} helyett {want}")
+        a.levels = want
+    q = quantise(img, a.levels)
     d = None
     if a.order == "depth":
         q, d = by_depth(img, q, a.levels)
@@ -236,6 +242,12 @@ def main():
     out = pathlib.Path(a.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(dm).save(out)
+    pal = getattr(quantise, "palette", None)
+    if pal:
+        import json
+        (out.parent / "palette.json").write_text(json.dumps(pal))
+        print("[depth] paletta: " + "  ".join(
+            "#%02x%02x%02x" % tuple(c) for c in pal))
     print(f"[depth] kesz: {out}")
     if a.debug:
         if d is None:

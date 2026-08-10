@@ -7,10 +7,9 @@
          padding: 24px clamp(12px, 3vw, 40px); background: #faf8f5; color: #241c14; }
   @media (prefers-color-scheme: dark) { body { background: #16130f; color: #ece5dc; } }
   h1 { font-size: 20px; margin: 0 0 20px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-         margin-bottom: 34px; align-items: start; }
+  .row { max-width: 520px; margin: 0 0 28px; }
   .row img { width: 100%; display: block; border-radius: 10px; background: #fff; }
-  .bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; }
+  .bar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
   .name { font-weight: 600; font-size: 17px; }
   button { font: inherit; padding: 5px 14px; border-radius: 7px; cursor: pointer;
            border: 1px solid #0003; background: #f2ece4; color: inherit; }
@@ -21,7 +20,7 @@
          font-family: ui-monospace, monospace; font-size: 13px; }
 </style>
 
-<h1>Macska — 10 változat · balra a generált illusztráció, jobbra a ténylegesen kivágott rétegek</h1>
+<h1>Macska — 10 változat</h1>
 <div id="list"></div>
 <div id="out">nincs kiválasztva</div>
 
@@ -34,8 +33,7 @@ for (let i = 1; i <= N; i++) {
   el.innerHTML = `
     <div class="bar"><span class="name">${v}</span>
       <button type="button">választom</button></div>
-    <img src="${v}/raw_v_0.png" alt="">
-    <img src="${v}/preview_stacked.png" alt="">`;
+    <img src="${v}/raw_v_0.png" alt="">`;
   el.querySelector('button').onclick = () => {
     picks.has(v) ? picks.delete(v) : picks.add(v);
     el.classList.toggle('pick', picks.has(v));

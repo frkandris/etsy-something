@@ -21,6 +21,7 @@ argv = sys.argv[sys.argv.index("--") + 1:]
 GRAIN = "--grain" in argv
 SCENE_HDRI = ""
 PROP_SET = "warm"
+PALETTE_FILE = ""
 SCENE_ZOOM = 0.82   # matched to the references, where the frame fills ~85% of
                     # the picture. Wider than that and it reads as an interior
                     # photo the frame happens to appear in.
@@ -31,6 +32,8 @@ for _i, _a in enumerate(argv):
         SCENE_ZOOM = float(argv[_i + 1])
     if _a == "--props" and _i + 1 < len(argv):
         PROP_SET = argv[_i + 1]
+    if _a == "--palette-file" and _i + 1 < len(argv):
+        PALETTE_FILE = argv[_i + 1]
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
 for i, a in enumerate(argv):
@@ -47,9 +50,9 @@ skip = set()
 for i, a in enumerate(argv):
     if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
              "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom",
-             "--props"):
+             "--props", "--palette-file"):
         skip.add(i)
-        if a in ("--orbit", "--scene", "--scene-zoom", "--props"):
+        if a in ("--orbit", "--scene", "--scene-zoom", "--props", "--palette-file"):
             skip.add(i + 1)
 argv = [a for i, a in enumerate(argv) if i not in skip]
 SRC = pathlib.Path(argv[0])
@@ -65,7 +68,10 @@ AZIM = 10.0 if VIEW == "hero" else 24.0
 # throws is under a pixel and the stack renders flat. 3.2 mm keeps the paper
 # read and gives every cut edge a visible shadow - the depth cue the reviewer
 # kept scoring lowest.
-THICK = 0.0032 if PAPER else 0.003
+# 3.2 mm threw a step shadow so deep that every recess read near-black, and
+# the piece looked nothing like the light, airy illustration it came from.
+# 2.2 mm still gives each cut edge its own shadow without burying the colour.
+THICK = 0.0022 if PAPER else 0.003
 GAP = 0.0002
 
 # ------------------------------------------------------------------ scene
@@ -80,7 +86,7 @@ scene.render.engine = "BLENDER_EEVEE"
 try:
     scene.eevee.taa_render_samples = 96
     scene.eevee.use_gtao = True                # ambient occlusion in the recesses
-    scene.eevee.gtao_distance = 0.02
+    scene.eevee.gtao_distance = 0.008
     scene.eevee.use_soft_shadows = True
 except AttributeError:
     pass
@@ -88,7 +94,7 @@ scene.render.resolution_x = 2000
 scene.render.resolution_y = 2000
 scene.render.film_transparent = (VIEW == "plate")
 scene.view_settings.look = "AgX - Base Contrast"
-scene.view_settings.exposure = -0.4
+scene.view_settings.exposure = -0.05
 if VIEW == "plate":
     # Lit to match a photographed backdrop rather than a modelled one: warm key
     # from the upper left, gentle fill, neutral transform so the composite step
@@ -266,9 +272,26 @@ PALETTES = {
     "knot2": [(0.42, 0.05, 0.05, 1), (0.05, 0.05, 0.06, 1), (0.10, 0.10, 0.12, 1),
               (0.45, 0.45, 0.48, 1), (0.80, 0.80, 0.82, 1), (0.96, 0.96, 0.97, 1)],
 }
-if PALETTE not in PALETTES:
+if PALETTE_FILE:
+    # The sheets take the ILLUSTRATION's own colours, deepest first. sRGB has
+    # to be linearised or every colour renders washed out and pale.
+    import json as _json
+    _srgb = _json.loads(pathlib.Path(PALETTE_FILE).read_text())
+
+    def _lin(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+    BASE = [tuple(_lin(v) for v in rgb) + (1,) for rgb in _srgb]
+    PALETTES = dict(PALETTES, __file__=BASE)
+    PALETTE = "__file__"
+    print("[render] paletta a rajzbol: " + "  ".join(
+        "#%02x%02x%02x" % tuple(c) for c in _srgb))
+elif PALETTE not in PALETTES:
     print(f"[render] FIGYELEM: ismeretlen paletta '{PALETTE}', wood-ra esem vissza")
-BASE = PALETTES.get(PALETTE, PALETTES["wood"])
+    BASE = PALETTES["wood"]
+else:
+    BASE = PALETTES[PALETTE]
 
 
 # Spot palettes are a SET of flat colours: blending them makes mud, so they are

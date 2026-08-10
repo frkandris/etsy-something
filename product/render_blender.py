@@ -19,6 +19,10 @@ argv = sys.argv[sys.argv.index("--") + 1:]
 # Every flag must be read BEFORE argv is filtered. Reading one afterwards
 # silently yields False - that is why --white-top and --recessed did nothing.
 GRAIN = "--grain" in argv
+SCENE_HDRI = ""
+for _i, _a in enumerate(argv):
+    if _a == "--scene" and _i + 1 < len(argv):
+        SCENE_HDRI = argv[_i + 1]
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
 for i, a in enumerate(argv):
@@ -34,9 +38,9 @@ DOTS = "--dots" in argv
 skip = set()
 for i, a in enumerate(argv):
     if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
-             "--dots", "--wood-frame", "--recessed"):
+             "--dots", "--wood-frame", "--recessed", "--scene"):
         skip.add(i)
-        if a == "--orbit":
+        if a in ("--orbit", "--scene"):
             skip.add(i + 1)
 argv = [a for i, a in enumerate(argv) if i not in skip]
 SRC = pathlib.Path(argv[0])
@@ -546,6 +550,49 @@ if FRAME:
           f"kitoltes={ART/(inner*2)*100:.0f}%")
     FRAME_OBJS.append(shell)
 
+if VIEW == "styled":
+    # A real room built from CC0 geometry, lit by an HDRI. The point is the
+    # camera: props at their own depths parallax correctly through an orbit,
+    # and the HDRI background rotates with the view. A flat backdrop plate
+    # cannot do either - it stayed nailed down while the frame turned, which
+    # is what gave the video away.
+    import os
+    AST = pathlib.Path(__file__).resolve().parent / "pipeline" / "assets"
+
+    def bring(name, loc, rot_z=0.0, scale=1.0):
+        bf = AST / "models" / name / f"{name}.blend"
+        if not bf.exists():
+            print(f"[render] hianyzo eszkoz: {name}")
+            return []
+        before = set(bpy.data.objects)
+        bpy.ops.wm.append(filepath=str(bf) + "/Collection/" + name,
+                          directory=str(bf) + "/Collection/", filename=name)
+        new = [o for o in bpy.data.objects if o not in before]
+        for o in new:
+            if o.parent:
+                continue
+            o.location = (loc[0] * SIZE, loc[1] * SIZE, loc[2] * SIZE)
+            o.rotation_euler.z += math.radians(rot_z)
+            o.scale = tuple(c * scale for c in o.scale)
+        return new
+
+    for o in objs + FRAME_OBJS:
+        o.rotation_euler = (math.radians(90), 0, 0)
+        ox, oy, oz = o.location.x, o.location.y, o.location.z
+        o.location = (ox, -oz, oy + SIZE * 0.60)
+
+    # the surface everything stands on
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, SIZE * 0.35, -SIZE * 0.03))
+    tb = bpy.context.object
+    tb.scale = (SIZE * 7, SIZE * 3.4, SIZE * 0.06)
+    tb.data.materials.append(wood("tabletop", (0.36, 0.22, 0.12, 1), 0.28, grain=True))
+
+    bring("potted_plant_02",        (-1.15, 0.55, 0.0), rot_z=25)
+    bring("antique_ceramic_vase_01", (0.98, 0.30, 0.0), rot_z=-15)
+    bring("book_encyclopedia_set_01", (0.78, -0.42, 0.0), rot_z=8)
+    bring("wooden_candlestick",     (-0.72, -0.38, 0.0), rot_z=0)
+    bring("wicker_basket_01",       (1.45, 0.75, 0.0), rot_z=40)
+
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene
     for o in objs + FRAME_OBJS:
@@ -640,7 +687,18 @@ if FRAME:
     # the frame extends past the art, so the camera must be told the object is
     # bigger - otherwise it fits the art and crops the frame away
     MARGIN *= 1.45 * (SIZE / ART if ART else 1.0)
-if VIEW == "plate":
+if VIEW == "styled":
+    D = SIZE * MARGIN * LENS / 36.0 * 1.15
+    bpy.ops.object.camera_add(location=(0, -D, SIZE * 0.72),
+                              rotation=(math.radians(88), 0, 0))
+    cam = bpy.context.object
+    cam.data.lens = LENS
+    cam.data.dof.use_dof = True
+    cam.data.dof.focus_distance = D
+    cam.data.dof.aperture_fstop = 2.8
+    scene.camera = cam
+    print(f"[render] nezet=styled tavolsag={D:.3f}")
+elif VIEW == "plate":
     D = SIZE * MARGIN * LENS / 36.0 * 1.0
     bpy.ops.object.camera_add(location=(0, -D, 0), rotation=(math.radians(90), 0, 0))
     cam = bpy.context.object
@@ -703,6 +761,21 @@ fo.location = (SIZE * 1.6, -SIZE * 0.9, SIZE * 0.9); fo.rotation_euler = (math.r
 
 world = bpy.data.worlds.new("w"); scene.world = world
 world.use_nodes = True
+if SCENE_HDRI:
+    _hdr = pathlib.Path(__file__).resolve().parent / "pipeline" / "assets" / "hdris" / f"{SCENE_HDRI}.hdr"
+    if _hdr.exists():
+        _wt = world.node_tree
+        _env = _wt.nodes.new("ShaderNodeTexEnvironment")
+        _env.image = bpy.data.images.load(str(_hdr))
+        _map = _wt.nodes.new("ShaderNodeMapping")
+        _map.inputs["Rotation"].default_value[2] = math.radians(120)
+        _co = _wt.nodes.new("ShaderNodeTexCoord")
+        _wt.links.new(_co.outputs["Generated"], _map.inputs["Vector"])
+        _wt.links.new(_map.outputs["Vector"], _env.inputs["Vector"])
+        _bg = _wt.nodes["Background"]
+        _wt.links.new(_env.outputs["Color"], _bg.inputs["Color"])
+        _bg.inputs[1].default_value = 1.0
+        print(f"[render] HDRI: {SCENE_HDRI}")
 if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55

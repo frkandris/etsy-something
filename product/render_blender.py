@@ -48,8 +48,12 @@ ELEV = float(argv[4]) if len(argv) > 4 else (80.0 if VIEW == "hero" else 34.0)
 AZIM = 10.0 if VIEW == "hero" else 24.0
 # 0.9 mm was physically honest for cardstock but read as a flat print; 2 mm
 # still says "paper" and gives every edge its own visible contact shadow
-THICK = 0.002 if PAPER else 0.003
-GAP = 0.00012 if PAPER else 0.0002
+# 2 mm is what cardstock actually measures, but at 300 mm the step shadow it
+# throws is under a pixel and the stack renders flat. 3.2 mm keeps the paper
+# read and gives every cut edge a visible shadow - the depth cue the reviewer
+# kept scoring lowest.
+THICK = 0.0032 if PAPER else 0.003
+GAP = 0.0002
 
 # ------------------------------------------------------------------ scene
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -222,13 +226,16 @@ PALETTES = {
     # Saturated warm midtones (terracotta, gold) so the three near-identical
     # browns separate, and NO pure white inside: the L*96 highlight slivers
     # round the eyes read as paint splatter, not paper. Interior ceiling L*90.
-    "well":  [(0.022, 0.010, 0.005, 1),   # L*20  #2A1B12 anchor
-              (0.079, 0.032, 0.013, 1),   # L*35
-              (0.430, 0.117, 0.043, 1),   # L*50  #B5643C terracotta
-              (0.727, 0.376, 0.048, 1),   # L*62  #E0A63F gold
-              (0.610, 0.430, 0.250, 1),   # L*74
-              (0.795, 0.775, 0.735, 1),   # L*88  interior light
-              (0.930, 0.912, 0.878, 1)],  # L*96  #F7F3EC the top sheet
+    # Even 12 L* steps from a WARM deep brown (not near-black - the reference's
+    # darkest is a warm #4A3122, and true black read as a hole rather than a
+    # sheet) up to a warm cream mat.
+    "well":  [(0.068, 0.033, 0.015, 1),   # L*22  #4A3122
+              (0.154, 0.068, 0.026, 1),   # L*34  #6E4A2E
+              (0.305, 0.098, 0.033, 1),   # L*46  #9A5A34 terracotta
+              (0.503, 0.195, 0.042, 1),   # L*58  #C07A3A
+              (0.716, 0.389, 0.102, 1),   # L*70  #DDA85C gold
+              (0.839, 0.638, 0.451, 1),   # L*82  #ECD3B4
+              (0.888, 0.815, 0.731, 1)],  # L*92  #F2EADD warm cream mat
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,
@@ -671,19 +678,23 @@ scene.camera = cam
 print(f"[render] nezet={VIEW} emelkedes={ELEV:.0f} tavolsag={D:.3f}")
 
 # tighter key = sharper layer-edge shadows, which is what sells the depth
-KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 70 if VIEW == "plate" else 110)
-key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E; key.size = SIZE * 1.5
+KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 105 if VIEW == "plate" else 110)
+key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E
+# a small emitter throws a hard, short shadow off every cut edge - that step
+# shadow IS the depth cue, and a broad soft light erased it
+key.size = SIZE * (0.35 if VIEW == "plate" else 1.5)
 if VIEW in ("lifestyle", "plate"):
     key.color = (1.0, 0.93, 0.84)          # warm daylight, matching the backdrop
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
 if VIEW == "plate":
-    ko.location = (-SIZE * 1.4, -SIZE * 1.5, SIZE * 1.1)
-    ko.rotation_euler = (math.radians(58), 0, math.radians(-38))
+    # lower and further round: a grazing key lengthens every step shadow
+    ko.location = (-SIZE * 1.7, -SIZE * 1.5, SIZE * 0.75)
+    ko.rotation_euler = (math.radians(68), 0, math.radians(-42))
 else:
     ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5)
     ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
 
-FILL_E = SIZE * SIZE * (26 if VIEW == "lifestyle" else 20 if VIEW == "plate" else 22)
+FILL_E = SIZE * SIZE * (26 if VIEW == "lifestyle" else 9 if VIEW == "plate" else 22)
 fill = bpy.data.lights.new("fill", "AREA"); fill.energy = FILL_E; fill.size = SIZE * 5
 if VIEW == "lifestyle":
     fill.color = (0.99, 0.98, 0.97)

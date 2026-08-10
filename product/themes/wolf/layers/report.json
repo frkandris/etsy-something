@@ -20,43 +20,43 @@
   },
   "2": {
    "pieces": 2,
-   "holes": 12,
-   "weakest_mm": 5.82,
+   "holes": 11,
+   "weakest_mm": 2.37,
    "thin_pct": 0.01
   },
   "3": {
    "pieces": 2,
-   "holes": 17,
-   "weakest_mm": 5.82,
-   "thin_pct": 0.0
+   "holes": 18,
+   "weakest_mm": 2.37,
+   "thin_pct": 0.01
   },
   "4": {
    "pieces": 2,
-   "holes": 13,
-   "weakest_mm": 5.82,
-   "thin_pct": 0.0
+   "holes": 15,
+   "weakest_mm": 2.37,
+   "thin_pct": 0.01
   },
   "5": {
    "pieces": 3,
    "holes": 11,
-   "weakest_mm": 5.82,
-   "thin_pct": 0.0
+   "weakest_mm": 2.37,
+   "thin_pct": 0.01
   },
   "6": {
-   "pieces": 3,
-   "holes": 18,
-   "weakest_mm": 5.82,
-   "thin_pct": 0.0
+   "pieces": 4,
+   "holes": 17,
+   "weakest_mm": 2.37,
+   "thin_pct": 0.01
   },
   "7": {
    "pieces": 6,
    "holes": 15,
-   "weakest_mm": 5.82,
-   "thin_pct": 0.0
+   "weakest_mm": 2.37,
+   "thin_pct": 0.01
   }
  },
- "pieces_total": 19,
- "weakest_mm": 5.82,
+ "pieces_total": 20,
+ "weakest_mm": 2.37,
  "necks": 0,
  "keyhole": false,
  "draft": false,

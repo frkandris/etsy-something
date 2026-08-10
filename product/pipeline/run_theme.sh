@@ -17,7 +17,7 @@ case "$KEY" in
   *)            BG=warm-shelf;   FRAMEFLAG="" ;;
 esac
 .venv/bin/python product/pipeline/02_trace.py --src "$SRC" --levels $LEVELS \
-  --min-part 180 --min-feature 2.0 --speckle 0.8 --sliver-ratio 4 --min-area-pct 1.2 --max-parts 20 --round-corners 3.5 --motif-scale 0.80 --merge-below 0.012 --margin 30 --punch 20 \
+  --min-part 180 --min-feature 5.0 --speckle 0.8 --sliver-ratio 3 --min-area-pct 1.2 --max-parts 18 --round-corners 3.5 --motif-scale 0.95 --merge-below 0.012 --margin 30 --punch 14 \
   --no-keyhole --full-panel --out $D/layers 2>&1 \
   | grep -v -E "Deprecat|px = list" | tail -14
 blender -b -P product/render_blender.py -- $D/layers "$PWD/$D/plate.png" \

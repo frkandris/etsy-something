@@ -94,6 +94,21 @@ one - draw it the way a papercut artist would cut it.
 Square, flat, centred, no text, no signature, no background scene.
 """
 
+
+FLAT_REF_NOTE = """
+
+STYLE REFERENCE. A photograph of a finished piece is attached. Take from it
+ONLY the drawing language:
+- how the shapes flow: long liquid ribbons with rounded teardrop tips, S-bends,
+  the look of poured paint rather than an outlined animal
+- how the subject is cropped LARGE and fills the panel, not a small figure
+  standing in the middle of an empty field
+- the warm cream-to-brown tonal ramp, each tone a flat solid block
+- the scattered round dots of varying size in the open areas
+Do NOT copy its subject, its pose, its frame, its background or its photograph
+quality. Output the FLAT ILLUSTRATION described above, nothing else - no frame,
+no room, no shadow, no photographic lighting."""
+
 PROMPT = """A design for LAYERED LASER-CUT WALL ART, drawn as a flat greyscale DEPTH MAP.
 
 Subject: {subject}
@@ -307,7 +322,7 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
             img = img.crop((x, y, x + w, y + h))
         buf = io.BytesIO(); img.save(buf, "PNG")
         body, ctype = _multipart(
-            {"model": MODEL, "prompt": prompt + ("" if flat else REF_NOTE), "size": size, "n": str(n)},
+            {"model": MODEL, "prompt": prompt + (FLAT_REF_NOTE if flat else REF_NOTE), "size": size, "n": str(n)},
             {"image": ("ref.png", buf.getvalue(), "image/png")})
         url = "https://api.openai.com/v1/images/edits"
         print(f"[gen] {MODEL}  {size}  temaja: {subject_key}  ref: {ref}"

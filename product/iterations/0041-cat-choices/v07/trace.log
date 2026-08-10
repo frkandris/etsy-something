@@ -3,15 +3,16 @@ tonusszintek: 0, 42, 85, 127, 170, 212, 255
 [i] teljes panel kikenyszeritve (19 mm2 kerult minden lapra)
 [i] minta a biztonsagos zonara illesztve (0.853x, eltolas +0/+0 mm)
 [i] 22 mm-es erintetlen margosav minden lapon
-[i] szilank-szures: 6 darab es 0 nyilas beolvasztva (karcsusag > 4 vagy terulet < 0.5%)
+[i] szilank-szures: 9 darab es 0 nyilas beolvasztva (karcsusag > 4 vagy terulet < 0.5%)
+[i] komponens-plafon 24: 0 darab es 2 nyilas beolvasztva
 objektum: 300 mm (a hatlap befoglaloja, nem a vaszon)
 
  reteg  darab  lyuk  terulet mm2   leggyengebb  vekony%  nyak  statusz
-     1      1     3       89,048        12.00mm    0.00%     0  OK
-     2      1     7       85,567        12.00mm    0.00%     0  OK
-     3      1     9       79,839        12.00mm    0.00%     0  OK
-     4      1    13       73,629        12.00mm    0.00%     0  OK
-     5      2    13       69,247        12.00mm    0.00%     0  OK
-     6      2    16       63,218        12.00mm    0.00%     0  OK
+     1      1     9       84,994        12.00mm    0.00%     0  OK
+     2      1     8       82,885        12.00mm    0.00%     0  OK
+     3      2    11       75,440         8.58mm    0.00%     0  OK
+     4      3    18       69,416         8.52mm    0.00%     0  OK
+     5      4    23       64,172         8.52mm    0.00%     0  OK
+     6      5    21       61,584         9.27mm    0.00%     0  OK
 
 kiirva: product/iterations/0041-cat-choices/v07/layers  (16 fajl)

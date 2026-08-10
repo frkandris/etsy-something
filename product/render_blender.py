@@ -71,9 +71,19 @@ GAP = 0.0002
 # ------------------------------------------------------------------ scene
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
-scene.render.engine = "CYCLES"
-scene.cycles.samples = 128
-scene.cycles.use_denoising = True
+# Eevee, not Cycles. Flat-shaded paper on flat sheets has nothing for path
+# tracing to discover - no caustics, no glass, no subsurface - so 128 Cycles
+# samples bought a couple of minutes per frame and no visible difference. The
+# video work already ran on Eevee for exactly this reason; the stills were
+# still quietly on Cycles.
+scene.render.engine = "BLENDER_EEVEE"
+try:
+    scene.eevee.taa_render_samples = 96
+    scene.eevee.use_gtao = True                # ambient occlusion in the recesses
+    scene.eevee.gtao_distance = 0.02
+    scene.eevee.use_soft_shadows = True
+except AttributeError:
+    pass
 scene.render.resolution_x = 2000
 scene.render.resolution_y = 2000
 scene.render.film_transparent = (VIEW == "plate")
@@ -473,9 +483,13 @@ PROP_SETS = {
     # Three, small, pushed to the edges. The references let a little greenery
     # and one ceramic thing peek in at a corner and nothing more; a full shelf
     # turns the listing into an interior photo the frame happens to be in.
-    "warm": [("potted_plant_02",          (-0.88, 0.40, 0.0),  25, 0.62),
-             ("antique_ceramic_vase_01",  ( 0.86, 0.25, 0.0), -15, 0.60),
-             ("book_encyclopedia_set_01", ( 0.95, -0.70, 0.0),   8, 0.70)],
+    # Two behind and blurred, two in FRONT of the frame's plane and cut by the
+    # picture edge - that front pair is what the reference uses to sell depth,
+    # and a prop that is only ever behind cannot do it.
+    "warm": [("potted_plant_02",          (-0.92,  0.55, 0.0),  25, 0.62),
+             ("antique_ceramic_vase_01",  ( 0.94,  0.45, 0.0), -15, 0.58),
+             ("wicker_basket_01",         ( 0.86, -0.85, 0.0),  30, 0.50),
+             ("wooden_candlestick",       (-0.84, -0.80, 0.0),   0, 0.55)],
 }
 
 FRAME_OBJS = []
@@ -554,7 +568,10 @@ if FRAME:
     bpy.context.view_layer.objects.active = shell
     bpy.ops.object.modifier_apply(modifier="cut")
     bpy.data.objects.remove(hole, do_unlink=True)
-    fc = (0.115, 0.052, 0.022, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
+    # Light oak, not walnut. The reference frame is a pale, warm, visibly
+    # grained oak; the near-black walnut swallowed the corner light and made
+    # the whole listing read heavy.
+    fc = (0.318, 0.170, 0.068, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
     # A flat matte plane reads as plastic. Real frame stock has grain running
     # one way, a slight sheen, and a bevel that catches a warm highlight.
     _fmat = wood("frame", fc, 0.34 if WOODFRAME else 0.42, grain=WOODFRAME)
@@ -582,7 +599,7 @@ if FRAME:
     shell.data.materials.append(_fmat)
     for _sl in shell.material_slots:
         _sl.material = _fmat
-    print(f"[render] keret: {'dio' if WOODFRAME else 'feher'}")
+    print(f"[render] keret: {'vilagos tolgy' if WOODFRAME else 'feher'}")
     print(f"[render] mu={ART:.4f} keret-nyilas={inner*2:.4f} "
           f"kitoltes={ART/(inner*2)*100:.0f}%")
     FRAME_OBJS.append(shell)
@@ -624,12 +641,27 @@ if VIEW == "styled":
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 1.6, -SIZE * 0.03))
     tb = bpy.context.object
     tb.scale = (SIZE * 9, SIZE * 9, SIZE * 0.06)
-    tb.data.materials.append(wood("tabletop", (0.36, 0.22, 0.12, 1), 0.28, grain=True))
+    # weathered plank, not polished walnut: the reference stands on pale
+    # grey-brown boards with visible grain running across the frame
+    tb.data.materials.append(wood("tabletop", (0.245, 0.163, 0.100, 1), 0.62,
+                                  grain=True))
 
     # Staggered in depth on purpose - that spread is the parallax. Kept few
     # and pushed to the edges: the references let one or two objects peek in at
     # a corner, and a full shelf turns the listing into an interior photo the
     # frame happens to appear in.
+    # A real wall behind. Leaving the background to the HDRI alone kept the top
+    # of the picture black - the environment map's bright side was simply not
+    # behind the camera. A wall is also what the reference has: a pale, warm
+    # surface that the depth of field turns into a soft field of light.
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0, SIZE * 2.6, SIZE * 1.5))
+    _wall = bpy.context.object
+    _wall.rotation_euler = (math.radians(90), 0, 0)
+    _wall.scale = (SIZE * 14, SIZE * 9, 1.0)
+    _wall.data.materials.append(wood("wall", (0.86, 0.80, 0.71, 1), 0.92, grain=False))
+
+    bring("Shelf_01", (0.15, 2.35, 1.15), rot_z=0, scale=1.15)
+
     for name, loc, rz, sc in PROP_SETS.get(PROP_SET, PROP_SETS["warm"]):
         bring(name, loc, rot_z=rz, scale=sc)
 
@@ -819,7 +851,9 @@ if SCENE_HDRI:
         _wt.links.new(_map.outputs["Vector"], _env.inputs["Vector"])
         _bg = _wt.nodes["Background"]
         _wt.links.new(_env.outputs["Color"], _bg.inputs["Color"])
-        _bg.inputs[1].default_value = 1.0
+        # 1.0 left the room nearly black behind the frame. The reference is a
+        # bright, airy daylight interior; the background has to carry light.
+        _bg.inputs[1].default_value = 2.6
         print(f"[render] HDRI: {SCENE_HDRI}")
 if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
@@ -834,7 +868,7 @@ if ORBIT:
     # These are flat-shaded paper planes with one key light: Eevee renders them
     # in seconds and the difference is invisible at 1080 px.
     try:
-        scene.render.engine = "BLENDER_EEVEE_NEXT"
+        scene.render.engine = "BLENDER_EEVEE"
     except TypeError:
         scene.render.engine = "BLENDER_EEVEE"
     es = scene.eevee

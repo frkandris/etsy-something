@@ -20,9 +20,13 @@ argv = sys.argv[sys.argv.index("--") + 1:]
 # silently yields False - that is why --white-top and --recessed did nothing.
 GRAIN = "--grain" in argv
 SCENE_HDRI = ""
+SCENE_ZOOM = 1.30   # >1 pulls the camera back; the frame should sit IN a room,
+                    # not fill it - the props are what make the room read as real
 for _i, _a in enumerate(argv):
     if _a == "--scene" and _i + 1 < len(argv):
         SCENE_HDRI = argv[_i + 1]
+    if _a == "--scene-zoom" and _i + 1 < len(argv):
+        SCENE_ZOOM = float(argv[_i + 1])
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
 for i, a in enumerate(argv):
@@ -38,9 +42,9 @@ DOTS = "--dots" in argv
 skip = set()
 for i, a in enumerate(argv):
     if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
-             "--dots", "--wood-frame", "--recessed", "--scene"):
+             "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom"):
         skip.add(i)
-        if a in ("--orbit", "--scene"):
+        if a in ("--orbit", "--scene", "--scene-zoom"):
             skip.add(i + 1)
 argv = [a for i, a in enumerate(argv) if i not in skip]
 SRC = pathlib.Path(argv[0])
@@ -582,16 +586,20 @@ if VIEW == "styled":
         o.location = (ox, -oz, oy + SIZE * 0.60)
 
     # the surface everything stands on
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, SIZE * 0.35, -SIZE * 0.03))
+    # runs well past the camera so its front edge never enters frame - a visible
+    # near edge turned the bottom third into a bright empty slab
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 1.6, -SIZE * 0.03))
     tb = bpy.context.object
-    tb.scale = (SIZE * 7, SIZE * 3.4, SIZE * 0.06)
+    tb.scale = (SIZE * 9, SIZE * 9, SIZE * 0.06)
     tb.data.materials.append(wood("tabletop", (0.36, 0.22, 0.12, 1), 0.28, grain=True))
 
-    bring("potted_plant_02",        (-1.15, 0.55, 0.0), rot_z=25)
-    bring("antique_ceramic_vase_01", (0.98, 0.30, 0.0), rot_z=-15)
-    bring("book_encyclopedia_set_01", (0.78, -0.42, 0.0), rot_z=8)
-    bring("wooden_candlestick",     (-0.72, -0.38, 0.0), rot_z=0)
-    bring("wicker_basket_01",       (1.45, 0.75, 0.0), rot_z=40)
+    # staggered in depth on purpose: something behind the frame, something
+    # beside it, something in front of its plane. That spread is the parallax.
+    bring("potted_plant_02",         (-1.30, 0.70, 0.0), rot_z=25,  scale=0.85)
+    bring("antique_ceramic_vase_01", ( 1.12, 0.45, 0.0), rot_z=-15, scale=0.80)
+    bring("book_encyclopedia_set_01",( 0.86, -0.55, 0.0), rot_z=8,  scale=0.85)
+    bring("wooden_candlestick",      (-0.80, -0.60, 0.0), rot_z=0,  scale=0.85)
+    bring("wicker_basket_01",        ( 1.70, 0.95, 0.0), rot_z=40,  scale=0.85)
 
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene
@@ -688,9 +696,14 @@ if FRAME:
     # bigger - otherwise it fits the art and crops the frame away
     MARGIN *= 1.45 * (SIZE / ART if ART else 1.0)
 if VIEW == "styled":
-    D = SIZE * MARGIN * LENS / 36.0 * 1.15
-    bpy.ops.object.camera_add(location=(0, -D, SIZE * 0.72),
-                              rotation=(math.radians(88), 0, 0))
+    D = SIZE * MARGIN * LENS / 36.0 * SCENE_ZOOM
+    # aim at the artwork's centre rather than picking a tilt by hand. A fixed
+    # tilt left half the picture as bare tabletop; aiming keeps the piece
+    # centred whatever the zoom, so zoom stays a free dial.
+    TGT = SIZE * 0.62
+    camz = SIZE * 1.05
+    bpy.ops.object.camera_add(location=(0, -D, camz),
+                              rotation=(math.atan2(D, camz - TGT), 0, 0))
     cam = bpy.context.object
     cam.data.lens = LENS
     cam.data.dof.use_dof = True

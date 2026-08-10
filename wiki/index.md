@@ -64,6 +64,8 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 ## Döntések — `decisions/`
 
+- [[decisions/2026-08-10-keprogeneralas-iranya]] — lapos illusztráció + külön mélységbecslés
+- [[decisions/2026-08-10-cc0-eszkozok-a-hatterben]] — a háttér CC0 3D geometria, nem lapos fotó
 - [[decisions/2026-08-07-pursue-layered]] — marad a layered
 - [[decisions/2026-08-06-apps-script-for-sheets]] — sheet-írás Apps Scripttel
 - [[decisions/2026-08-06-exchange-rates]] — rögzített árfolyamok

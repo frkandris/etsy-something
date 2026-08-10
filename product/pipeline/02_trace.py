@@ -343,6 +343,9 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
+    ap.add_argument("--merge-below", type=float, default=0.04,
+                    help="ekkoranal kisebb uj teruletet ado szintet osszevon; "
+                         "4%% elnyelte az arcot hordozo szinteket")
     ap.add_argument("--margin", type=float, default=0.0,
                     help="mm: ilyen szeles erintetlen sav a lap szelen")
     ap.add_argument("--speckle", type=float, default=0.0,
@@ -601,7 +604,7 @@ def main():
     drop = []
     for i, k in enumerate(ks[1:], 1):
         prev = geoms[ks[i - 1]]
-        if prev.area > 0 and (prev.area - geoms[k].area) / prev.area < 0.04:
+        if prev.area > 0 and (prev.area - geoms[k].area) / prev.area < a.merge_below:
             drop.append((k, (prev.area - geoms[k].area) / prev.area))
     for k, gain in drop:
         print(f"[i] {k}. reteg osszevonva a mogotte levobe ({gain*100:.1f}% uj terulet)")

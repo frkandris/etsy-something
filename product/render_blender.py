@@ -216,7 +216,7 @@ PALETTES = {
               (0.087, 0.033, 0.011, 1),   # #55341C deep chocolate, H32
               (0.546, 0.097, 0.015, 1),   # #C85A22 burnt orange, H17
               (0.716, 0.389, 0.028, 1),   # #DDA82F mustard gold, H47
-              (0.930, 0.863, 0.738, 1)],  # #F7F0E4 warm off-white sheet L*95
+              (0.965, 0.955, 0.935, 1)],  # near-white top sheet, L*98
     "knot":  [(0.045, 0.045, 0.05, 1), (0.55, 0.08, 0.08, 1), (0.30, 0.30, 0.33, 1),
               (0.62, 0.62, 0.65, 1), (0.82, 0.82, 0.84, 1), (0.95, 0.95, 0.96, 1)],
     # MaWood look: deep red field on the solid backer, near-black strands,

@@ -1,0 +1,65 @@
+{
+ "web_target_mm": 2.0,
+ "thin_area_worst_pct": 0.07,
+ "web_target_at_scale_mm": {
+  "100%": 2.0,
+  "75%": 1.5,
+  "50%": 1.0,
+  "25%": 0.5
+ },
+ "note": "web_target_mm is the design target the chain heals to, not a guaranteed floor; thin_area_worst_pct is how much of the worst layer measured below it.",
+ "levels": 6,
+ "levels_requested": 6,
+ "levels_merged": 0,
+ "layers": {
+  "1": {
+   "pieces": 1,
+   "holes": 6,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.0
+  },
+  "2": {
+   "pieces": 1,
+   "holes": 13,
+   "weakest_mm": 12.0,
+   "thin_pct": 0.03
+  },
+  "3": {
+   "pieces": 3,
+   "holes": 12,
+   "weakest_mm": 4.1,
+   "thin_pct": 0.06
+  },
+  "4": {
+   "pieces": 3,
+   "holes": 16,
+   "weakest_mm": 4.1,
+   "thin_pct": 0.07
+  },
+  "5": {
+   "pieces": 3,
+   "holes": 13,
+   "weakest_mm": 4.1,
+   "thin_pct": 0.07
+  },
+  "6": {
+   "pieces": 3,
+   "holes": 5,
+   "weakest_mm": 4.1,
+   "thin_pct": 0.07
+  }
+ },
+ "pieces_total": 14,
+ "weakest_mm": 4.1,
+ "necks": 0,
+ "keyhole": false,
+ "draft": false,
+ "size_mm": 300.0,
+ "accent_pieces": {
+  "3": 2,
+  "4": 2,
+  "5": 2,
+  "6": 2
+ },
+ "accent_note": "accent pieces sit on the solid sheet behind them and are glued separately; count above is per layer"
+}

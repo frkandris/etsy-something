@@ -2,6 +2,9 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-11 — Akcentus-darabok: a 150 mm2 folotti sziget nem hiba, hanem kulon ragasztando elem (a beagyazott retegek miatt alatta mindig van anyag) - igy marad meg a szem-irisz. Riport-idoben, a vegso geometriabol szamolva, report.json-ban (workflows/recessed-papercut-pipeline)
+2026-08-11 — v04 ujrarajzolas: az attetszo szalag-atfedesek keverekzonai tormelekre esnek a kvantalasnal; a prompt tiltja a keverest, es a valasztott kep kompozicio-referenciakent megy vissza. Reviewer: redraw_a 4,0 atlag - eddigi legjobb (product/iterations/0048-cat-v04)
+
 2026-08-11 — Csipkes elek: ket ok, mindketto merve — a potrace GeoJSON-backendje 8 szakaszra lapitotta a Bezier-eket (SVG-backendre valtas), es az 1024 px-es forras 0,293 mm-es pixelracsa (4x felskalazas vektorizalas elott) (workflows/recessed-papercut-pipeline)
 2026-08-11 — Egyszerusitesi audit: minden javito lepes kikapcsolasaval a riport ugyanugy zold, a kimenet husegesebb (a pottyok megmaradnak). A speckle/sliver/min-area/min-feature/round-corners alapbol ki, a Taubin-simitas torolve (workflows/recessed-papercut-pipeline)
 

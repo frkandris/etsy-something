@@ -75,6 +75,11 @@ one - draw it the way a papercut artist would cut it.
 - EXACTLY {levels} flat tones, no more. Every tone is one sheet of paper.
   Solid fill, hard edges. NO gradients, NO shading, NO drop shadows, NO
   texture, NO grain, NO outlines, NO highlights.
+- NO TRANSPARENCY, NO OVERLAP BLENDING. Where two ribbons cross, ONE of them
+  wins and keeps its solid colour - never a mixed in-between shade. Every
+  boundary in the picture is a hard edge between exactly two of the {levels}
+  tones. If a soft airbrushed transition appears anywhere, the picture cannot
+  be cut.
 - The palette is a warm neutral ramp from cream to deep brown. Each tone is
   clearly separable from its neighbours - if two tones could be confused at a
   glance, push them apart.

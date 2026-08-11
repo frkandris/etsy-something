@@ -475,6 +475,8 @@ def main():
     ap.add_argument("--palette", default=None,
                     help="a rajzbol szarmazo szinek (01b palette_full.json); a "
                          "tulelt lapokhoz tartozokat a kimenetbe irja")
+    ap.add_argument("--accent-min", type=float, default=150.0,
+                    help="mm2 - ekkora sziget mar akcentus-darab, megmarad")
     ap.add_argument("--connected", action="store_true",
                     help="keret-eloszor: minden reteg egyetlen, a keretig ero darab")
     ap.add_argument("--margin", type=float, default=0.0,
@@ -589,6 +591,8 @@ def main():
     # what makes the MIN_PART argument true - a dropped piece's footprint is
     # guaranteed to be present on the plate behind. Healing widens necks and
     # can leave clip-slivers, so alternate the two until stable.
+    keep_floor = min(a.min_part, a.accent_min) if a.connected else a.min_part
+
     def enforce_nesting():
         for k in sorted(geoms)[1:]:
             prev = geoms.get(k - 1)
@@ -596,7 +600,7 @@ def main():
                 continue
             clipped = geoms[k].intersection(prev).buffer(0)
             clipped = unary_union([p for p in parts_of(clipped)
-                                   if p.area >= a.min_part])
+                                   if p.area >= keep_floor])
             if clipped.is_empty:
                 del geoms[k]
             else:
@@ -653,9 +657,9 @@ def main():
         mnx0, mny0, mxx0, mxy0 = geoms[ks0[0]].bounds
         outer0 = Polygon([(mnx0, mny0), (mxx0, mny0), (mxx0, mxy0), (mnx0, mxy0)])
         inner0 = outer0.buffer(-a.margin)
-        base0 = make_valid(geoms[ks0[0]])
+        base0 = set_precision(make_valid(geoms[ks0[0]]), 0.01)
         for k in ks0:
-            geoms[k] = make_valid(geoms[k])
+            geoms[k] = set_precision(make_valid(geoms[k]), 0.01)
         op_all = unary_union([base0.difference(geoms[k]).buffer(0)
                               for k in ks0[1:]]).buffer(0)
         if not op_all.is_empty and not inner0.is_empty:
@@ -668,18 +672,15 @@ def main():
             dy = (imny + imxy) / 2 - (omny + omxy) / 2
             if fit < 0.999 or abs(dx) > 0.5 or abs(dy) > 0.5:
                 ox, oy = (imnx + imxx) / 2, (imny + imxy) / 2
-                # snap to a 0.01 mm grid before boolean ops: GEOS throws
-                # "side location conflict" when two rings run within float
-                # noise of each other, and make_valid alone does not stop it -
-                # snapping does, and 0.01 mm is far below every tolerance here
-                base0 = set_precision(base0, 0.01)
                 for k in ks0[1:]:
-                    op = base0.difference(set_precision(geoms[k], 0.01)).buffer(0)
+                    op = base0.difference(geoms[k]).buffer(0)
                     if op.is_empty:
                         continue
                     op = affinity.translate(op, dx, dy)
                     op = affinity.scale(op, xfact=fit, yfact=fit, origin=(ox, oy))
                     geoms[k] = base0.difference(set_precision(op, 0.01)).buffer(0)
+                # (a snap mar a bounds-szamitas ELOTT megtortent - a fit igy a
+                # tenyleg feldolgozott geometriabol keszul)
                 print(f"[i] minta a biztonsagos zonara illesztve "
                       f"({fit:.3f}x, eltolas {dx:+.0f}/{dy:+.0f} mm)")
 
@@ -875,7 +876,7 @@ def main():
         mnxc, mnyc, mxxc, mxyc = geoms[ksc[0]].bounds
         rim = Polygon([(mnxc, mnyc), (mxxc, mnyc), (mxxc, mxyc), (mnxc, mxyc)]) \
             .exterior.buffer(1.0)
-        loose_total = 0.0
+        loose_total, n_acc = 0.0, {}
         for k in ksc:
             parts = parts_of(geoms[k])
             if len(parts) < 2:
@@ -885,14 +886,26 @@ def main():
                 attached = [max(parts, key=lambda p: p.area)]
                 print(f"[!] {k}. reteg: egyetlen darab sem eri el a keretet, "
                       f"a legnagyobbat tartom meg")
-            loose = sum(p.area for p in parts) - sum(p.area for p in attached)
+            # An island is not necessarily a defect. The layers are nested, so
+            # under every piece of sheet k there IS solid material on sheet
+            # k-1: a floating piece rests on it and gets glued - which is
+            # exactly what the eyes are in the real kits this product competes
+            # with. Small enough to lose or fiddly to place stays dropped;
+            # anything from a thumbnail-sized accent up is kept and REPORTED,
+            # so the count is a design decision, not an accident.
+            accents = [p for p in parts
+                       if p not in attached and p.area >= a.accent_min > 0]
+            if accents:
+                n_acc[k] = len(accents)
+            keep_parts = attached + accents
+            loose = sum(p.area for p in parts) - sum(p.area for p in keep_parts)
             if loose > 0:
                 loose_total += loose
                 dropped[k] = unary_union(
-                    [dropped[k]] + [p for p in parts if p not in attached]) \
+                    [dropped[k]] + [p for p in parts if p not in keep_parts]) \
                     if k in dropped else unary_union([p for p in parts
-                                                      if p not in attached])
-            geoms[k] = unary_union(attached).buffer(0)
+                                                      if p not in keep_parts])
+            geoms[k] = unary_union(keep_parts).buffer(0)
         if loose_total > 0:
             print(f"[i] keret-eloszor: {loose_total:.0f} mm2 kulonallo sziget "
                   f"egy lappal hatrebb kerult")
@@ -1108,6 +1121,21 @@ def main():
         "draft": a.draft,
         "size_mm": MM,
     }
+    # accents recounted from the FINAL geometry - the mid-chain count could
+    # name layers that healing later merged or clipped
+    accents_final = {}
+    if a.connected and geoms:
+        mnxf, mnyf, mxxf, mxyf = geoms[sorted(geoms)[0]].bounds
+        rim_f = Polygon([(mnxf, mnyf), (mxxf, mnyf), (mxxf, mxyf), (mnxf, mxyf)]) \
+            .exterior.buffer(1.5)
+        for k in sorted(geoms):
+            n = sum(1 for q in parts_of(geoms[k]) if not q.intersects(rim_f))
+            if n:
+                accents_final[k] = n
+        if accents_final:
+            print(f"[i] akcentus-darabok (kulon ragasztando, vegso): "
+                  + ", ".join(f"{k}. reteg: {n}" for k, n in sorted(accents_final.items())))
+
     if a.palette:
         src = json.loads(pathlib.Path(a.palette).read_text())
         # src[0] is the floor of the deepest well - never a sheet
@@ -1117,6 +1145,9 @@ def main():
             out_pal.append(src[min(i, len(src) - 1)])
         (out / "palette.json").write_text(json.dumps(out_pal))
         print(f"[i] paletta: {len(out_pal)} lap a forras {len(src)} tonusabol")
+    report["accent_pieces"] = {str(k): v for k, v in accents_final.items()}
+    report["accent_note"] = ("accent pieces sit on the solid sheet behind them "
+                             "and are glued separately; count above is per layer")
     (out / "report.json").write_text(json.dumps(report, indent=1))
 
     if final_out.exists():

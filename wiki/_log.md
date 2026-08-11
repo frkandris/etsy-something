@@ -2,6 +2,9 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-11 — Csipkes elek: ket ok, mindketto merve — a potrace GeoJSON-backendje 8 szakaszra lapitotta a Bezier-eket (SVG-backendre valtas), es az 1024 px-es forras 0,293 mm-es pixelracsa (4x felskalazas vektorizalas elott) (workflows/recessed-papercut-pipeline)
+2026-08-11 — Egyszerusitesi audit: minden javito lepes kikapcsolasaval a riport ugyanugy zold, a kimenet husegesebb (a pottyok megmaradnak). A speckle/sliver/min-area/min-feature/round-corners alapbol ki, a Taubin-simitas torolve (workflows/recessed-papercut-pipeline)
+
 2026-08-11 — A szilankszuro ket egymast takaro hibaja: eloszor a felso lapokat torolte (nagy nyilasu panel = vekony gyuru = magas karcsusag), majd a nyilasokat is (egy LYUK nem tud kiesni, ra a karcsusagi teszt ertelmetlen). Ez volt az oka, hogy a render nem hasonlitott a rajzra (pitfalls/2026-08-11-a-szuro-torolte-a-felso-lapokat)
 2026-08-11 — Keret-eloszor: a kutatas szerint a valodi eladok nem bontanak kepet retegekre, hanem keretbol epitenek fel, es minden elem kapcsolodik a kerethez. A retegsorrend tervezoi dontes, ezert nem is lehetett kimerni (decisions/2026-08-11-keret-eloszor)
 

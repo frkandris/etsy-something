@@ -33,7 +33,8 @@ sorrendet adja, és a renderben semmit nem kellett fordítani.
 | lépés | fájl | mit csinál |
 |---|---|---|
 | 0 | `00_generate.py` | gpt-image-2 mélységtérkép; `--recessed` a süllyesztett szerkezethez, `--ref/--crop` stílus-referenciához |
-| 2 | `02_trace.py` | poszterizálás → potrace → shapely; nesting-kényszer, nyak-gyógyítás, vágásbiztonsági riport |
+| 1b | `01b_depth.py` | lapos illusztráció → mélységtérkép: mező árasztással, téma k-means-szel, paletta a rajzból |
+| 2 | `02_trace.py` | 4× felskálázás → potrace SVG-backend (Bézier!) → shapely; nesting, keret-kapcsoltság, vágásbiztonsági riport |
 | 3 | `03_listing_images.py` | galéria: hero-overlay, specs-kártya, closeup, assembly |
 | 4 | `04_composite.py` | `--shoot` háttérfotó generálás, `--place` kompozit vetett és kontaktárnyékkal |
 | 5 | `05_video.py` | teljes szinuszos kamera-ciklus → kockánkénti kompozit → H.264 loop |
@@ -90,3 +91,21 @@ enteriőr — ezért lett témánként eltérő keret és háttérfotó.
 
 `product/pipeline/*`, `product/themes/*`. Kapcsolódik: [[findings/paper-layered-market]],
 [[findings/competitor-listing-images]], [[workflows/production-pipeline]].
+
+## 2026-08-11: az egyszerűsítési audit
+
+A felhasználó kérdése — „tényleg kell-e minden a pipeline-ba?" — mérésre fordítva: minden javító
+lépés kikapcsolásával a riport **ugyanúgy zöld** (12 mm legvékonyabb pont, 0 nyak), a kimenet pedig
+**hűségesebb** (a pöttyök megmaradnak). A javítógépezet a zajos mélységtérkép-korszak öröksége volt;
+a tiszta lapos-illusztráció bemeneten csak törölt.
+
+**Alapból kikapcsolva:** `--speckle`, `--sliver-ratio`, `--min-area-pct`, `--min-feature`,
+`--round-corners`. **Törölve:** a Taubin-simítás (bármely beállítással a lapok területét a hatodára
+vitte; egy lépés, amit nem értünk, nem szállítható). **A csipkés élek két oka** (mindkettő mérve):
+a potrace GeoJSON-backendje fix 8 szakaszra lapította a Bézier-eket → SVG-backend + saját
+mintavételezés; és az 1024 px-es forrás 0,293 mm-es pixelrácsa → 4× felskálázás Gauss-szal és
+újraküszöböléssel vektorizálás előtt.
+
+A kanonikus hívás ennyi maradt:
+`02_trace.py --src depth_map.png --levels 7 --min-part 60 --merge-below 0.005 --margin 8
+--no-keyhole --full-panel --connected --palette palette_full.json`

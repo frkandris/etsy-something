@@ -1,0 +1,23 @@
+forras: depth_map.png  1024x1024px
+tonusszintek: 0, 42, 85, 127, 170, 212, 255
+[i] teljes panel kikenyszeritve (4,964 mm2 kerult minden lapra)
+[i] minta a biztonsagos zonara illesztve (0.947x, eltolas -0/+0 mm)
+[i] 8 mm-es erintetlen margosav minden lapon
+[i] keret-eloszor: 1330 mm2 kulonallo sziget egy lappal hatrebb kerult
+[i] amputalva 1 gyogyithatatlan nyakon logo kis vegtag (23 mm2)
+[i] amputalva 1 gyogyithatatlan nyakon logo kis vegtag (26 mm2)
+[i] amputalva 1 gyogyithatatlan nyakon logo kis vegtag (39 mm2)
+[i] 5. reteg: 450 mm2 eldobva, ebbol 382 mm2 tobb mint egy lappal hatrebb latszik
+[i] 6. reteg: 593 mm2 eldobva, ebbol 499 mm2 tobb mint egy lappal hatrebb latszik
+objektum: 300 mm (a hatlap befoglaloja, nem a vaszon)
+
+ reteg  darab  lyuk  terulet mm2   leggyengebb  vekony%  nyak  statusz
+     1      1     5       86,384        12.00mm    0.00%     0  OK
+     2      1    13       77,254        12.00mm    0.04%     0  OK
+     3      1    18       72,017        12.00mm    0.04%     0  OK
+     4      1    18       61,969        12.00mm    0.04%     0  OK
+     5      1    17       46,216        12.00mm    0.03%     0  OK
+     6      1    10       28,385        12.00mm    0.04%     0  OK
+[i] paletta: 6 lap a forras 7 tonusabol
+
+kiirva: product/iterations/0046-cat-vector/t2/layers  (17 fajl)

@@ -23,6 +23,7 @@ MIN_WEB = 2.0       # mm - narrowest material we accept
 MIN_PART = 400.0    # mm2 - smaller pieces stay one plate back, not glued separately
 MIN_HOLE = 4.0      # mm^2 - drop pinholes smaller than this
 MIN_FRAG = 20.0     # mm^2 - a region this big hanging on a thin neck is a defect
+UPSAMPLE = 4        # trace at 4x: one source pixel is 0.293 mm, visibly stepped
 
 
 class ToneShortfall(Exception):
@@ -128,7 +129,14 @@ def _svg_paths(d):
             # pixel outline instead.
             chord = (abs(p3[0] - pos[0]) + abs(p3[1] - pos[1])
                      + abs(p1[0] - pos[0]) + abs(p1[1] - pos[1]))
-            n = max(4, min(48, int(chord / 12)))
+            # ~0.5 source pixels apart. The first attempt sampled 0.12 px
+            # apart, and Taubin smoothing on a point cloud that dense cannot
+            # move anything without folding the ring over itself - the hole
+            # count went from 8 to 256 on one layer, all of them artefacts.
+            # ~2 upsampled pixels apart (0.5 source px). The first attempt
+            # sampled 0.12 px apart and Taubin smoothing folded the rings over
+            # themselves; the second went to 2 source px and lost the shape.
+            n = max(4, min(32, int(chord / 200.0)))
             x0, y0 = pos
             for t in (k / n for k in range(1, n + 1)):
                 u = 1 - t
@@ -155,11 +163,24 @@ def trace(mask):
     edges came from. The SVG backend keeps the curves; we sample them ourselves.
     """
     import re
+    # UPSAMPLE BEFORE TRACING. At 1024 px for a 300 mm panel one pixel is
+    # 0.293 mm - well above a laser's kerf - so the outline potrace is handed
+    # is itself stepped, and fitting a curve to a stepped outline gives a
+    # rippling curve. Blowing the mask up 4x, blurring it and re-thresholding
+    # puts the boundary back where the smooth shape actually was: the step
+    # drops to 0.073 mm, below anything the eye or the cutter resolves.
+    up = UPSAMPLE
+    g = mask.convert("L").resize((mask.width * up, mask.height * up), Image.BICUBIC)
+    g = g.filter(ImageFilter.GaussianBlur(up * 0.38))
+    big = g.point(lambda v: 255 if v >= 128 else 0).convert("1")
+
     with tempfile.TemporaryDirectory() as td:
         t = pathlib.Path(td)
-        mask.save(t / "m.pbm")
-        subprocess.run(["potrace", "-b", "svg", "-a", "1.334", "-O", "0.35",
-                        "-t", "4", "-u", "100",
+        big.save(t / "m.pbm")
+        # -a 1.334 is the documented ceiling: above 4/3 every corner is
+        # suppressed and the output is completely smooth.
+        subprocess.run(["potrace", "-b", "svg", "-a", "1.334", "-O", "0.5",
+                        "-t", str(4 * up * up), "-u", "100",
                         "-o", str(t / "m.svg"), str(t / "m.pbm")], check=True)
         svg = (t / "m.svg").read_text()
 
@@ -173,7 +194,9 @@ def trace(mask):
     rings = []
     for d in re.findall(r'<path[^>]*\bd="([^"]+)"', svg):
         for r in _svg_paths(d):
-            pts = [(x * u, y * u) for x, y in r]
+            # back to source-image pixel units, so the rest of the chain (which
+            # derives its mm scale from the original image) is unaffected
+            pts = [(x * u / up, y * u / up) for x, y in r]
             if len(pts) > 2:
                 poly = Polygon(pts)
                 if not poly.is_valid:

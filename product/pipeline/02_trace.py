@@ -82,22 +82,112 @@ def mask_at(g, thr):
     return g.point(lambda v: 0 if v >= thr else 255).convert("1")
 
 
+def _svg_paths(d):
+    """potrace's SVG path data -> lists of points, cubics sampled.
+
+    potrace emits a limited subset - m/l/c/z, relative - so a full SVG parser
+    would be overkill and a regex is enough.
+    """
+    import re
+    toks = re.findall(r"[MmLlCcVvHhZz]|-?\d*\.?\d+", d)
+    rings, cur, pos, start = [], [], (0.0, 0.0), (0.0, 0.0)
+    i, cmd = 0, None
+    def num():
+        nonlocal i
+        v = float(toks[i]); i += 1
+        return v
+    while i < len(toks):
+        if toks[i].isalpha():
+            cmd = toks[i]; i += 1
+            if cmd in "Zz":
+                if len(cur) > 2:
+                    rings.append(cur)
+                cur, pos = [], start
+                continue
+        rel = cmd.islower()
+        if cmd in "Mm":
+            x, y = num(), num()
+            pos = (pos[0] + x, pos[1] + y) if rel else (x, y)
+            if len(cur) > 2:
+                rings.append(cur)
+            cur, start = [pos], pos
+        elif cmd in "Ll":
+            x, y = num(), num()
+            pos = (pos[0] + x, pos[1] + y) if rel else (x, y)
+            cur.append(pos)
+        elif cmd in "Cc":
+            p1 = (num(), num()); p2 = (num(), num()); p3 = (num(), num())
+            if rel:
+                p1 = (pos[0] + p1[0], pos[1] + p1[1])
+                p2 = (pos[0] + p2[0], pos[1] + p2[1])
+                p3 = (pos[0] + p3[0], pos[1] + p3[1])
+            # Sample by chord length so a long sweeping curve gets as many
+            # points as it needs and a short one does not get 20. THIS is what
+            # removes the staircase: potrace already fitted a smooth cubic, and
+            # the GeoJSON backend was throwing it away and handing back the
+            # pixel outline instead.
+            chord = (abs(p3[0] - pos[0]) + abs(p3[1] - pos[1])
+                     + abs(p1[0] - pos[0]) + abs(p1[1] - pos[1]))
+            n = max(4, min(48, int(chord / 12)))
+            x0, y0 = pos
+            for t in (k / n for k in range(1, n + 1)):
+                u = 1 - t
+                cur.append((u*u*u*x0 + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0],
+                            u*u*u*y0 + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]))
+            pos = p3
+        elif cmd in "Hh":
+            x = num(); pos = (pos[0] + x, pos[1]) if rel else (x, pos[1]); cur.append(pos)
+        elif cmd in "Vv":
+            y = num(); pos = (pos[0], pos[1] + y) if rel else (pos[0], y); cur.append(pos)
+        else:
+            i += 1
+    if len(cur) > 2:
+        rings.append(cur)
+    return rings
+
+
 def trace(mask):
+    """Vectorise one mask through potrace's SVG (Bezier) backend.
+
+    The GeoJSON backend cannot express a curve, so it flattened potrace's
+    fitted Beziers back down to the pixel outline - 4317 vertices for one mask,
+    every pixel step preserved. That is where the visible staircase on the cut
+    edges came from. The SVG backend keeps the curves; we sample them ourselves.
+    """
+    import re
     with tempfile.TemporaryDirectory() as td:
         t = pathlib.Path(td)
         mask.save(t / "m.pbm")
-        subprocess.run(["potrace", "-b", "geojson", "-a", "1.0", "-t", "4",
-                        "-o", str(t / "m.json"), str(t / "m.pbm")], check=True)
-        gj = json.loads((t / "m.json").read_text())
-    polys = []
-    for f in gj.get("features", []):
-        try:
-            g = shape(f["geometry"])
-        except Exception:
-            continue
-        if g.geom_type in ("Polygon", "MultiPolygon"):
-            polys.append(g if g.is_valid else g.buffer(0))
-    return unary_union(polys) if polys else None
+        subprocess.run(["potrace", "-b", "svg", "-a", "1.334", "-O", "0.35",
+                        "-t", "4", "-u", "100",
+                        "-o", str(t / "m.svg"), str(t / "m.pbm")], check=True)
+        svg = (t / "m.svg").read_text()
+
+    # potrace's own transform flips Y (its coordinates run bottom-up, SVG's run
+    # top-down) and undoes the --unit quantisation. Applying it whole would flip
+    # the artwork, because clean() further down already does the Y flip for the
+    # whole chain - so take the unit scale only and leave the orientation alone.
+    m = re.search(r'scale\(([-\d.]+),\s*([-\d.]+)\)', svg)
+    u = abs(float(m.group(1))) if m else 1.0
+
+    rings = []
+    for d in re.findall(r'<path[^>]*\bd="([^"]+)"', svg):
+        for r in _svg_paths(d):
+            pts = [(x * u, y * u) for x, y in r]
+            if len(pts) > 2:
+                poly = Polygon(pts)
+                if not poly.is_valid:
+                    poly = poly.buffer(0)
+                if not poly.is_empty and poly.area > 0:
+                    rings.append(poly)
+    if not rings:
+        return None
+    # potrace nests holes inside outlines; depth parity decides which is which
+    rings.sort(key=lambda p: p.area, reverse=True)
+    out = None
+    for p in rings:
+        out = p if out is None else (out.symmetric_difference(p))
+    return out.buffer(0) if out is not None else None
 
 
 def clean(geom, scale, thicken, min_part, height):

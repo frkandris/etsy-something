@@ -19,10 +19,10 @@ for i in $(seq 1 "$N"); do
       --art "$D/raw_v_0.png" --out "$D/depth_map.png" --levels 7 >/dev/null 2>&1
   [ -f "$D/depth_map.png" ] || { echo "v$i melyseg HIBA"; continue; }
   .venv/bin/python product/pipeline/02_trace.py --src "$D/depth_map.png" --levels 7 \
-      --min-part 120 --min-feature 3.0 --speckle 0.8 --sliver-ratio 4 --min-area-pct 0.5 \
-      --max-parts 24 --round-corners 2.0 --motif-scale 1.0 --merge-below 0.012 \
-      --margin 22 --punch 0 --no-keyhole --full-panel --out "$D/layers" >"$D/trace.log" 2>&1 \
+      --min-part 60 --merge-below 0.005 --margin 8 --no-keyhole --full-panel --connected \
+      --palette "$D/palette_full.json" --out "$D/layers" >"$D/trace.log" 2>&1 \
     || { echo "v$i trace HIBA (lasd $D/trace.log)"; continue; }
-  cp "$D/layers/preview_stacked.png" "$D/preview_stacked.png"
+  blender -b -P product/render_blender.py -- "$D/layers" "$PWD/$D/plate.png" plate \
+      --frame --paper --recessed --palette-file "$D/layers/palette.json" >/dev/null 2>&1
   echo "v$i kesz"
 done

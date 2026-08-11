@@ -1,0 +1,56 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Macska — 10 új változat</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 15px/1.5 -apple-system, system-ui, sans-serif; margin: 0;
+         padding: 24px clamp(12px, 3vw, 40px); background: #faf8f5; color: #241c14; }
+  @media (prefers-color-scheme: dark) { body { background: #16130f; color: #ece5dc; } }
+  h1 { font-size: 20px; margin: 0 0 20px; }
+  .refs { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 30px; }
+  .refs img { width: 260px; border-radius: 10px; display: block; }
+  .refs figcaption { font-size: 12px; opacity: .65; margin-top: 5px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .row { margin: 0; }
+  .row img { width: 100%; display: block; border-radius: 10px; background: #fff; }
+  .bar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .name { font-weight: 600; font-size: 17px; }
+  button { font: inherit; padding: 5px 14px; border-radius: 7px; cursor: pointer;
+           border: 1px solid #0003; background: #f2ece4; color: inherit; }
+  .row.pick button { background: #b5651d; color: #fff; border-color: #b5651d; }
+  .row.pick img { outline: 3px solid #b5651d; outline-offset: 2px; }
+  #out { position: sticky; bottom: 0; padding: 13px 16px; background: #241c14;
+         color: #f6f1ea; border-radius: 10px;
+         font-family: ui-monospace, monospace; font-size: 13px; }
+</style>
+
+<h1>Macska — 10 új változat</h1>
+<div class="refs">
+  <figure style="margin:0"><img src="refs/ref-cat-face-swirl.png" alt="">
+    <figcaption>inspiráció — ezt adtam be a modellnek</figcaption></figure>
+  <figure style="margin:0"><img src="refs/ref-layered-cat.png" alt="">
+    <figcaption>inspiráció — korábbi referencia</figcaption></figure>
+</div>
+<div id="list" class="grid"></div>
+<div id="out">nincs kiválasztva</div>
+
+<script>
+const N = 10, picks = new Set(), list = document.getElementById('list');
+for (let i = 1; i <= N; i++) {
+  const v = 'v' + String(i).padStart(2, '0');
+  const el = document.createElement('div');
+  el.className = 'row';
+  el.innerHTML = `
+    <div class="bar"><span class="name">${v}</span>
+      <button type="button">választom</button></div>
+    <img src="${v}/raw_v_0.png" alt="">`;
+  el.querySelector('button').onclick = () => {
+    picks.has(v) ? picks.delete(v) : picks.add(v);
+    el.classList.toggle('pick', picks.has(v));
+    const s = [...picks].sort();
+    document.getElementById('out').textContent =
+      s.length ? 'kiválasztva: ' + s.join(', ') : 'nincs kiválasztva';
+  };
+  list.appendChild(el);
+}
+</script>

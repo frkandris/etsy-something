@@ -16,6 +16,7 @@ import json, math, subprocess, tempfile, pathlib, argparse
 from PIL import Image, ImageDraw, ImageFilter
 from shapely.geometry import shape, Polygon, MultiPolygon, Point
 from shapely.ops import unary_union
+from shapely import make_valid, set_precision
 from shapely import affinity
 
 MM = 300.0          # finished diameter
@@ -652,7 +653,9 @@ def main():
         mnx0, mny0, mxx0, mxy0 = geoms[ks0[0]].bounds
         outer0 = Polygon([(mnx0, mny0), (mxx0, mny0), (mxx0, mxy0), (mnx0, mxy0)])
         inner0 = outer0.buffer(-a.margin)
-        base0 = geoms[ks0[0]]
+        base0 = make_valid(geoms[ks0[0]])
+        for k in ks0:
+            geoms[k] = make_valid(geoms[k])
         op_all = unary_union([base0.difference(geoms[k]).buffer(0)
                               for k in ks0[1:]]).buffer(0)
         if not op_all.is_empty and not inner0.is_empty:
@@ -665,13 +668,18 @@ def main():
             dy = (imny + imxy) / 2 - (omny + omxy) / 2
             if fit < 0.999 or abs(dx) > 0.5 or abs(dy) > 0.5:
                 ox, oy = (imnx + imxx) / 2, (imny + imxy) / 2
+                # snap to a 0.01 mm grid before boolean ops: GEOS throws
+                # "side location conflict" when two rings run within float
+                # noise of each other, and make_valid alone does not stop it -
+                # snapping does, and 0.01 mm is far below every tolerance here
+                base0 = set_precision(base0, 0.01)
                 for k in ks0[1:]:
-                    op = base0.difference(geoms[k]).buffer(0)
+                    op = base0.difference(set_precision(geoms[k], 0.01)).buffer(0)
                     if op.is_empty:
                         continue
                     op = affinity.translate(op, dx, dy)
                     op = affinity.scale(op, xfact=fit, yfact=fit, origin=(ox, oy))
-                    geoms[k] = base0.difference(op).buffer(0)
+                    geoms[k] = base0.difference(set_precision(op, 0.01)).buffer(0)
                 print(f"[i] minta a biztonsagos zonara illesztve "
                       f"({fit:.3f}x, eltolas {dx:+.0f}/{dy:+.0f} mm)")
 

@@ -11,6 +11,8 @@ sources:
     title: Etsy Marketplace Insights, 40 kifejezés
   - resource: /assets/data/3d-print-etsy-sweep-2026-08-12.json
     title: böngészős találati-lista mintavétel, 24 lekérdezés
+  - resource: /assets/data/3d-print-arxiv-2026-08-12.md
+    title: szakirodalmi felmérés (arXiv-fókusz), 887 sor
 ---
 
 # 3D nyomtatás az Etsyn — első mérés
@@ -110,6 +112,25 @@ A codex-elemzés öt pontja, amiket megtartok kritikaként a saját mérésemmel
 5. **A layered alapérték két különböző napról nem keverhető.** A 2026-08-07-i mérés 1 200 keresés /
    189 900 listing, a mostani 1 103 / 185 987. Egy táblában csak azonos napi értékek szerepelhetnek
    — ebben az oldalban végig a **2026-08-12-i** szám van.
+
+## Amit a szakirodalom hozzátesz
+
+A párhuzamos arXiv-kutatás (`assets/data/3d-print-arxiv-2026-08-12.md`) négy dolgot mond, ami a
+terméktervezést közvetlenül érinti:
+
+- **A fizetős fájl nem geometriát ad el.** A Thingiverse 158 373 modelljének **90,6%-a nyílt
+  licencű**, és a CC-licenceknek csak 13,8%-a tiltja a kereskedelmi felhasználást. Amit fizetni
+  érdemes: **garantáltan ép háló** és **dokumentáció** — a repozitóriumok tele vannak nem-manifold,
+  önmetsző hálókkal.
+- **A letöltésszám nem kereslet.** 30 népszerű modellen 500 nap alatt **7 823 249 letöltésre
+  19 425 elkészített darab** jutott, és az arány romlott. Bármilyen volumenbecslés, ami letöltésre
+  épül, nagyságrendekkel felülbecsül.
+- **A generatív 3D látványra optimalizál, nem nyomtathatóságra.** A TRELLIS nyers kimenetének
+  normalizált támaszigénye 0,343, nyomtathatóságra optimalizálva 0,176; a részlet a textúrában van,
+  ami egyszínű nyomtatásnál **elvész**.
+- **Licencbuktató, ami ránk vonatkozik:** a Hunyuan3D 2.0 és 2.1 licence szó szerint **nem
+  érvényes az Európai Unióban** — Magyarországról nem használható jogtisztán. Ami igen: TRELLIS
+  (MIT), TripoSR/TripoSG (MIT), InstantMesh (Apache-2.0), Shap-E (MIT).
 
 ## Amit legközelebb meg kell mérni
 

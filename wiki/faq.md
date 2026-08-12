@@ -43,9 +43,16 @@ Lásd [[pitfalls/2026-08-08-wrong-unit-of-independence]]. Az eredeti érvelés: 
 
 ## Miért nem SalesDoe-t használunk a niche-kutatásban?
 
-Mert a medián ára a lista- és az akciós ár között ingadozik, ami a mélyen diszkontálóknál felfelé
-torzít, és mert boltonként egy böngésző-kattintást igényel.
-[[pitfalls/2026-08-06-salesdoe-list-vs-sale-price]]
+Két indok volt, és **2026-08-12-én az egyik elavult**:
+
+- **Érvényes:** a medián ára a lista- és az akciós ár között ingadozik, ami a mélyen
+  diszkontálóknál felfelé torzít. [[pitfalls/2026-08-06-salesdoe-list-vs-sale-price]]
+- **Elavult:** „boltonként egy böngésző-kattintást igényel" — **van API-ja**
+  (`/api/shops/shop?shop_name=`), tehát tömegesen lekérdezhető.
+  Lásd [[methods/browser-data-endpoints]].
+
+Tehát a bolt-bevételhez **használható**, ha az árat külön ellenőrizzük; a niche kereslet-oldalához
+továbbra sem ő az elsődleges forrás, hanem az Etsy Marketplace Insights.
 
 ## Tudjuk már a keresési volument?
 

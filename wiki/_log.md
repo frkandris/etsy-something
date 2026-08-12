@@ -2,6 +2,9 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-12 — Skill keszult a kutatashoz (.claude/skills/etsy-research): 0. kapu a wiki-olvasas, 5. kapu az ot kotelezo ellenorzes (populacio, fuggetlensegi egyseg, lista- vs akcios ar, rogzitett arfolyam, mintaveteli mutermek), plus harvest.js mind a negy vegponttal. Az ok, amiert kell: ebben a korben nem tudas hianyzott, hanem a sorrend
+2026-08-12 — faq javitva: a SalesDoe elleni ket ervbol az egyik (boltonkenti kattintas) ELAVULT, mert van API-ja; a lista- vs akcios ar torzitas viszont ervenyes (faq)
+
 2026-08-12 — SalesDoe API felfedezve (/api/shops/shop): a faq eddig azzal utasitotta el a niche-kutatasra, hogy 'boltonkent egy bongeszo-kattintast igenyel' - ez az erv ELAVULT, tomegesen lekerdezheto. A list-vs-sale-price torzitas viszont NEM avult el. 15 bolt lekerve, median 453 170 HUF/ho 36 listinggel (findings/3d-shop-list)
 2026-08-12 — Uj methods oldal a bongeszos vegpontokrol: Marketplace Insights beagyazott JSON, Etsy autocomplete, bolt-oldal, SalesDoe API. Ezek eddig NEM voltak dokumentalva, ezert ment egy kor kezzel (methods/browser-data-endpoints)
 

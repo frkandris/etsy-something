@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "collected": "2026-08-12",
+    "generator": "Etsy's own autocomplete, /suggestions_ajax.php?search_query=<seed>, 36 seeds",
+    "measurement": "the measured terms went through Etsy Marketplace Insights (same source as findings/etsy-first-party-search-data)",
+    "harvest_size": "204 unique suggestions, of which 81 carry explicit file intent (stl / 3mf / print files / printable)",
+    "note": "an autocomplete suggestion means Etsy has seen the query, not that it has volume. Only the measured rows below carry numbers; the rest are candidates."
+  },
+
+  "measured_long_tail": [
+    {"term": "stl files commercial use",   "searches_30d": 992, "listings": 11124, "per_1000": 89.2, "cvr_rating": 2, "query_cvr_permille": 1.36},
+    {"term": "commercial use stl",         "searches_30d": 129, "listings": 10521, "per_1000": 12.3, "cvr_rating": 4, "query_cvr_permille": 4.38},
+    {"term": "stl commercial use",         "searches_30d": 124, "listings": 8354,  "per_1000": 14.8, "cvr_rating": 4, "query_cvr_permille": 2.58},
+    {"term": "flexi animals stl",          "searches_30d": 189, "listings": 7465,  "per_1000": 25.3, "cvr_rating": 4, "query_cvr_permille": 2.37},
+    {"term": "stl bundle commercial use",  "searches_30d": 53,  "listings": 5659,  "per_1000": 9.4,  "cvr_rating": 4, "query_cvr_permille": 2.15},
+    {"term": "cookie cutter stl bundle",   "searches_30d": 43,  "listings": 6387,  "per_1000": 6.7,  "cvr_rating": 4, "query_cvr_permille": 2.13},
+    {"term": "articulated dragon stl",     "searches_30d": 114, "listings": 8459,  "per_1000": 13.5, "cvr_rating": 3, "query_cvr_permille": 1.64},
+    {"term": "stl pack",                   "searches_30d": 1459,"listings": 44212, "per_1000": 33.0, "cvr_rating": 1, "query_cvr_permille": 0.72},
+    {"term": "stl files for printing",     "searches_30d": 5061,"listings": 209136,"per_1000": 24.2, "cvr_rating": 1, "query_cvr_permille": 0.67},
+    {"term": "3d print stl bundle",        "searches_30d": 33,  "listings": 78834, "per_1000": 0.4,  "cvr_rating": 1, "query_cvr_permille": 0.58},
+    {"term": "3d printer stl files",       "searches_30d": 398, "listings": 193854,"per_1000": 2.1,  "cvr_rating": 0, "query_cvr_permille": 0.33},
+    {"term": "stl file halloween",         "searches_30d": 60,  "listings": 20885, "per_1000": 2.9,  "cvr_rating": 0, "query_cvr_permille": 0.33},
+    {"term": "planter stl file",           "searches_30d": 63,  "listings": 8154,  "per_1000": 7.7,  "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "print in place stl files",   "searches_30d": 15,  "listings": 9397,  "per_1000": 1.6,  "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "stl bundle fidget",          "searches_30d": 5,   "listings": 6210,  "per_1000": 0.8,  "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "stl bundle animals",         "searches_30d": 7,   "listings": 4682,  "per_1000": 1.5,  "cvr_rating": 0, "query_cvr_permille": 0.00}
+  ],
+
+  "candidate_families": {
+    "licence_intent_MEASURED_BEST": [
+      "stl commercial use", "stl files commercial use", "commercial use stl",
+      "stl bundle commercial", "stl bundle commercial use"
+    ],
+    "articulated_flexi": [
+      "articulated", "articulated animal stl", "articulated animal stl file",
+      "articulated animal stl files bundle", "articulated animal 3d print files",
+      "articulated animal figurine", "articulated animal keychains", "articulated stl",
+      "articulated dragon", "articulated dragon stl", "articulated hummingbird stl",
+      "articulated fish", "articulated fish charm", "articulated skeleton",
+      "articulated skeleton earrings", "articulated doll",
+      "flexi", "flexi animals", "flexi animal 3d", "flexi animal 3d print",
+      "flexi animal bundle", "flexi animal playset", "flexi animal stl bundle",
+      "flexi animal stl files", "flexi animals 3d files", "flexi animals 3mf",
+      "flexi animals stl", "flexi dragon", "flexi factory"
+    ],
+    "file_format_and_bundle": [
+      "stl", "stl files", "stl bundle", "stl pack", "stl files bundle", "stl files 3d",
+      "stl 3d", "stl 3d print files", "stl figure", "stl files for printing",
+      "stl files for 3d printing", "stl files for cnc", "stl files for cnc router",
+      "3d print files", "3d print stl", "3d print stl files", "3d print stl bundle",
+      "3d printer stl", "3d printer stl files", "3d model stl", "3d model files",
+      "3d model for printing", "3d model print pack"
+    ],
+    "seasonal": [
+      "stl file halloween", "3d print stl halloween", "stl bundle halloween"
+    ],
+    "printer_and_process": [
+      "stl bundle fdm", "stl bundle resin printer", "print in place stl files",
+      "3d printer service", "3d printer spare", "3d printer stand", "3d printer patterns"
+    ],
+    "physical_product_intent_NOT_files": [
+      "3d printed", "3d printed animals", "3d printed toys", "3d printed dragon",
+      "3d printed fidget", "3d printed lamp", "3d printed keychain", "3d printed clicker",
+      "3d printed earrings", "3d printed snake", "3d printed cat", "3d printed cat bowl",
+      "3d printed cat house", "3d printed cat mask", "3d printed cat toys",
+      "3d printed catchall tray", "3d printed dog", "3d printed dog accessories",
+      "3d printed dog bust", "3d printed dog figure", "3d printer toys",
+      "3d printing", "3d modeling service", "3d model commission"
+    ],
+    "note_on_the_last_family": "these are the largest family in the harvest and they want an OBJECT, not a file. Etsy's own 'Shop customizable ideas' row confirms it. Anyone selling files must avoid ranking on these, exactly as the layered research found for 'shadow box' vs 'shadow box svg'."
+  }
+}

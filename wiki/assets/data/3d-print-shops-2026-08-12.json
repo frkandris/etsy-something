@@ -1,0 +1,71 @@
+{
+  "meta": {
+    "collected": "2026-08-12",
+    "source": "Etsy shop pages (etsy.com/shop/<name>), fetched same-origin from a logged-in session; shop names came from the listing cards embedded in Marketplace Insights result pages",
+    "why_not_apify": "no Apify budget this round - the three inputs the project's own revenue formula needs (sold_count, shop age, active listing count) are all on the public shop page",
+    "formula_reference": "methods/revenue-estimation-method: HUF/month = (total sales / months open) x median actual sale price (USD) x 316.33 x catalogue share of the niche",
+    "what_is_here": "the first two inputs only - sales per month and catalogue size. The median actual sale price and the catalogue share are NOT measured per shop in this round, so no HUF figure is computed. sales_per_month is a UNIT COUNT, not revenue.",
+    "population": "34 shops. Selection: (a) the 11 shops that ranked with 3+ separate listings across 20 niche queries, (b) the top shops by review count from the same card pool. This is NOT a random sample - it is the visible head of the market, and dead or never-ranked shops are structurally invisible (same limitation as data-collection-pipeline).",
+    "caveats": [
+      "Sales counts are lifetime totals; sales_per_month is a lifetime average, not current run rate. For a 3-month-old shop these are close, for a 15-year-old shop they are not.",
+      "'digital' and 'bundle' flags are inferred from the shop's ranking listing TITLES in our card pool, not from a catalogue sample. A shop can be misclassified if its ranking listing is unrepresentative.",
+      "Sales are per ORDER, not per file. A mega-bundle sale is one sale."
+    ]
+  },
+
+  "cohort_A_new_stl_file_shops": {
+    "description": "Shops selling STL files, all opened within the last year. Every one is a Star Seller.",
+    "shops": [
+      {"shop": "NenoWorks",           "sales": 3272, "months": 8,  "items": 420, "sales_per_month": 409, "rating": 4.7, "reviews": 265, "star": true, "digital": true, "bundle": true},
+      {"shop": "STLForgeeStudio",     "sales": 1495, "months": 6,  "items": 21,  "sales_per_month": 249, "rating": 4.7, "reviews": 205, "star": true, "digital": true, "bundle": true},
+      {"shop": "SolvraStudioDesigns", "sales": 717,  "months": 3,  "items": 96,  "sales_per_month": 239, "rating": 4.7, "reviews": 165, "star": true, "digital": true, "bundle": true},
+      {"shop": "3dsaltlab",           "sales": 1936, "months": 9,  "items": 141, "sales_per_month": 215, "rating": 4.8, "reviews": 154, "star": true, "digital": true, "bundle": true},
+      {"shop": "STLVaultStudio",      "sales": 806,  "months": 4,  "items": 41,  "sales_per_month": 202, "rating": 4.9, "reviews": 89,  "star": true, "digital": true, "bundle": true},
+      {"shop": "STLCraftVibes",       "sales": 1348, "months": 9,  "items": 8,   "sales_per_month": 150, "rating": 4.5, "reviews": 126, "star": true, "digital": true, "bundle": true},
+      {"shop": "ARENPRINT",           "sales": 722,  "months": 10, "items": 270, "sales_per_month": 72,  "rating": 4.6, "reviews": 112, "star": true, "digital": true, "bundle": false},
+      {"shop": "TheNovaPrintables",   "sales": 158,  "months": 3,  "items": 20,  "sales_per_month": 53,  "rating": 5.0, "reviews": 10,  "star": true, "digital": true, "bundle": true}
+    ]
+  },
+
+  "cohort_B_established_shops": {
+    "description": "The old head of the market. Mostly PHYSICAL sellers (cookie cutters, decals, printed miniatures) - only a few sell files.",
+    "shops": [
+      {"shop": "BobbisCutters",        "sales": 632204, "months": 180, "items": 3005, "sales_per_month": 3512, "reviews": 74703, "digital_signal": true},
+      {"shop": "CreeepyPrints",        "sales": 115037, "months": 72,  "items": 4494, "sales_per_month": 1598, "reviews": 25036, "digital_signal": false},
+      {"shop": "SCStudioDecals",       "sales": 127795, "months": 108, "items": 518,  "sales_per_month": 1183, "reviews": 18454, "digital_signal": false},
+      {"shop": "LizViz",               "sales": 157938, "months": 180, "items": 3240, "sales_per_month": 877,  "reviews": 16714, "digital_signal": true},
+      {"shop": "RPGGuildPolska",       "sales": 68402,  "months": 48,  "items": 6180, "sales_per_month": 1425, "reviews": 16231, "digital_signal": false},
+      {"shop": "STLCookieCutter",      "sales": 65776,  "months": 60,  "items": 1705, "sales_per_month": 1096, "reviews": 5385,  "digital_signal": true},
+      {"shop": "SinfulCutters",        "sales": 51049,  "months": 108, "items": 1431, "sales_per_month": 473,  "reviews": 6653,  "digital_signal": true},
+      {"shop": "Wapu3D",               "sales": 46094,  "months": 48,  "items": 315,  "sales_per_month": 960,  "reviews": 5423,  "digital_signal": false},
+      {"shop": "PatchesAndCrafts",     "sales": 41368,  "months": 156, "items": 190,  "sales_per_month": 265,  "reviews": 6103,  "digital_signal": false},
+      {"shop": "CarterPrintingCo",     "sales": 36966,  "months": 96,  "items": 121,  "sales_per_month": 385,  "reviews": 7477,  "digital_signal": false},
+      {"shop": "NextLevel3Duk",        "sales": 33128,  "months": 36,  "items": 9,    "sales_per_month": 920,  "reviews": 3466,  "digital_signal": false},
+      {"shop": "PrimusPrintsCo",       "sales": 32365,  "months": 96,  "items": 181,  "sales_per_month": 337,  "reviews": 4794,  "digital_signal": false},
+      {"shop": "Yorkshire3DLtd",       "sales": 31404,  "months": 24,  "items": 55,   "sales_per_month": 1309, "reviews": 2989,  "digital_signal": false},
+      {"shop": "DiDiSensei",           "sales": 25840,  "months": 48,  "items": 96,   "sales_per_month": 538,  "reviews": 7092,  "digital_signal": false},
+      {"shop": "Crafts3Dcom",          "sales": 24005,  "months": 36,  "items": 77,   "sales_per_month": 667,  "reviews": 5012,  "digital_signal": false},
+      {"shop": "TheKokomoLighthouse",  "sales": 22380,  "months": 96,  "items": 36,   "sales_per_month": 233,  "reviews": 7099,  "digital_signal": false},
+      {"shop": "SkylarCrafting",       "sales": 21538,  "months": 60,  "items": 461,  "sales_per_month": 359,  "reviews": 3193,  "digital_signal": false},
+      {"shop": "Alchemy3dPrints",      "sales": 20724,  "months": 72,  "items": 1132, "sales_per_month": 288,  "reviews": 6453,  "digital_signal": false},
+      {"shop": "DotyIslandStudios",    "sales": 20072,  "months": 60,  "items": 53,   "sales_per_month": 335,  "reviews": 5987,  "digital_signal": false},
+      {"shop": "PrintedByAliens",      "sales": 19894,  "months": 48,  "items": 2560, "sales_per_month": 414,  "reviews": 5104,  "digital_signal": false},
+      {"shop": "Olee3DArt",            "sales": 19136,  "months": 36,  "items": 90,   "sales_per_month": 532,  "reviews": 2965,  "digital_signal": false},
+      {"shop": "CO3Dprint",            "sales": 18091,  "months": 48,  "items": 119,  "sales_per_month": 377,  "reviews": 3208,  "digital_signal": false},
+      {"shop": "LakeViewMetal",        "sales": 17959,  "months": 96,  "items": 1655, "sales_per_month": 187,  "reviews": 3731,  "digital_signal": false},
+      {"shop": "TheBeaverNBroadsword", "sales": 16257,  "months": 48,  "items": 1542, "sales_per_month": 339,  "reviews": 3761,  "digital_signal": false},
+      {"shop": "Muds3DGoods",          "sales": 13240,  "months": 36,  "items": 53,   "sales_per_month": 368,  "reviews": 3485,  "digital_signal": false},
+      {"shop": "3DPrintCraftShop",     "sales": 10011,  "months": 72,  "items": 19,   "sales_per_month": 139,  "reviews": 2784,  "digital_signal": false}
+    ]
+  },
+
+  "shop_concentration": {
+    "shops_seen_in_card_pool": 261,
+    "cards_collected": 381,
+    "queries": 20,
+    "appeared_once": 217,
+    "appeared_twice": 33,
+    "appeared_3_or_more": 11,
+    "warning": "with only ~19 cards per query, a shop CANNOT appear three times unless it dominates. The '217 appeared once' figure is largely a sample-size artefact and must NOT be read as market fragmentation. Only the 3+ group is a real signal, and even that is a floor, not a count."
+  }
+}

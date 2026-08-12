@@ -37,6 +37,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/keyword-database]] — **345 kulcsszó volumennel**: hol a hosszú farok a kutyákon túl
 - [[findings/keyword-demand-sweep]] — **kereslet 40+ kifejezésre**: hol a rés, és miért a thumbnail dönt
 - [[findings/etsy-first-party-search-data]] — **kereslet első kézből**: volumen, trend, és a vevői szókincs
+- [[findings/3d-print-market-structure]] — **3D piacszerkezet**: boltok, hosszú farok, és a licenc mint vásárlási jelzés
 - [[findings/3d-print-first-look]] — **3D nyomtatás**: jobb kereslet/kínálat, de a konverzió nem követi
 - [[findings/2024-vs-2026-cohort]] — az egyetlen valódi idősorunk
 

@@ -2,6 +2,8 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-12 — 3D piacszerkezet: 34 bolt, 204 hosszu farok kifejezes, 56 mert kereses, mind bongeszobol (Apify nelkul). Ket kulon kohorsz: 26 regi (median 5 ev, 252 termek, csak 4 fajlos) es 8 uj fajlos (median 7 HONAP, 68 termek, 208 eladas/ho, mind Star Seller). A legjobban konvertalo kifejezes a LICENC: commercial use stl 4,38 promille, a commercial use toldat mediana 2,37 vs 0,45 nelkule (findings/3d-print-market-structure)
+
 2026-08-12 — arXiv-kutatas a 3D iranyhoz (1170 sor, 97 tetel, assets/data/3d-print-arxiv-2026-08-12.md): a fizetos fajl nem geometriat ad el hanem ep halot es dokumentaciot (a Thingiverse 90,6%-a nyilt licencu); a letoltes nem kereslet (7,8 M letoltes / 19 425 make); a generativ 3D latvanyra optimalizal nem nyomtathatosagra; es a Hunyuan3D licence az EU-ban NEM ervenyes
 
 2026-08-12 — 3D nyomtatas elso meres: az Etsy sajat keresesi adatabol 40 kifejezes. A kereslet/kinalat arany nagysagrenddel jobb (layered svg 5,9 vs 3D median 26,9, 3d print files 172,9), DE a konverzio nem koveti: a harom legjobb aranyu kifejezes a legrosszabb konverzios savban van. Iranyvaltas nincs alatamasztva, pilot kell (findings/3d-print-first-look)

@@ -63,11 +63,32 @@ Mind az öt kérdésre legyen válaszod. Ha nincs, a szám nem mehet ki.
 | 1 | **Mi a populáció?** Hány, milyen szűréssel, deduplikálva? | `173 bolt` / `35 specialista` / `21 igazolt` — ez a különbség igaz és hamis állítás között |
 | 2 | **Mi a függetlenségi egység?** Ugyanaz a bolt/listing hányszor számít bele? | egyszer már 65 „specialistát" vitt le 35-re |
 | 3 | **Lista- vagy akciós ár?** | a mélyen diszkontálóknál torzít a legjobban, vagyis pont ott, ahol számít |
-| 4 | **Van rögzített árfolyam a devizára?** | árfolyamot **kitalálni tilos** — ha nincs a `decisions/2026-08-06-exchange-rates` táblájában, a bolt darabszámmal szerepel, HUF nélkül |
+| 4 | **Megvan a devizához az árfolyam?** | árfolyamot **kitalálni tilos, de kihagyni sem szabad** — ha nincs a rögzített táblában, **kérd le az aktuálisat** (lásd lent) |
 | 5 | **Mintavételi műtermék-e?** | „217 bolt egyszer szerepelt" nem szétaprózottság, ha lekérdezésenként csak 19 kártyát láttál |
 
 Külön: **a magas kereslet/kínálat arány önmagában nem következtetés.** Ellenőrizd a konverzióval,
 és nézd meg, hogy a kereslet a **te termékformádat** akarja-e. A norse/kelta bukás pontosan ez volt.
+
+## 5b. Árfolyam — szerezd meg, ne tippelj és ne hagyd ki
+
+A [[decisions/2026-08-06-exchange-rates]] kilenc devizát rögzít. Ha ezen kívül jön egy deviza,
+**kérd le az aktuális kurzust**:
+
+```bash
+curl -s "https://open.er-api.com/v6/latest/HUF"   # 1/rates[XXX] = 1 XXX hány HUF
+```
+
+Aztán:
+
+1. **Vedd fel a döntésoldal táblájába**, dátummal és forrással.
+2. **Ellenőrizd egyúttal a kilenc rögzítettet is.** 2026-08-12-én mind 0,6%-on belül volt a napi
+   jegyzéshez képest, tehát nem kellett újraszámolni semmit. Ha egy kurzus 5%-nál jobban elmegy,
+   az már döntés kérdése, és `pitfalls/` bejegyzést érdemel.
+3. **Jelöld a findingben**, hogy az a sor napi jegyzéssel készült, nem a rögzített konvencióval.
+
+**Miért nem elég a tipp:** 2026-08-12-én TRY-ra 9,3-at tippeltem volna, a valóság **6,62** —
+40%-os hiba, épp az egyetlen török boltnál. És miért nem elég kihagyni: az öt kimaradó bolt közül
+kettő az élmezőnybe került, amint kiszámoltuk őket.
 
 ## 6. Kimenet — a wiki szerződése
 

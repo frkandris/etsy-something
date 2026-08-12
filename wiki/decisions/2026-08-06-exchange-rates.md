@@ -31,6 +31,24 @@ tábla viszont HUF-ban számol.
 | HKD | 40,32 |
 | MYR | 77,35 |
 
+### 2026-08-12-i bővítés
+
+A 3D-körben három olyan deviza jött elő, ami nem volt a táblában. **Nem hagytam ki a boltokat és
+nem találtam ki kurzust — lekértem az aktuálisat** (exchangerate-api.com, 2026-08-11 23:57 UTC):
+
+| deviza | HUF | forrás |
+|---|---:|---|
+| MAD | **33,99** | exchangerate-api.com, 2026-08-11 |
+| CHF | **390,02** | exchangerate-api.com, 2026-08-11 |
+| TRY | **6,62** | exchangerate-api.com, 2026-08-11 |
+
+Ugyanekkor **ellenőriztem a kilenc eredeti kurzust is**: mind **0,6%-on belül** van a napi
+jegyzéshez képest, tehát a rögzített tábla továbbra is érvényes, és nem kell újraszámolni semmit.
+
+**Miért fontos ez:** mielőtt lekértem, tippeltem volna TRY-ra 9,3-at — a valóság 6,62, ami
+**40%-os hiba** lett volna, épp az egyetlen török boltnál. Az „inkább kihagyom" és az „inkább
+tippelek" közül **egyik sem jó**: az árfolyamot meg kell szerezni.
+
 ## Miért
 
 Az USD és EUR értéket **a felhasználó meglévő 2026-08-06-os soraiból fejtettem vissza** (pl.

@@ -2,6 +2,8 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-12 — Arfolyam: a hianyzo harom devizat (MAD 33,99 / CHF 390,02 / TRY 6,62) lekertem, nem tippeltem es nem hagytam ki - a tippem TRY-ra 9,3 lett volna, 40% hiba. A kilenc rogzitett kurzus ugyanekkor ellenorizve: mind 0,6%-on belul. A bolt-lista igy 15 teljes sor, median 489 456 HUF/ho 33 listinggel (decisions/2026-08-06-exchange-rates, findings/3d-shop-list)
+
 2026-08-12 — Skill keszult a kutatashoz (.claude/skills/etsy-research): 0. kapu a wiki-olvasas, 5. kapu az ot kotelezo ellenorzes (populacio, fuggetlensegi egyseg, lista- vs akcios ar, rogzitett arfolyam, mintaveteli mutermek), plus harvest.js mind a negy vegponttal. Az ok, amiert kell: ebben a korben nem tudas hianyzott, hanem a sorrend
 2026-08-12 — faq javitva: a SalesDoe elleni ket ervbol az egyik (boltonkenti kattintas) ELAVULT, mert van API-ja; a lista- vs akcios ar torzitas viszont ervenyes (faq)
 

@@ -1,7 +1,7 @@
 ---
 type: Finding
 title: 3D-fájlos bolt-lista — SalesDoe adatokkal, a layered lista szerkezetében
-description: 15 bolt SalesDoe API-ból, a Google Sheet layered-fül oszlopaival. Tíznél van rögzített árfolyam, ötnél nincs. A medián 453 ezer HUF/hó, 36 listinggel — a layered oldal 274 listingjéhez képest.
+description: 15 bolt SalesDoe API-ból, a Google Sheet layered-fül oszlopaival. A medián 489 ezer HUF/hó 33 listinggel — a layered oldal 274 listingjéhez képest. A hiányzó három devizára aznap kért árfolyam.
 status: stable
 generated:
   by: claude-opus-5
@@ -31,30 +31,26 @@ deviza`.
 | RippleLuv | 70 858 | 65 | 1 090 | $2,00 | 2025-05 | 112 | 64/65 | USD |
 | TheNovaPrintables | 52 398 | 20 | 2 620 | £3,00 | 2026-04 | 41 | 20/20 | GBP |
 | AuraPrint3D | 16 079 | 33 | 487 | €2,45 | 2025-07 | 18 | 33/33 | EUR |
+| STLForgeeStudio | 1 261 709 | 21 | 60 081 | 160 MAD | 2026-01 | 232 | — | MAD |
+| LovaSTL | 994 208 | 28 | 35 507 | 250 MAD | 2026-04 | 117 | — | MAD |
+| SolvraStudioDesigns | 835 832 | 90 | 9 287 | 10.99 CHF | 2026-04 | 195 | — | CHF |
+| STLCraftVibes | 489 456 | 8 | 61 182 | 100 MAD | 2025-10 | 144 | — | MAD |
+| ARENPRINT | 120 021 | 269 | 446 | 259 TRY | 2025-10 | 70 | — | TRY |
 
-**Medián: 453 170 HUF/hó, 36 listing, 7 602 HUF/listing.** (n = 10)
+**Medián: 489 456 HUF/hó, 33 listing, 11 698 HUF/listing.** (n = 15)
 
-### Árfolyam nélküli boltok — HUF-ot NEM számolok
-
-| bolt | listing | ár | eladás/hó | nyitás | deviza |
-|---|---:|---:|---:|---|---|
-| STLForgeeStudio | 21 | 160 | 232 | 2026-01 | **MAD** |
-| SolvraStudioDesigns | 90 | 10,99 | 195 | 2026-04 | **CHF** |
-| STLCraftVibes | 8 | 100 | 144 | 2025-10 | **MAD** |
-| ARENPRINT | 269 | 259 | 70 | 2025-10 | **TRY** |
-| LovaSTL | 28 | 250 | 117 | 2026-04 | **MAD** |
-
-A [[decisions/2026-08-06-exchange-rates]] kilenc devizát rögzít; MAD, CHF és TRY nincs köztük.
-Árfolyamot **nem találok ki** — amíg nincs rögzítve, ezek darabszámmal szerepelnek.
+A MAD, CHF és TRY kurzust **2026-08-12-én kértem le** (exchangerate-api.com), és felvettem a
+[[decisions/2026-08-06-exchange-rates]] táblájába. A kilenc eredeti kurzus ugyanekkor ellenőrizve:
+mind 0,6%-on belül, tehát nem kellett újraszámolni semmit.
 
 ## Amit a lista mond
 
 **A katalógusméret itt nem hajtóerő.** A layered oldalon a [[findings/verified-shop-list]] élén
-274–934 listinges boltok állnak; itt a medián **36 listing**, és a két legjobb bevételű bolt közül
-az egyiknek **31**, a másiknak 420 terméke van. A `HUF/listing` szórása ezért óriási: 487-től
-45 781-ig, **94-szeres**.
+274–934 listinges boltok állnak; itt a medián **33 listing**, és a két legjobb bevételű bolt közül
+az egyiknek **31**, a másiknak 420 terméke van. A `HUF/listing` szórása ezért óriási: 446-tól
+61 182-ig, **137-szeres**.
 
-**Mind digitális, és szinte mind friss.** A 15 boltból 14-nél a mintavett listingek **100%-a
+**Mind digitális, és szinte mind friss.** A tíz mintavett boltból kilencnél a listingek **100%-a
 letöltés**. A nyitási dátumok 2025-05 és 2026-06 közé esnek — **a legrégebbi is 15 hónapos**.
 
 **A legjobb HUF/listing nem a legnagyobb boltnál van.** A TheHexAndHaven 31 listinggel termel
@@ -75,6 +71,9 @@ látszik erősebbnek.
    katalóguson.
 5. **A `HUF/listing` félrevezető lehet** ott, ahol a bolt egyetlen mega-bundle-ből él: a 31 listing
    közül lehet, hogy egy hozza a forgalmat.
+6. **A MAD/CHF/TRY kurzus napi jegyzés, nem rögzített konvenció.** A tábla többi sora a
+   2026-08-06-i rögzített árfolyamokkal készült. Az eltérés kicsi (a kilenc régi kurzus 0,6%-on
+   belül van a mai jegyzéshez képest), de a két oszlop szigorúan véve nem azonos konvenciójú.
 
 ## Provenancia
 

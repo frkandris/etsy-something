@@ -4,7 +4,7 @@
   "source": "SalesDoe API (/api/shops/shop, /api/shops/shop/<id>) a bejelentkezett bongeszo-munkamenetbol",
   "columns_match": "Google Sheet 'layered niche' ful (gid 1600752523) es findings/verified-shop-list oszlopai",
   "price_caveat": "a SalesDoe median ara a lista- es az akcios ar kozott ingadozik (pitfalls/2026-08-06-salesdoe-list-vs-sale-price); ezek a boltok tartos 50-75%-os akciot futtatnak, tehat a huf_per_month FELSO BECSLES",
-  "fx": "csak a decisions/2026-08-06-exchange-rates altal rogzitett devizakra szamoltunk HUF-ot; MAD, CHF, TRY nincs rogzitve",
+  "fx": "a rogzitett kilenc devizara a decisions/2026-08-06-exchange-rates tablaja; MAD, CHF es TRY kurzusa 2026-08-12-en lekerve (exchangerate-api.com). A kilenc rogzitett kurzus ugyanekkor ellenorizve: mind 0,6%-on belul a napi jegyzeshez kepest.",
   "population": "15 bolt, a Marketplace Insights altal felhozott listingek boltjaibol - a lathato fej, nem veletlen minta"
  },
  "shops": [
@@ -31,12 +31,13 @@
    "sales_per_month": 232,
    "listings": 21,
    "median_price_salesdoe": 160,
-   "huf_per_month": null,
-   "huf_per_listing": null,
+   "huf_per_month": 1261709,
+   "huf_per_listing": 60081,
    "download_listings": 21,
    "sampled_listings": 21,
    "reviews": 205,
-   "fx_available": false
+   "fx_available": true,
+   "fx_source": "exchangerate-api.com 2026-08-11 (napi jegyzes, nem rogzitett konvencio)"
   },
   {
    "shop": "SolvraStudioDesigns",
@@ -46,12 +47,13 @@
    "sales_per_month": 195,
    "listings": 90,
    "median_price_salesdoe": 10.99,
-   "huf_per_month": null,
-   "huf_per_listing": null,
+   "huf_per_month": 835832,
+   "huf_per_listing": 9287,
    "download_listings": 90,
    "sampled_listings": 90,
    "reviews": 165,
-   "fx_available": false
+   "fx_available": true,
+   "fx_source": "exchangerate-api.com 2026-08-11 (napi jegyzes, nem rogzitett konvencio)"
   },
   {
    "shop": "3dsaltlab",
@@ -91,12 +93,13 @@
    "sales_per_month": 144,
    "listings": 8,
    "median_price_salesdoe": 100,
-   "huf_per_month": null,
-   "huf_per_listing": null,
+   "huf_per_month": 489456,
+   "huf_per_listing": 61182,
    "download_listings": 8,
    "sampled_listings": 8,
    "reviews": 126,
-   "fx_available": false
+   "fx_available": true,
+   "fx_source": "exchangerate-api.com 2026-08-11 (napi jegyzes, nem rogzitett konvencio)"
   },
   {
    "shop": "ARENPRINT",
@@ -106,12 +109,13 @@
    "sales_per_month": 70,
    "listings": 269,
    "median_price_salesdoe": 259,
-   "huf_per_month": null,
-   "huf_per_listing": null,
+   "huf_per_month": 120021,
+   "huf_per_listing": 446,
    "download_listings": 100,
    "sampled_listings": 100,
    "reviews": 112,
-   "fx_available": false
+   "fx_available": true,
+   "fx_source": "exchangerate-api.com 2026-08-11 (napi jegyzes, nem rogzitett konvencio)"
   },
   {
    "shop": "TheNovaPrintables",
@@ -211,12 +215,13 @@
    "sales_per_month": 117,
    "listings": 28,
    "median_price_salesdoe": 250,
-   "huf_per_month": null,
-   "huf_per_listing": null,
+   "huf_per_month": 994208,
+   "huf_per_listing": 35507,
    "download_listings": 28,
    "sampled_listings": 28,
    "reviews": 44,
-   "fx_available": false
+   "fx_available": true,
+   "fx_source": "exchangerate-api.com 2026-08-11 (napi jegyzes, nem rogzitett konvencio)"
   },
   {
    "shop": "AuraPrint3D",

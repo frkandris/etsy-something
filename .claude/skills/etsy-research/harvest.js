@@ -149,11 +149,28 @@
     return Object.keys(ER.sd).length;
   };
 
-  /* Árfolyam: CSAK a decisions/2026-08-06-exchange-rates rögzített devizái.
-   * Ami nincs itt, arra NEM számolunk HUF-ot — kitalálni tilos. */
+  /* Árfolyam. A rögzített kilenc a decisions/2026-08-06-exchange-rates konvenciója.
+   * Ami nincs benne: NE tippelj és NE hagyd ki — kérd le az aktuálisat ER.fetchFX()-szel,
+   * és vedd fel a döntésoldal táblájába dátummal. (Tippelt TRY 9,3 vs valós 6,62 = 40% hiba.) */
   ER.FX = { USD: 316.33, EUR: 364.60, GBP: 426.0, CAD: 226.0, AUD: 222.8,
             SGD: 246.7, SEK: 33.42, HKD: 40.32, MYR: 77.35 };
-  ER.huf = (spm, price, cur) => (ER.FX[cur] && price) ? Math.round(spm * price * ER.FX[cur]) : null;
+  ER.FXlive = {};   // ide kerül, ami napi jegyzésből jött — a findingben jelöld külön
+
+  /* Aktuális kurzusok + a rögzítettek ellenőrzése. Eltérést is visszaad. */
+  ER.fetchFX = async (want = []) => {
+    const j = await fetch('https://open.er-api.com/v6/latest/HUF').then(r => r.json());
+    const rate = c => j.rates[c] ? +(1 / j.rates[c]).toFixed(2) : null;
+    const drift = Object.fromEntries(Object.entries(ER.FX)
+      .map(([c, v]) => [c, rate(c) ? +(((rate(c) / v) - 1) * 100).toFixed(1) : null]));
+    want.forEach(c => { const r = rate(c); if (r) ER.FXlive[c] = r; });
+    return { updated: j.time_last_update_utc, live: ER.FXlive, driftPctVsFixed: drift,
+             warn: Object.entries(drift).filter(([, d]) => d != null && Math.abs(d) > 5) };
+  };
+
+  ER.huf = (spm, price, cur) => {
+    const r = ER.FX[cur] ?? ER.FXlive[cur];
+    return (r && price) ? Math.round(spm * price * r) : null;
+  };
 
   ER.dump = () => JSON.stringify({
     demand: ER.mi,
@@ -161,7 +178,8 @@
     specialists: ER.specialists(),
     shops: ER.shop,
     salesdoe: Object.fromEntries(Object.entries(ER.sd).map(([k, v]) => [k, v.err ? v :
-      { ...v, hufPerMonth: ER.huf(v.spm, v.priceMed, v.cur), fxKnown: !!ER.FX[v.cur] }]))
+      { ...v, hufPerMonth: ER.huf(v.spm, v.priceMed, v.cur),
+        fxSource: ER.FX[v.cur] ? 'rogzitett' : (ER.FXlive[v.cur] ? 'napi jegyzes' : 'HIANYZIK') }]))
   });
 
   return 'ER telepítve: demand, longtail, cards, specialists, shops, salesdoe, huf, dump';

@@ -37,6 +37,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/keyword-database]] — **345 kulcsszó volumennel**: hol a hosszú farok a kutyákon túl
 - [[findings/keyword-demand-sweep]] — **kereslet 40+ kifejezésre**: hol a rés, és miért a thumbnail dönt
 - [[findings/etsy-first-party-search-data]] — **kereslet első kézből**: volumen, trend, és a vevői szókincs
+- [[findings/niche-comparison]] — **layered vs 3D**: azonos alapú összehasonlítás, percentilisekkel
 - [[findings/3d-shop-list]] — **3D bolt-lista** SalesDoe bevétellel, a layered lista szerkezetében
 - [[findings/3d-print-market-structure]] — **3D piacszerkezet**: boltok, hosszú farok, és a licenc mint vásárlási jelzés
 - [[findings/3d-print-first-look]] — **3D nyomtatás**: jobb kereslet/kínálat, de a konverzió nem követi
@@ -61,6 +62,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 ## Mérési csapdák — `pitfalls/`
 
+- [[pitfalls/2026-08-12-rossz-populacio-harmadszor]] — a hibás populáció, harmadszor
 - [[pitfalls/2026-08-11-a-szuro-torolte-a-felso-lapokat]] — a szűrő a felső lapokat és a nyílásokat is törölte
 - [[pitfalls/2026-08-07-single-listing-attribution]] — a populáció fele hamis pozitív volt
 - [[pitfalls/2026-08-07-duplicate-search-hits]] — ugyanaz a listing háromszor számolva

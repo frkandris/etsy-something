@@ -2,6 +2,9 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-12 — Layered vs 3D azonos alapu osszehasonlitas: mindket oldal ujramerve SalesDoe API-val ugyanaznap. Auditalt layered median 706 907 vs 3D 489 456 HUF/ho - a 3D 31%-kal KEVESEBB, de 33 listinggel a layered 326-javal szemben (HUF/listing 1 845 vs 11 698) (findings/niche-comparison)
+2026-08-12 — KORREKCIO: az osszehasonlitast eloszor a HIBAS 33-as layered listan szamoltam, pedig a sajat pitfall-om szerint az auditalt populacio 21. A javitas 68%-kal emelte a layered mediant es megforditotta a fo kovetkeztetest. Plusz kevert percentilis-definicio es egy visszavont 'egyotod annyi ido' allitas (pitfalls/2026-08-12-rossz-populacio-harmadszor)
+
 2026-08-12 — Arfolyam: a hianyzo harom devizat (MAD 33,99 / CHF 390,02 / TRY 6,62) lekertem, nem tippeltem es nem hagytam ki - a tippem TRY-ra 9,3 lett volna, 40% hiba. A kilenc rogzitett kurzus ugyanekkor ellenorizve: mind 0,6%-on belul. A bolt-lista igy 15 teljes sor, median 489 456 HUF/ho 33 listinggel (decisions/2026-08-06-exchange-rates, findings/3d-shop-list)
 
 2026-08-12 — Skill keszult a kutatashoz (.claude/skills/etsy-research): 0. kapu a wiki-olvasas, 5. kapu az ot kotelezo ellenorzes (populacio, fuggetlensegi egyseg, lista- vs akcios ar, rogzitett arfolyam, mintaveteli mutermek), plus harvest.js mind a negy vegponttal. Az ok, amiert kell: ebben a korben nem tudas hianyzott, hanem a sorrend

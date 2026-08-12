@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "collected": "2026-08-12",
+    "source": "etsy.com search, browser-driven (no Apify budget)",
+    "locale": "Etsy Hungary storefront, prices in HUF",
+    "fx_note": "convert with the project's fixed rates: USD 316.33, EUR 364.6 (decisions/2026-08-06-exchange-rates)",
+    "method": "same-origin fetch of /search?q=..., server-rendered HTML parsed with DOMParser; Etsy server-renders only the FIRST ~12-13 listing cards per query, the rest lazy-load. Every figure below therefore describes the TOP ~12 results, i.e. what a buyer sees before scrolling - not the whole result set.",
+    "caveats": [
+      "Etsy caps the displayed result count at '1,000+'; only narrower queries return an exact number.",
+      "Two runs of the same head queries differed slightly (e.g. cosplay stl digital share 75 vs 92) - Etsy rotates and personalises results, so treat single-run figures as +/- one listing.",
+      "Review counts are a SALES PROXY, not sales. A digital bundle listing accumulates reviews across all its buyers.",
+      "No search-volume data in this sweep. Supply is measured, demand is only proxied by reviews and badges. The 'searches per 1000 results' metric used elsewhere in this wiki CANNOT be computed from this dataset."
+    ],
+    "fields": {
+      "count": "Etsy's displayed result count for the query",
+      "digital_pct": "share of the top ~12 listings that are 'Digital download' (STL/3MF) rather than a physical printed object",
+      "price_med_digital": "median HUF price of the digital listings in the top ~12",
+      "price_med_physical": "median HUF price of the physical listings in the top ~12",
+      "rev_sum": "sum of review counts across the top ~12",
+      "rev_med": "median review count across the top ~12",
+      "bestsellers": "how many of the top ~12 carry Etsy's Bestseller badge"
+    }
+  },
+
+  "head_queries": [
+    {"q": "stl files",            "count": "1,000+", "digital_pct": 92, "price_med_digital": 1100, "price_med_physical": null,  "rev_sum": 1400, "rev_med": 65,  "bestsellers": 2},
+    {"q": "stl bundle",           "count": "1,000+", "digital_pct": 92, "price_med_digital": 1933, "price_med_physical": null,  "rev_sum": 913,  "rev_med": 44,  "bestsellers": 1},
+    {"q": "articulated dragon",   "count": "1,000+", "digital_pct": 67, "price_med_digital": 1141, "price_med_physical": 7430,  "rev_sum": 1290, "rev_med": 33,  "bestsellers": 3},
+    {"q": "flexi animal stl",     "count": "1,000+", "digital_pct": 92, "price_med_digital": 2139, "price_med_physical": null,  "rev_sum": 831,  "rev_med": 44,  "bestsellers": 5},
+    {"q": "print in place stl",   "count": "1,000+", "digital_pct": 92, "price_med_digital": 1097, "price_med_physical": null,  "rev_sum": 1330, "rev_med": 126, "bestsellers": 5},
+    {"q": "3d printed lamp",      "count": "1,000+", "digital_pct": 62, "price_med_digital": 2053, "price_med_physical": 32580, "rev_sum": 1050, "rev_med": 46,  "bestsellers": 3},
+    {"q": "3d printed keychain",  "count": "1,000+", "digital_pct": 75, "price_med_digital": 2097, "price_med_physical": 7041,  "rev_sum": 2318, "rev_med": null,"bestsellers": 5},
+    {"q": "cookie cutter stl",    "count": "1,000+", "digital_pct": 92, "price_med_digital": 2411, "price_med_physical": null,  "rev_sum": 7132, "rev_med": null,"bestsellers": 4},
+    {"q": "vase stl",             "count": "1,000+", "digital_pct": 90, "price_med_digital": 1231, "price_med_physical": null,  "rev_sum": 583,  "rev_med": 46,  "bestsellers": 3},
+    {"q": "planter stl",          "count": "1,000+", "digital_pct": 92, "price_med_digital": 1502, "price_med_physical": null,  "rev_sum": 524,  "rev_med": 36,  "bestsellers": 3},
+    {"q": "cosplay stl",          "count": "1,000+", "digital_pct": 75, "price_med_digital": 3478, "price_med_physical": 50310, "rev_sum": 1265, "rev_med": 74,  "bestsellers": 5},
+    {"q": "dnd miniatures stl",   "count": "1,000+", "digital_pct": 92, "price_med_digital": 3870, "price_med_physical": null,  "rev_sum": 617,  "rev_med": 41,  "bestsellers": 4},
+    {"q": "3d printed name sign", "count": "1,000+", "digital_pct": 42, "price_med_digital": 1007, "price_med_physical": 3771,  "rev_sum": 19409,"rev_med": null,"bestsellers": 5},
+    {"q": "headphone stand stl",  "count": "1,000+", "digital_pct": 92, "price_med_digital": 1705, "price_med_physical": null,  "rev_sum": 801,  "rev_med": null,"bestsellers": 0},
+    {"q": "fidget stl",           "count": "1,000+", "digital_pct": 92, "price_med_digital": 2097, "price_med_physical": null,  "rev_sum": 1158, "rev_med": null,"bestsellers": 4},
+    {"q": "3d print wall art",    "count": "1,000+", "digital_pct": 54, "price_med_digital": 1931, "price_med_physical": 82530, "rev_sum": 6498, "rev_med": null,"bestsellers": 2}
+  ],
+
+  "long_tail_queries": [
+    {"q": "articulated axolotl stl", "count": "944",    "digital_pct": 85, "price_med_digital": 1614, "rev_sum": 4078,  "bestsellers": 4},
+    {"q": "flexi cat stl",           "count": "1,000+", "digital_pct": 92, "price_med_digital": 2512, "rev_sum": 992,   "bestsellers": 1},
+    {"q": "hexagon planter stl",     "count": "989",    "digital_pct": 92, "price_med_digital": 1935, "rev_sum": 11895, "bestsellers": 0},
+    {"q": "d20 dice box stl",        "count": "859",    "digital_pct": 69, "price_med_digital": 1915, "rev_sum": 4078,  "bestsellers": 2},
+    {"q": "lithophane stl",          "count": "745",    "digital_pct": 82, "price_med_digital": 2014, "rev_sum": 1226,  "bestsellers": 1},
+    {"q": "vase mode stl",           "count": "1,000+", "digital_pct": 90, "price_med_digital": 1607, "rev_sum": 501,   "bestsellers": 2},
+    {"q": "articulated crab stl",    "count": "870",    "digital_pct": 92, "price_med_digital": 2421, "rev_sum": 4163,  "bestsellers": 2},
+    {"q": "cable organizer stl",     "count": "1,000+", "digital_pct": 92, "price_med_digital": 1470, "rev_sum": 11814, "bestsellers": 0}
+  ],
+
+  "observed_top_listing_patterns": {
+    "mega_bundles": [
+      "800 TB+ Mega STL Files | 2 Million+ 3D Print Files | Flexi Animals, Dragons, Cosplay, Vehicles - HUF 3143 (70% off from 10478)",
+      "500TB+ Mega STL Bundle | Flexi Animals, Dragons, Vehicles, Anime, Cosplay - HUF 6519 (70% off from 21730)",
+      "12,000+ Articulated Animal STL Bundle - HUF 846 (75% off from 3386)",
+      "10,000+ Flexi Animal STL Bundle - HUF 1106 (67% off from 3354)",
+      "2500+ Home Decor STL Bundle | Vases, Bowls, Planters, Candle Holders (Commercial Use) - HUF 1931",
+      "8000+ 3D Keychain STL Bundle + SVG Files | Cricut & Laser Cut - HUF 625 (65% off)"
+    ],
+    "note_on_bundles": "The head of every STL query is dominated by mega-bundles of thousands to millions of files, sold at 500-3000 HUF after a permanent 50-75% 'discount'. Several of them advertise 'Commercial Use'. This is the same permanent-discount pattern the layered-SVG research already documented, but at an extreme scale: the unit being sold is no longer a design, it is an archive.",
+    "cross_over_with_our_niche": "One of the top results for 'stl files' is a 720,000+ LASER CUT file bundle (svg dxf cdr ai eps, CNC & Glowforge) at HUF 638 with 210 reviews, and an 8000+ keychain bundle sells STL *and* SVG together. The bundle sellers do not respect the laser/paper/3D boundary - they aggregate across all of them."
+  },
+
+  "etsy_facets_and_related": {
+    "facet_chips_on_3d_printed": ["Wooden", "Polymer Clay", "Cookie Cutter", "Stand", "Wall Mount", "Housewarming", "Christmas", "Father's Day", "Photo", "Logo"],
+    "related_searches": ["3d printed files", "3d printed dragon", "3d printed toys", "3d printed animals", "3d printed fidget", "3d printed lamp", "3d printed keychain"],
+    "customisable_suggestions": ["personalized 3d printed name sign", "3d printed business logo", "custom 3d printed keychain", "personalized 3d printed lamp", "custom 3d printed portrait figurine"],
+    "note": "Etsy's own 'Shop customizable ideas' row is entirely PERSONALISED PHYSICAL products, not files. Etsy is steering this query toward made-to-order printing, not toward digital downloads."
+  }
+}

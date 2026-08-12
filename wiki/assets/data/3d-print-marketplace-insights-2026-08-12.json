@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "collected": "2026-08-12",
+    "source": "Etsy Marketplace Insights (Shop Manager > Stats > Marketplace insights), LasercutSupplier shop, Etsy Plus",
+    "why_this_matters": "This is FIRST-PARTY Etsy data, the same source as findings/etsy-first-party-search-data. It gives the wiki's core metric - searches per 1000 listings - for 3D-printing terms on exactly the same basis as the layered-SVG terms, so the two niches are directly comparable. No third-party keyword tool is involved.",
+    "extraction": "the numbers are embedded in the server-rendered page as initial_data.marketplace_insights_search.stats; fetched same-origin and parsed, no UI scraping",
+    "fields": {
+      "term": "search term",
+      "searches_30d": "searches in the last 30 days, Etsy's own count",
+      "listings": "avgTotalListings - Etsy's own competing-listing count for the term",
+      "per_1000": "searches_30d / listings * 1000 - the wiki's demand-per-supply metric",
+      "cvr_rating": "Etsy's conversion-rate rating, integer. Observed 0-4; the UI labelled cvr=1 as 'Low'. Higher is better. The exact label for each integer is NOT confirmed beyond 1='Low'.",
+      "query_cvr_permille": "Etsy's queryCvr x 1000, i.e. sales per 1000 searches"
+    },
+    "caveats": [
+      "cvr_rating's full label scale is unverified - only cvr=1 was seen labelled ('Low') in the UI. Do not translate the other integers into words without checking.",
+      "'print in place' returned 9 searches against 68,747 listings. That is almost certainly Etsy treating the phrase as three common words rather than a real query - treat as unusable, not as a finding.",
+      "'ams multicolor stl' failed to parse (term probably has no data).",
+      "Searches are 30-day totals for the Etsy marketplace as a whole, not per-country.",
+      "A high per_1000 with a low cvr_rating means people look and do not buy - lithophane, gridfinity and 3d printed lamp are all in that quadrant."
+    ]
+  },
+
+  "baseline_our_current_niche": [
+    {"term": "layered svg",         "searches_30d": 1103, "listings": 185987, "per_1000": 5.9,  "cvr_rating": 1, "query_cvr_permille": 0.63},
+    {"term": "shadow box svg",      "searches_30d": 2679, "listings": 33836,  "per_1000": 79.2, "cvr_rating": 2, "query_cvr_permille": 0.92},
+    {"term": "multilayer svg",      "searches_30d": 589,  "listings": 26492,  "per_1000": 22.2, "cvr_rating": 0, "query_cvr_permille": 0.20},
+    {"term": "layered mandala svg", "searches_30d": 139,  "listings": 18701,  "per_1000": 7.4,  "cvr_rating": 0, "query_cvr_permille": 0.18}
+  ],
+
+  "three_d_printing": [
+    {"term": "3d printed",          "searches_30d": 68217, "listings": 969710, "per_1000": 70.3,  "cvr_rating": 0, "query_cvr_permille": 0.07},
+    {"term": "3d print files",      "searches_30d": 45614, "listings": 263787, "per_1000": 172.9, "cvr_rating": 1, "query_cvr_permille": 0.57},
+    {"term": "3d printer files",    "searches_30d": 19504, "listings": 208796, "per_1000": 93.4,  "cvr_rating": 1, "query_cvr_permille": 0.53},
+    {"term": "stl files",           "searches_30d": 18035, "listings": 298977, "per_1000": 60.3,  "cvr_rating": 1, "query_cvr_permille": 0.69},
+    {"term": "dnd miniatures",      "searches_30d": 6767,  "listings": 217527, "per_1000": 31.1,  "cvr_rating": 0, "query_cvr_permille": 0.31},
+    {"term": "stl file",            "searches_30d": 4996,  "listings": 297697, "per_1000": 16.8,  "cvr_rating": 0, "query_cvr_permille": 0.24},
+    {"term": "3d printed lamp",     "searches_30d": 2636,  "listings": 14369,  "per_1000": 183.5, "cvr_rating": 0, "query_cvr_permille": 0.07},
+    {"term": "stl bundle",          "searches_30d": 2133,  "listings": 59588,  "per_1000": 35.8,  "cvr_rating": 2, "query_cvr_permille": 1.22},
+    {"term": "halloween stl",       "searches_30d": 1958,  "listings": 31515,  "per_1000": 62.1,  "cvr_rating": 1, "query_cvr_permille": 0.63},
+    {"term": "articulated dragon",  "searches_30d": 1659,  "listings": 15710,  "per_1000": 105.6, "cvr_rating": 1, "query_cvr_permille": 0.49},
+    {"term": "3d printed keychain", "searches_30d": 1655,  "listings": 42874,  "per_1000": 38.6,  "cvr_rating": 1, "query_cvr_permille": 0.61},
+    {"term": "lithophane",          "searches_30d": 1328,  "listings": 6243,   "per_1000": 212.7, "cvr_rating": 0, "query_cvr_permille": 0.18},
+    {"term": "gridfinity",          "searches_30d": 1006,  "listings": 3117,   "per_1000": 322.7, "cvr_rating": 0, "query_cvr_permille": 0.07},
+    {"term": "cookie cutter stl",   "searches_30d": 745,   "listings": 67273,  "per_1000": 11.1,  "cvr_rating": 1, "query_cvr_permille": 0.61},
+    {"term": "cosplay stl",         "searches_30d": 741,   "listings": 27053,  "per_1000": 27.4,  "cvr_rating": 1, "query_cvr_permille": 0.56},
+    {"term": "3d printed gift",     "searches_30d": 617,   "listings": 366235, "per_1000": 1.7,   "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "flexi animals",       "searches_30d": 590,   "listings": 13103,  "per_1000": 45.0,  "cvr_rating": 1, "query_cvr_permille": 0.64},
+    {"term": "christmas stl",       "searches_30d": 563,   "listings": 35336,  "per_1000": 15.9,  "cvr_rating": 0, "query_cvr_permille": 0.28},
+    {"term": "3d printed name sign","searches_30d": 412,   "listings": 10866,  "per_1000": 37.9,  "cvr_rating": 0, "query_cvr_permille": 0.31},
+    {"term": "3d model stl",        "searches_30d": 337,   "listings": 127728, "per_1000": 2.6,   "cvr_rating": 0, "query_cvr_permille": 0.47},
+    {"term": "vase stl",            "searches_30d": 318,   "listings": 7619,   "per_1000": 41.7,  "cvr_rating": 1, "query_cvr_permille": 0.66},
+    {"term": "planter stl",         "searches_30d": 306,   "listings": 11620,  "per_1000": 26.3,  "cvr_rating": 2, "query_cvr_permille": 0.92},
+    {"term": "dice tower stl",      "searches_30d": 268,   "listings": 8014,   "per_1000": 33.4,  "cvr_rating": 2, "query_cvr_permille": 1.19},
+    {"term": "desk organizer stl",  "searches_30d": 190,   "listings": 10137,  "per_1000": 18.7,  "cvr_rating": 0, "query_cvr_permille": 0.33},
+    {"term": "cake topper stl",     "searches_30d": 128,   "listings": 19940,  "per_1000": 6.4,   "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "wall art stl",        "searches_30d": 115,   "listings": 54615,  "per_1000": 2.1,   "cvr_rating": 1, "query_cvr_permille": 0.57},
+    {"term": "headphone stand stl", "searches_30d": 96,    "listings": 3908,   "per_1000": 24.6,  "cvr_rating": 1, "query_cvr_permille": 0.71},
+    {"term": "flexi cat",           "searches_30d": 85,    "listings": 4307,   "per_1000": 19.7,  "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "fidget toy stl",      "searches_30d": 72,    "listings": 12264,  "per_1000": 5.9,   "cvr_rating": 4, "query_cvr_permille": 2.16},
+    {"term": "stl download",        "searches_30d": 68,    "listings": 152539, "per_1000": 0.4,   "cvr_rating": 2, "query_cvr_permille": 1.14},
+    {"term": "articulated axolotl", "searches_30d": 53,    "listings": 5420,   "per_1000": 9.8,   "cvr_rating": 1, "query_cvr_permille": 0.67},
+    {"term": "terrarium stl",       "searches_30d": 49,    "listings": 6523,   "per_1000": 7.5,   "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "bambu lab stl",       "searches_30d": 34,    "listings": 4820,   "per_1000": 7.1,   "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "garden stake stl",    "searches_30d": 3,     "listings": 1141,   "per_1000": 2.6,   "cvr_rating": 0, "query_cvr_permille": 0.00},
+    {"term": "print in place",      "searches_30d": 9,     "listings": 68747,  "per_1000": 0.1,   "cvr_rating": 0, "query_cvr_permille": 0.00, "note": "UNUSABLE - Etsy appears to treat this as three ordinary words, not a query"},
+    {"term": "ams multicolor stl",  "searches_30d": null,  "listings": null,   "per_1000": null,  "cvr_rating": null, "query_cvr_permille": null, "note": "no data returned"}
+  ]
+}

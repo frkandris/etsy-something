@@ -2,6 +2,8 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-12 — 3D nyomtatas elso meres: az Etsy sajat keresesi adatabol 40 kifejezes. A kereslet/kinalat arany nagysagrenddel jobb (layered svg 5,9 vs 3D median 26,9, 3d print files 172,9), DE a konverzio nem koveti: a harom legjobb aranyu kifejezes a legrosszabb konverzios savban van. Iranyvaltas nincs alatamasztva, pilot kell (findings/3d-print-first-look)
+
 2026-08-11 — Akcentus-darabok: a 150 mm2 folotti sziget nem hiba, hanem kulon ragasztando elem (a beagyazott retegek miatt alatta mindig van anyag) - igy marad meg a szem-irisz. Riport-idoben, a vegso geometriabol szamolva, report.json-ban (workflows/recessed-papercut-pipeline)
 2026-08-11 — v04 ujrarajzolas: az attetszo szalag-atfedesek keverekzonai tormelekre esnek a kvantalasnal; a prompt tiltja a keverest, es a valasztott kep kompozicio-referenciakent megy vissza. Reviewer: redraw_a 4,0 atlag - eddigi legjobb (product/iterations/0048-cat-v04)
 

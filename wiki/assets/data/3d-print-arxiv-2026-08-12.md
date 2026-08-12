@@ -16,30 +16,32 @@ API-n keresztül.
 
 ## Összefoglaló
 
-**1. A fizetős 3D-fájl nem geometriát ad el.** Az ingyenes oldal hatalmas és jogilag nyitott:
-Özkil 158 373 Thingiverse-modelljéből **90,6% nyílt licencű, és a CC-licenceknek csak 13,8%-a tiltja
-a kereskedelmi felhasználást** [A1]. Amit egy fizetős fájl hozzátehet, az a **garantáltan ép
-geometria** (a repozitóriumok tele vannak nem-manifold, önmetsző hálókkal — Thingi10K [A4]) és a
-**dokumentáció**: Alcock négy dokumentált vevői akadálya (összeszerelés, testreszabhatóság,
-nyomtathatóság az adott gépen, készítési mód) [A5, D9] gyakorlatilag egy listing-checklist.
+**1. A fizetős 3D-fájl nem geometriát ad el.** Az ingyenes kínálat hatalmas és jogilag nyitott:
+158 373 Thingiverse-modellből **90,6% nyílt licencű, a CC-licenceknek csak 13,8%-a tiltja a
+kereskedelmi felhasználást** [A1]. Amit egy fizetős fájl hozzátehet: **garantáltan ép geometria**
+(a repozitóriumok tele vannak törött hálókkal, [A4]) és **dokumentáció** — Alcock négy vevői
+akadálya [A5] gyakorlatilag kész listing-checklist.
 
-**2. A letöltésszám nem kereslet.** Novak 30 népszerű modellt követett 500 napig: **7 823 249
-letöltésre 19 425 „make" jutott, és az arány 1:474-ről 1:784-re romlott** [A2]. Bármilyen
-volumen-becslés, ami letöltésre épül, nagyságrendekkel felülbecsli a fizetőképes keresletet.
+**2. A letöltésszám nem kereslet.** 30 népszerű modellen **7 823 249 letöltésre 19 425 „make" jutott,
+és az arány 1:474-ről 1:784-re romlott** [A2]. Letöltésre épülő volumenbecslés nagyságrendekkel
+felülbecsli a fizetőképes keresletet.
 
 **3. A parametrikus template erősebb termék, mint a kész fájl** — de csak ha a vevő érzi, hogy ő
-tervezte. Kyriakou (MIS Quarterly) szerint **a metamodelleket többször hasznosítják újra, mint az
-általuk generált konkrét modelleket** [A9/D8]; Franke–Schreier szerint a saját tervezésű termékre a
-fizetési hajlandóság kb. **+100%** [D1, D2] — viszont Franke 2010 kimutatja, hogy a prémium az
-**érzékelt saját hozzájáruláson** múlik [D3], vagyis egy „egy kattintás, kész" automata
-személyre szabás akár kevesebbet is érhet, mint egy lassabb, látható konfigurátor.
+tervezte. A metamodelleket többször hasznosítják újra, mint az általuk generált modelleket [A9];
+saját tervezésű termékre a fizetési hajlandóság kb. **+100%** [D1, D2] — viszont a prémium az
+**érzékelt saját hozzájáruláson** múlik [D3], így egy egykattintásos automata személyre szabás
+kevesebbet is érhet, mint egy lassabb, látható konfigurátor.
 
-**4. A generatív 3D ma látványra optimalizál, nem nyomtathatóságra — és a licenc buktató.** A SEG
-[C10] mérése szerint a TRELLIS kimenetének normalizált támaszigénye 0,343, a nyomtathatóságra
-optimalizált változaté 0,176; a GenMF [C11] pedig azt mutatja, hogy egyszínű nyomtatásnál a
-textúrába kódolt részlet **elvész**, mert a generált modellek a látványt textúrában, nem
-geometriában tárolják. Licencoldalon: **a Hunyuan3D 2.0 és 2.1 licence kifejezetten nem érvényes az
-Európai Unióban** [L] — Magyarországról nem használható jogtisztán.
+**4. A generatív 3D látványra optimalizál, nem nyomtathatóságra — és a licenc buktató.** A TRELLIS
+kimenetének normalizált támaszigénye **0,343**, a nyomtathatóságra optimalizált változaté **0,176**
+[C13]; egyszínű nyomtatásnál pedig a textúrába kódolt részlet **elvész** [C14]. **A Hunyuan3D 2.0 és
+2.1 licence kifejezetten nem érvényes az EU-ban** — Magyarországról nem használható. Biztonságos
+alapértelmezés: TRELLIS (MIT).
+
+**5. A print-in-place tervezési ablakot két szám fogja közre, és ennyi az egész irodalom:**
+**0,5 mm** minimális hézag az összeolvadás ellen [B9], **0,15–0,25 mm** az optimum egy 10 mm-es
+forgó ízületnél [B11]. Anyagra és rétegmagasságra lebontott táblázat **nincs** — ezt, mint a
+papírvágásnál a 2 mm-es webet, **magunknak kell megmérnünk**.
 
 ---
 
@@ -256,113 +258,316 @@ találtam — a tartalomleírás a címből/folyóiratból következtetve, **iga
 
 ## B) Mi nyomtatható jól és mi nem — terméktervezési korlátok
 
-> **Figyelmeztetés a szakasz egészére:** ez a terület **nincs arXiv-en**. Célzott lekérdezések
+> **Figyelmeztetés a szakasz egészére:** ez a terület **jórészt nincs arXiv-en**. A tervezési
+> szabályok a szakfolyóiratokban (Additive Manufacturing, Rapid Prototyping Journal, Polymers,
+> Processes), a szabványokban és **gyártói tudásbázisokban** élnek. Az arXiv célzott lekérdezései
 > (`abs:"support-free" AND abs:"additive manufacturing"`, `abs:"print-in-place"`,
-> `abs:"printability"`) 4–5 releváns találatot adtak, azok is robotikai/metaanyag-témájúak. A DfAM
-> tervezési szabályok a szakfolyóiratokban (Additive Manufacturing, Rapid Prototyping Journal), a
-> szabványokban (ISO/ASTM 52910 sorozat) és **gyártói tudásbázisokban** élnek. Az utóbbiakat külön
-> megjelölöm — **nem lektorált forrás.**
+> `abs:"printability"`) alig adtak érdemi találatot.
+>
+> **Megbízhatósági jelölés a szakaszban:** ✅ = a forrást ténylegesen megnyitottam vagy egy
+> alügynök megnyitotta és idézte · ⚠️ = csak Crossref/Semantic Scholar metaadat, a tartalom
+> fizetős fal mögött · ⚠️⚠️ = az alügynök jelentette ellenőrzöttként, de a párhuzamos futásai
+> ellentmondtak egymásnak, én magam nem kértem le.
 
-**[B1] Topology optimization of 3D self-supporting structures for additive manufacturing**
-Matthijs Langelaar · 2016 · Additive Manufacturing 12:60–70 · DOI 10.1016/j.addma.2016.06.010
-A támasz nélküli („self-supporting") tervezés kanonikus optimalizálási hivatkozása: a maximális
-túlnyúlásszöget mint szűrőt építi be a topológiaoptimalizálásba, így a kimenet eleve támasz nélkül
-nyomtatható. Crossrefen ellenőrzött metaadat; 201 hivatkozás. *Nekünk:* ez a formális alapja annak,
-amit a gyakorlatban 45°-os szabályként ismerünk.
+### B/1. Túlnyúlás és támasz nélküli tervezés
 
-**[B2] Support-Free Hollowing for 3D Printing via Voronoi Diagram of Ellipses**
+**[B1] Topology optimization of 3D self-supporting structures for additive manufacturing** ✅
+Matthijs Langelaar · 2016 · Additive Manufacturing 12:60–70 · DOI 10.1016/j.addma.2016.06.010 ·
+OA: https://repository.tudelft.nl/record/uuid:c49bb07e-bf70-48fd-96b8-f07d7c0c26f5
+A kanonikus „AM filter": a rétegenkénti gyártási modellt sűrűségszűrőként építi be az
+optimalizációs ciklusba, így nem nyomtatható geometria eleve nem jöhet létre. Dokumentált korlátja,
+hogy strukturált hálón **fix 45°-ot** kényszerít. Kiegészítők: Langelaar, *An additive manufacturing
+filter for topology optimization of print-ready designs*, SMO 55:871–883, DOI 10.1007/s00158-016-1522-2 ⚠️;
+Gaynor & Guest 2016, SMO 54:1157–1172, DOI 10.1007/s00158-016-1551-x ⚠️ (a másik alapmű, a
+tartalmát nem tudtuk megnyitni, ezért **semmilyen számot nem tulajdonítunk neki**).
+
+**[B2] A topology optimization approach to structure design with self-supporting constraints in additive manufacturing** ✅
+Zhao Wu, Renbin Xiao · 2022 · J. Computational Design and Engineering 9(2):364–379 ·
+DOI 10.1093/jcde/qwac004 · nyílt hozzáférés: https://academic.oup.com/jcde/article/9/2/364/6537182
+**Ez a forrás, amivel a 45°-ot idézni lehet folklór helyett.** Kimondja, hogy Langelaar szűrője fix
+45°-on áll, és saját példáit **α = 30°, 45° és 80°** mellett futtatja, megmutatva, hogy a
+megengedett túlnyúlásszög növelésével csökken a compliance.
+
+**[B3] Continuous front propagation-based overhang control for topology optimization with additive manufacturing** ✅
+E. van de Ven, R. Maas, C. Ayas, M. Langelaar, F. van Keulen · 2018 · SMO 57:2075–2091 ·
+DOI 10.1007/s00158-017-1880-4
+Front-terjedéses szűrő, ami — Langelaar-ral ellentétben — **strukturálatlan hálón is működik**, és a
+megengedett túlnyúlás mértéke szabadon választható. 3D kiterjesztés: DOI 10.1016/j.cma.2020.113169;
+összehasonlítás: DOI 10.1007/s00158-021-02887-2. Level-set ág: Allaire, Dapogny, Estevez, Faure,
+Michailidis 2017, J. Comput. Phys. 351:295–328, DOI 10.1016/j.jcp.2017.09.041 ⚠️.
+
+**[B4] Topology optimization for additive manufacturing with length scale, overhang, and building orientation constraints** ✅
+Prabhat Kumar, Eduardo Fernández · 2022 · arXiv:2204.07333 · https://arxiv.org/abs/2204.07333
+Minimális tömör méret + minimális üreg + maximális túlnyúlásszög + építési irány egyetlen
+formulációban, **MATLAB-kóddal a függelékben**. Őszinte a hibamódról is: egy pusztán *lokális*
+gradiens-alapú túlnyúlás-kényszer átmehet a lejtésteszten úgy, hogy a darab globálisan mégsem
+önhordó. Compliant mechanism benchmarkokat is tartalmaz.
+Rokon: Zhao, Li, Liu 2017, arXiv:1708.07364 ✅ (kvadratikus folytonos önhordási kényszer, ~100×
+gyorsabb túlnyúlás-detektálás konvolúcióval, **általános** szöggel).
+
+**[B5] Effect of Extrusion Temperature on Printable Threshold Overhang in Additive Manufacturing** ✅
+Jingchao Jiang, Xun Xu, Jonathan Stringer · 2019 · Procedia CIRP 81:1376–1381 ·
+DOI 10.1016/j.procir.2019.04.047
+**A legjobb hivatkozás a 45°-ra — és arra, hogy ez konvenció, nem fizikai állandó.** Szó szerint:
+„The threshold overhang angle that can be self-supported is generally set at 45° for FDM printers.
+However, different process parameters such as extrusion temperature and print speed can also have a
+great impact on printable threshold overhang angle (PTOA)." Mért esetek: **20°, 30°, 40°, 50°**
+túlnyúlás **175, 190, 205, 220 °C** extrudálási hőmérsékleten.
+*Nekünk:* ha a modellt szigorú 45°-ra tervezzük, az minden vevő gépén biztonságos; ha ennél
+merészebbre, akkor gépfüggő lesz — és ebből lesz a rossz értékelés.
+Előzmény: Jiang, Stringer, Xu, Zhong 2018, Int. J. CIM 31(9–10):961–969,
+DOI 10.1080/0951192X.2018.1466398 ⚠️.
+
+**[B6] Support Structures for Additive Manufacturing: A Review** ✅
+Jingchao Jiang, Xun Xu, Jonathan Stringer · 2018 · JMMP 2(4):64 · DOI 10.3390/jmmp2040064 ·
+https://www.mdpi.com/2504-4494/2/4/64
+57 publikáció áttekintése hat kategóriában. A keretezés forrása ahhoz, hogy a támasz nélküli
+tervezés valódi kutatási irány, nem hobbista preferencia.
+
+**[B7] Support-Free Hollowing for 3D Printing via Voronoi Diagram of Ellipses** ✅
 Mokwon Lee, Qing Fang, Joonghyun Ryu és mtsai · 2017 · arXiv:1708.06577 ·
 https://arxiv.org/abs/1708.06577
-Belső üregesítés ellipszis-Voronoi-diagrammal úgy, hogy ne kelljen belső támasz.
-*Nekünk:* anyagköltség-csökkentés dekoratív tömör tárgyaknál (szobrocska, figura) belső támasz
-nélkül.
+Belső üregesítés ellipszis-Voronoi-diagrammal, belső támasz nélkül.
+*Nekünk:* anyagköltség-csökkentés dekoratív tömör tárgyaknál (szobrocska, figura).
+Rokon, de többtengelyes gépet feltételez: Li, Tang, He 2020, arXiv:2007.00413.
 
-**[B3] Multi-Axis Support-Free Printing of Freeform Parts with Lattice Infill Structures**
-Yamin Li, Kai Tang, Dong He · 2020 · arXiv:2007.00413 · https://arxiv.org/abs/2007.00413
-Geodetikus távolságmezőre épülő rácsos kitöltés többtengelyes, önhordó nyomtatáshoz.
-*Nekünk:* korlátozott relevancia — többtengelyes gépet feltételez, nem konzumer FDM-et.
-
-**[B4] AgentsCAD: Automated Design for Manufacturing of FDM Parts via Multi-Agent LLM Reasoning and Geometric Feature Recognition**
+**[B8] AgentsCAD: Automated Design for Manufacturing of FDM Parts via Multi-Agent LLM Reasoning and Geometric Feature Recognition** ✅
 Emmanuel George, Christopher Keefe, Peter Pak, Amir Barati Farimani · 2026 · arXiv:2607.02448 ·
 https://arxiv.org/abs/2607.02448
-Többügynökös rendszer, ami STEP-fájlt olvas, **45°-os küszöb felett detektálja a túlnyúlásokat**,
-él-szomszédsági topológiagráfot épít, opcionálisan GraphSAGE-modellből (MFCAD++, **59 665 alkatrész**)
-szemantikus jellemzőcímkéket injektál, majd egy LLM-ügynök átorientálást, lekerekítést, letörést
-javasol; egy vision-modell ellenőrzi a renderelt nézeteket. Kimenet: módosított STEP + emberi
-jelentés. *Nekünk:* a legkonkrétabb publikált „DfM automatizálás" — de az értékelés egyetlen
-madárodú-esettanulmány, nem statisztika.
+STEP-fájlt olvas, **45°-os küszöb felett detektálja a túlnyúlásokat**, él-szomszédsági
+topológiagráfot épít, opcionálisan GraphSAGE-modellből (MFCAD++, **59 665 alkatrész**) szemantikus
+címkéket injektál, majd LLM-ügynök javasol átorientálást, lekerekítést, letörést; vision-modell
+ellenőrzi a rendert. *Nekünk:* a legkonkrétabb publikált „DfM automatizálás", és bizonyíték arra,
+hogy a 45° 2026-ban is az operatív gépi szabály — de az értékelés egyetlen madárodú-esettanulmány.
 
-**[B5] A Characterization of 3D Printability**
+### B/2. Print-in-place, nem összeszerelendő és ízelt mechanizmusok
+
+**[B9] Ten guidelines for the design of non-assembly mechanisms: the case of 3D-printed prosthetic hands** ✅
+J. S. Cuellar, G. Smit, A. A. Zadpoor, P. Breedveld · 2018 · Proc. IMechE Part H 232(9):962–971 ·
+DOI 10.1177/0954411918794734 · **nyílt hozzáférés**: https://europepmc.org/articles/PMC6151958
+**A print-in-place tervezés legfontosabb egyetlen forrása, és konzumer gépen készült:
+Ultimaker 3, PLA, 0,2 mm rétegvastagság, 70 mm/s.** Tíz megnevezett irányelv General / Play / Stress
+csoportban, és három kemény szám (lásd a szabálytáblát): **0,5 mm minimális hézag mozgó testek
+között** a nyomtatás közbeni összeolvadás ellen, **1 mm** elválasztás támaszt körülzáró testek közt,
+**4 mm² minimális nyílás** a támasz eltávolításához. Az 5–7. irányelv (a nagy tűrésű alkatrészeket
+a nyomtatási síkkal párhuzamosan pozicionáld; a holtjátékot előfeszítéssel szüntesd meg; a merev
+érintkezést cseréld rugalmasra) pontosan az, amitől egy eladható ízelt modell jó tapintású lesz és
+nem lötyögős.
+*Nekünk:* a **0,5 mm** ugyanaz a szerepű szám itt, mint a papírvágásnál a 2 mm-es minimális web.
+
+**[B10] Additive manufacturing of non-assembly mechanisms** ✅ (absztrakt)
+J. S. Cuellar, G. Smit, D. Plettenburg, A. A. Zadpoor · 2018 · Additive Manufacturing 21:150–158 ·
+DOI 10.1016/j.addma.2018.02.004 · https://research.tudelft.nl/en/publications/additive-manufacturing-of-non-assembly-mechanisms/
+Rendszerezett áttekintés az egyszerű ízülettől a beágyazott mechanikai elemeket tartalmazó összetett
+elrendezésekig, kényszer-elemzéssel. A fogalmi térkép arról, mi lehet és mi nem lehet egy
+egydarabos mechanizmus.
+
+**[B11] An Approach for Designing 3D-Printed Assembled Rotational Joints and Assemblies for Mechanisms and Robot Models** ✅ (absztrakt szó szerint)
+I. Chavdarov, B. Naydenov, S. Yochev · 2025 · Technologies 13(10):436 · DOI 10.3390/technologies13100436
+**A legjobb kvantitatív FFF-specifikus hézag-eredmény.** Kifejezetten **támaszstruktúra nélkül**
+épített ízületekről szól, és a gördülési ellenállást motoráram-méréssel követi hézag-sorozaton.
+Szó szerinti következtetés: *„rotational joints with a diameter d = 10 [mm], created using FFF
+technology and PLA material, have the lowest resistance at a clearance in the range
+t = 0,15–0,25 [mm]."*
+
+**[B12] 3D-printing of non-assembly, articulated models** ⚠️
+Jacques Calì, Dan A. Calian, Cristina Amati, Rebecca Kleinberger, Anthony Steed, Jan Kautz,
+Tim Weyrich · 2012 · ACM TOG 31(6) · DOI 10.1145/2366145.2366149
+A SIGGRAPH Asia cikk, ami elindította az ízelt nyomtatás műfaját: automatikusan illeszt
+nyomtatható, pózolható **súrlódásos** ízületeket egy riggelt hálóba, kalibrációs készlettel a
+nyomtatóparaméterek hangolásához (súrlódás igen, összeolvadás nem). **A tartalmát nem sikerült
+megnyitni** (a szerzői PDF meghaladta a letöltési limitet, a projektoldal TLS-tanúsítványa lejárt) —
+a hézagértékei tehát **nálunk igazolatlanok**, pedig valószínűleg ezek a legjobb történeti adatok.
+
+**[B13] Fabricating articulated characters from skinned meshes** ⚠️
+Moritz Bächer, Bernd Bickel, Doug L. James, Hanspeter Pfister · 2012 · ACM TOG 31(4) ·
+DOI 10.1145/2185520.2185543
+A párhuzamos 2012-es munka: skinned karakterhálóból gömb- és csuklóízületes nyomtatható figura.
+Metaadat ellenőrizve, tartalom nem.
+
+**[B14] A study on revolute joints in 3D-printed non-assembly mechanisms** ⚠️
+Xiangzhi Wei, Yaobin Tian, Ajay Joneja · 2016 · Rapid Prototyping Journal 22(6):901–933 ·
+DOI 10.1108/RPJ-10-2014-0146
+„Féreg alakú" csapágygeometriát javasol az FDM forgó ízületek dinamikai teljesítményének javítására,
+paraméterválasztási eljárással. Fizetős, absztrakt elrejtve. Rokon lead, **nem ellenőrzött**:
+Song & Chen, *Joint Design for 3-D Printing Non-Assembly Mechanisms*, ASME IDETC 2012,
+DOI 10.1115/DETC2012-71528.
+
+**[B15] Evaluating clearance parameters of 3D printed joints for the automated design of a non-assembly delta robot** ✅ (absztrakt)
+S. Schiele, T. N. Nguyen, T. C. Lueth · 2021 · IEEE ROBIO 2021 · DOI 10.1109/ROBIO54168.2021.9739551
+Parametrikus, automatikusan generált nem összeszerelendő forgó és gömbcsuklók, kísérlettel a
+**minimális hézagszélességre** és az érintkezési felületet csökkentő geometriákra.
+**Fenntartás: ez porágyas (SLS), nem FFF** — a minimális hézag tartománya más, a számai nem
+vihetők át.
+
+### B/3. Számszerű FDM-korlátok: áthidalás, tűrés, vetemedés
+
+**[B16] Investigation on Bridging Defects in 3D-Printed Polylactic Acid Beams Using Fused Filament Fabrication** ✅ (teljes szöveg)
+Hao He, Zhi Zhu, Y. X. Zhang, Richard Yang · 2026 · Polymers 18(2):261 · DOI 10.3390/polym18020261 ·
+https://pmc.ncbi.nlm.nih.gov/articles/PMC12845589/
+**Az egyetlen lektorált kvantitatív áthidalás-vizsgálat, amit találtunk.** Fesztávok: **60 / 100 /
+140 mm**, PLA+ 2,85 mm, 0,2 mm réteg, fúvóka 215/205/195 °C, tálca 65 °C, 45/25/65 mm/s. Idézi és
+utána kísérletileg megdönti az „empirikus ipari 10 mm-es fesztávkorlátot". Kritikus gerendaszélesség
+**~1,2 mm (60 mm fesztáv) → ~4,3 mm (140 mm)**. Kulcs-mechanizmus: **a hőmérsékleti maradó feszültség
+dominál, nem a gravitáció** — ezért javul az áthidalás hűtéssel és alacsonyabb fúvókahőmérséklettel,
+nem merevebb geometriával. *Nekünk:* ez ellentmond annak, amit egy tervező intuitívan gondol.
+
+**[B17] Accuracy of FDM PLA Polymer 3D Printing Technology Based on Tolerance Fields** ✅
+Ivan Grgić, Mirko Karakašić, Hrvoje Glavaš, Pejo Konjatić · 2023 · Processes 11(10):2810 ·
+DOI 10.3390/pr11102810
+**A legjobb lektorált forrás konzumer nyomtató illesztési tűréseire.** Creality Ender-3 Pro, PLA,
+0,4 mm fúvóka, 0,2 mm réteg, Ø35 mm alapméret, ISO 286 furat-alapú illesztések H9…H14 × h9…a14,
+jellemzőnként 10 mérés. Megadja az elért határeltéréseket és körkörösséget illesztési osztályonként,
+plusz a ténylegesen szükséges szeletelő-kompenzációt. *Nekünk:* ez a hivatkozás arra, hogy „a furat
+kicsi lesz, a csap nagy" — és hogy a tűrésbe tervezz, ne a szeletelőben javíts.
+
+**[B18] Warpage of FDM parts: experimental tests and analytic model** ⚠️⚠️
+A. Armillotta, M. Bellotti, M. Cavallaro · 2018 · Robotics and Computer-Integrated Manufacturing ·
+DOI 10.1016/j.rcim.2017.09.007 · OA kézirat: https://bura.brunel.ac.uk/bitstream/2438/25747/1/FullText.pdf
+Teljes faktoriális kísérlet ABSplus lapokon, síklapúsági hiba koordináta-mérőgéppel. Két
+ellenintuitív eredmény: a vetemedés **köztes magasságnál (~2–4 mm) tetőzik, majd csökken**, és a
+**vastagabb réteg jobban vetemedik**. **Fenntartás:** ezt csak az alügynök egyik futása jelentette
+ellenőrzöttként, a másik kettő nem — én magam nem kértem le.
+
+**[B19] Benchmarking of FDM Machines through Part Quality Using IT Grades** ✅ (absztrakt)
+Paolo Minetola, Luca Iuliano, Giovanni Marchiandi · 2016 · Procedia CIRP 41:1027–1032 ·
+DOI 10.1016/j.procir.2015.12.075
+Referencia-alkatrész több ISO 286 alapméret-tartományon, szándékosan **támasz nélkül nyomtathatóra**
+tervezve, hogy egyfúvókás gépen is menjen; ABS, koordináta-mérőgép, eredmény IT-fokozatban. A modell
+GrabCAD-en elérhető. **Az elért IT-fokozat konkrét értékeit nem sikerült megszerezni** (ScienceDirect
+403). Ugyanez a sors: Lieneke és mtsai, *Dimensional Tolerances for Additive Manufacturing:
+Experimental Investigation for FDM*, DOI 10.1016/j.procir.2016.02.361.
+
+**[B20] An Additive Manufacturing Test Artifact** ✅ (absztrakt)
+Shawn Moylan, John Slotwinski, April Cooke, Kevin Jurrens, M. Alkan Donmez · 2014 ·
+J. Research of NIST 119:429–459 · DOI 10.6028/jres.119.017 · https://www.nist.gov/publications/additive-manufacturing-test-artifact
+A szabványosításra szánt teszt-artefaktum, ami minden mért hibát egy konkrét géphiba-forráshoz köt;
+az ISO/ASTM 52902 elődje. **Fontos fenntartás: a közölt mérések lézer-porágyas rozsdamentes acélra
+vonatkoznak, nem anyagextrúzióra.**
+
+**[B21] On design for additive manufacturing: evaluating geometrical limitations** ⚠️ — **a legnagyobb hiányzó darab**
+Guido A. O. Adam, Detmar Zimmer · 2015 · Rapid Prototyping Journal 21(6):662–670 ·
+DOI 10.1108/RPJ-06-2013-0060 · társ: DOI 10.1016/j.cirpj.2013.10.001 (CIRP JMST 7:20–28)
+Ez **a** DfAM tervezésiszabály-katalógus: standard geometriai elemek lézerszinterezéssel,
+lézerolvasztással **és FDM-mel** legyártva, minőség kiértékelve, szabályok levezetve. **Fizetős, és a
+paderborni repozitóriumban sincs feltöltve teljes szöveg** („No fulltext has been uploaded").
+**A neten széles körben terjedő, hozzá kötött számok — „FDM min. falvastagság 1 mm, kiálló elem
+2 mm, csap 3 mm" — NEM ellenőrizhetők a forrás ellenében, ezért szándékosan kihagytuk a
+szabálytáblából.** Ha valaha könyvtári hozzáférés van, ez az első cikk, amit le kell kérni.
+
+**[B22] Experimental Study of ABS Material Shrinkage and Deformation Based on Fused Deposition Modeling** ✅ (absztrakt)
+Yaodong Xu · 2016 · MATEC Web of Conferences 67:03039 · DOI 10.1051/matecconf/20166703039
+Regresszióval **lineáris kapcsolatot** talál az FDM ABS zsugorodása és a modellméret között — vagyis
+a zsugorodás-kompenzációnak mérettel kell skálázódnia. **A regressziós együtthatók a PDF-ben vannak,
+ami 403-mal elutasított — a százalékok igazolatlanok.**
+
+**[B23] A Characterization of 3D Printability** ✅
 Ioannis Fudos, Margarita Ntousia, Vasiliki Stamati és mtsai (8 szerző) · 2020 · arXiv:2010.12930 ·
 https://arxiv.org/abs/2010.12930
-„Printability score" bevezetése: egy modell nyomtathatósági valószínűsége adott AM-gépen, háló-
-komplexitás és alkatrész-jellemzők alapján. Kísérleti validáció FDM, Binder Jetting és Polyjet
-gépeken. **Az absztraktban nincsenek konkrét mm/fok küszöbök** — a pontszám módszere érdekes, a
-számok nem szerepelnek benne.
+„Printability score": egy modell nyomtathatósági valószínűsége adott AM-gépen, hálókomplexitás és
+alkatrész-jellemzők alapján; kísérleti validáció FDM, Binder Jetting és Polyjet gépen.
+**Konkrét mm/fok küszöböket az absztrakt nem közöl.** Fogalmilag ez a legközelebbi dolog ahhoz a
+kérdéshez, hogy „ez az STL le fog-e nyomtatódni a vevőmnél".
 
-**[B6] Parallelobox: Improved Decomposition for Optimized Parallel Printing using Axis-Aligned Bounding Boxes**
-Hayley Hatton, Muhammed Khalid, Umar Manzoor, John Murray · 2026 · arXiv:2603.29579 ·
-https://arxiv.org/abs/2603.29579
-Modell-dekompozíció tengelyigazított befoglaló dobozokkal, hogy több nyomtatón párhuzamosan
-lehessen nyomtatni; a benchmark „parallel printing time" metrikán veri a rekurzív szimmetria és a
-kocka-vázas megközelítéseket. **Konkrét számokat az absztrakt nem közöl.**
-*Nekünk:* csak akkor releváns, ha valaha fizikai terméket gyártanánk; digitális fájleladásnál nem.
+**[B24] A Comparative Study of the Mechanical Properties of FDM 3D Prints Made of PLA and Carbon Fiber-Reinforced PLA for Thin-Walled Applications** ⚠️⚠️
+Bochnia, Blasiak, Kozior · 2021 · Materials 14(22):7062 · DOI 10.3390/ma14227062 · PMC8623718
+A legközelebbi akadémiai proxy a **vase mode fal** viselkedésére: 1,0 / 1,4 / 1,8 mm falak vs. 4,0 mm
+referencia X/Y/Z irányban. A vékony fal síkban felveszi a versenyt a referenciával, de **Z-ben
+összeomlik**, és a méretpontosság vékony keresztmetszetnél elszáll. **Fenntartás:** egy alügynök-futás
+jelentette, magam nem kértem le.
 
-**[B7] Chopper: partitioning models into 3D-printable parts**
-Linjie Luo, Ilya Baran, Szymon Rusinkiewicz, Wojciech Matusik · 2012 · ACM TOG (SIGGRAPH Asia) ·
-DOI 10.1145/2366145.2366148
-A modell-feldarabolás kanonikus munkája: nyomtatótér-korlát, összeszerelhetőség, esztétika és
-szilárdság mint együttes célfüggvény.
+### B/4. Multi-material / színváltás
 
-**[B8] Stress relief: improving structural strength of 3D printable objects**
-Ondrej Stava, Juraj Vanek, Bedrich Benes, Nathan Carr, Radomír Měch · 2012 · ACM TOG (SIGGRAPH) ·
-DOI 10.1145/2185520.2185544
-Automatikus szerkezeti gyengeség-detektálás és javítás (falvastagítás, tartóborda, üregesítés) egy
-nyomtatandó modellen. *Nekünk:* a „vékony nyúlvány letörik postázás közben / nyomtatás közben"
-probléma formális kezelése — ugyanaz a családja a problémának, mint a papírvágásnál a 2 mm-es
-minimális web.
+**[B25] Optimizing Interfacial Adhesion and Mechanical Performance of Multimaterial Joints Fabricated by Material Extrusion** ⚠️⚠️
+Zatloukal, Viry, Mizera, Stoklásek, Miškařík, Bednařík · 2025 · Materials 18(16):3846 ·
+DOI 10.3390/ma18163846 · PMC12387702
+Négy anyagpár (PC/PETG, PC/ASA, ASA/PETG, PLA/PETG) × három illesztési geometria (sima tompa,
+fogazott, rétegközi). **A PLA/PETG 1,6 MPa-ról 25,4 MPa-ra megy, ha rétegenként fogazva építed —
+15,9× különbség pusztán a geometriától.** *Nekünk:* többszínű modellben soha ne tegyél
+anyaghatárt teherviselő függőleges síkra; tedd vízszintes rétegre vagy építs mechanikus reteszt.
+**Fenntartás:** egy alügynök-futás jelentette teljes szövegként; magam nem kértem le.
+Rokon, absztrakt-szinten: Richter & Wu 2025, DOI 10.1016/j.matdes.2025.113688 — a **PP-t vagy
+PE-t tartalmazó párok ~2 nagyságrenddel gyengébbek**. ⚠️
 
-**[B9] Fabricating articulated characters from skinned meshes**
-Moritz Bächer, Bernd Bickel, Doug L. James, Hanspeter Pfister · 2012 · ACM TOG (SIGGRAPH) ·
-DOI 10.1145/2185520.2185543
-Skinned (animációs) hálóból közvetlenül gyártható **ízelt** karakter: automatikus ízület-elhelyezés
-és -méretezés a bőrözési súlyokból. *Nekünk:* ez a legközelebbi formális rokona a mai Etsy-slágernek,
-az „articulated print-in-place" figuráknak — de a cikk **utólag összeszerelt** ízületeket feltételez,
-nem helyben nyomtatottakat.
-
-**[B10] Polygon mesh repairing: an application perspective**
-Marco Attene, Marcel Campen, Leif Kobbelt · 2013 · ACM Computing Surveys 45(2) ·
-DOI 10.1145/2431211.2431214
-A háló-javítás referencia-áttekintése: milyen hibatípusok vannak (lyuk, önmetszés, nem-manifold él,
-degenerált háromszög, fordított normális), és melyik algoritmuscsalád melyiket oldja meg. Kiegészítő:
-Attene, *A lightweight approach to repairing digitized polygon meshes*, The Visual Computer 2010,
-DOI 10.1007/s00371-010-0416-3 (a MeshFix alapja).
-
-**[B11] Implicit Toolpath Generation for Functionally Graded Additive Manufacturing via Gradient-Informed Slicing**
+**[B26] Implicit Toolpath Generation for Functionally Graded Additive Manufacturing via Gradient-Informed Slicing** ✅
 Charles Wade, Devon Beck, Robert MacCurdy · 2025 · arXiv:2505.08093 · https://arxiv.org/abs/2505.08093
 Multi-material FDM szeletelés implicit geometria- és anyagmezőkből. A második stratégia
 „közvetlenül a gradiens ellenében nyomtat, hogy **kiküszöbölje a purge-öt** és csökkentse a
 hulladékot". **Konkrét százalékot a purge-csökkentésre nem közöl.**
-*Nekünk:* ez a legközelebbi tudományos érintés az AMS/színváltós nyomtatás purge-hulladékához — és a
-válasza az, hogy a probléma szeletelő-szintű, nem tervezői.
+*Nekünk:* a legközelebbi tudományos érintés az AMS/színváltós purge-hulladékhoz — a válasza, hogy a
+probléma szeletelő-szintű, nem tervezői.
 
-**[B12] Slice-100K: A Multimodal Dataset for Extrusion-based 3D Printing**
+### B/5. Modell-előkészítés: darabolás, erősítés, javítás
+
+**[B27] Chopper: partitioning models into 3D-printable parts** ✅ (Crossref)
+Linjie Luo, Ilya Baran, Szymon Rusinkiewicz, Wojciech Matusik · 2012 · ACM TOG (SIGGRAPH Asia) ·
+DOI 10.1145/2366145.2366148
+A modell-feldarabolás kanonikus munkája: nyomtatótér-korlát, összeszerelhetőség, esztétika és
+szilárdság együttes célfüggvényként.
+
+**[B28] Stress relief: improving structural strength of 3D printable objects** ✅ (Crossref)
+Ondrej Stava, Juraj Vanek, Bedrich Benes, Nathan Carr, Radomír Měch · 2012 · ACM TOG (SIGGRAPH) ·
+DOI 10.1145/2185520.2185544
+Automatikus szerkezeti gyengeség-detektálás és javítás (falvastagítás, tartóborda, üregesítés).
+*Nekünk:* a „vékony nyúlvány letörik" probléma formális kezelése — ugyanaz a családja, mint a
+papírvágásnál a 2 mm-es minimális web.
+
+**[B29] Polygon mesh repairing: an application perspective** ✅ (Crossref)
+Marco Attene, Marcel Campen, Leif Kobbelt · 2013 · ACM Computing Surveys 45(2) ·
+DOI 10.1145/2431211.2431214
+A háló-javítás referencia-áttekintése: hibatípusok (lyuk, önmetszés, nem-manifold él, degenerált
+háromszög, fordított normális) és a rájuk való algoritmuscsaládok. Kiegészítő: Attene, *A lightweight
+approach to repairing digitized polygon meshes*, The Visual Computer 2010,
+DOI 10.1007/s00371-010-0416-3 (a MeshFix alapja).
+
+**[B30] Parallelobox: Improved Decomposition for Optimized Parallel Printing using Axis-Aligned Bounding Boxes** ✅
+Hayley Hatton, Muhammed Khalid, Umar Manzoor, John Murray · 2026 · arXiv:2603.29579 ·
+https://arxiv.org/abs/2603.29579
+Modell-dekompozíció több nyomtatón való párhuzamos nyomtatáshoz. **Konkrét számokat az absztrakt nem
+közöl.** *Nekünk:* csak fizikai gyártásnál releváns, digitális fájleladásnál nem.
+
+**[B31] Slice-100K: A Multimodal Dataset for Extrusion-based 3D Printing** ✅
 Anushrut Jignasu, Kelly O. Marshall, Ankush Kumar Mishra és mtsai · 2024 · arXiv:2407.04180 ·
 NeurIPS 2024 · https://arxiv.org/abs/2407.04180
-**100 000+ G-code fájl** a hozzájuk tartozó CAD-modellel, LVIS-kategóriával, geometriai
-tulajdonságokkal és renderekkel (Objaverse-XL + Thingi10K forrásból).
-*Nekünk:* ha valaha automatizált nyomtathatóság-ellenőrzőt építenénk, ez a tanítóadat.
+**100 000+ G-code fájl** CAD-modellel, LVIS-kategóriával, geometriai tulajdonságokkal és renderekkel
+(Objaverse-XL + Thingi10K forrásból). *Nekünk:* ha automatizált nyomtathatóság-ellenőrzőt
+építenénk, ez a tanítóadat.
 
-### Gyártói (nem lektorált) tervezési szabályok
+### B/6. Szabványok — és egy fontos negatív eredmény
 
-Ezeket **külön kezeljük** a lektorált irodalomtól. Forrás: Protolabs Network (korábban 3D Hubs)
-tudásbázis, amit ténylegesen lekértem:
+Az ISO/ASTM szabványok szövege fizetős, **egyiket sem nyitottuk meg**; csak a katalógus-metaadatot
+ellenőriztük Crossrefen.
+
+- **ISO/ASTM 52910** — *Additive manufacturing — Design — Requirements, guidelines and
+  recommendations*. Német adaptációk: DIN EN ISO/ASTM 52910:2019-05 (DOI 10.31030/3033101),
+  :2020-02 (10.31030/3111254), :2022-09 (10.31030/3376541). **Szándékosan folyamat-független, tehát
+  konkrét mm/fok értékeket akkor sem tartalmazna, ha megvennénk.**
+- **ISO/ASTM 52911 sorozat** — Part 1 = lézer-porágyas **fém** (DIN DOI 10.31030/3060962),
+  Part 2 = lézer-porágyas **polimer** (10.31030/3071992), Part 3 = elektronsugaras fém
+  (10.31030/3427731). **Negatív eredmény, ami számít: NINCS anyagextrúziós (FDM) rész.** Vagyis a
+  konzumer nyomtatók folyamatára nincs normatív tervezési szabvány a 52911 sorozatban.
+- **ASTM F3529-21** — *Standard Guide for Additive Manufacturing — Design — Material Extrusion of
+  Polymers*, 22 oldal, DOI 10.1520/F3529-21, https://store.astm.org/f3529-21.html.
+  Az alügynök egyik futása szerint **ez** tölti be a hiányzó helyet. ⚠️⚠️ **Nem ellenőriztem magam,
+  és a szöveg fizetős (~104 USD).** Ha valaha szabványosított MEX tervezési értékek kellenek, ezt
+  kell megvenni.
+- **ISO/ASTM 52902** — teszt-artefaktumok, 2019 és 2023 kiadás (DIN 10.31030/3057421, 10.31030/3490353;
+  ASTM F3345-19 / F3345-23).
+
+### B/7. Gyártói (nem lektorált) tervezési szabályok
+
+Ezeket **külön kezeljük**. Az alábbi három oldalt **magam kértem le** 2026-08-12-én, a belőlük
+származó számok a szabálytáblában ⚠️ jelöléssel szerepelnek:
 
 - https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/
 - https://www.hubs.com/knowledge-base/key-design-considerations-3d-printing/
 - https://www.hubs.com/knowledge-base/selecting-optimal-shell-and-infill-parameters-fdm-3d-printing/
 
-A konkrét számok a lenti „Számszerű tervezési szabályok" szakaszban.
+Az alügynök további gyártói és szeletelő-forráskód forrásokat is jelentett (Prusa Knowledge Base,
+Stratasys Direct FDM Design Guide, PrusaSlicer / Bambu Studio / Cura / OrcaSlicer `PrintConfig.cpp`
+és `fdmprinter.def.json`). **Ezek a párhuzamos futásai közt ellentmondásosak voltak** — az egyik
+futás szerint minden gyártói oldal 402/403/404-gyel elutasította. Ezért a belőlük származó számokat
+⚠️⚠️ jelöléssel, a pontos URL-lel, de **„nem általam ellenőrizve"** minősítéssel vettük fel.
 
 ---
 
@@ -756,35 +961,92 @@ licencet.
 
 ## Konkrét, számszerű tervezési szabályok
 
-**Jelölés:** ✅ = lektorált vagy szabvány forrás · ⚠️ = gyártói/oktatási tudásbázis, nem lektorált ·
-❌ = általánosan ismert gyakorlati szám, amihez **nem találtam** ellenőrizhető forrást.
+**Jelölés:** ✅ = lektorált forrás, a szöveget megnyitottuk · ⚠️ = gyártói tudásbázis, amit **magam
+kértem le** (nem lektorált) · ⚠️⚠️ = egyetlen alügynök-futás jelentette, a párhuzamos futásai
+ellentmondtak, **magam nem ellenőriztem** · ❌ = **nem találtunk** ellenőrizhető forrást.
 
-| # | Szabály | Érték | Forrás | Megbízhatóság |
+### Lektorált számok (ezekre lehet építeni)
+
+| # | Szabály | Érték | Kontextus | Forrás | J. |
+|---|---|---|---|---|---|
+| 1 | Támasz nélküli túlnyúlás küszöbe FDM-en | **45°** — „generally set at 45° for FDM printers" | az iparági konvenció szó szerinti idézete | Jiang, Xu & Stringer 2019, DOI 10.1016/j.procir.2019.04.047 [B5] | ✅ |
+| 2 | …de ez **nem** fizikai állandó | túlnyúlás **20° / 30° / 40° / 50°** mérve **175 / 190 / 205 / 220 °C** extrudálási hőmérsékleten; a küszöb mozog | FDM, kísérlet | ugyanaz, mint #1 | ✅ |
+| 3 | A domináns topológiaoptimalizáló szűrő szöge | **fix 45°** (Langelaar AM filter) | strukturált háló | Wu & Xiao 2022, DOI 10.1093/jcde/qwac004 [B2] | ✅ |
+| 4 | A szög szabad paraméterként | módszerek **α = 30°, 45°, 80°** mellett; szigorúbb szög → rosszabb compliance | TO benchmark | Wu & Xiao 2022 [B2] | ✅ |
+| 5 | Strukturálatlan hálón a szög szabadon választható | „the permissible degree of overhang can be freely chosen" | front-terjedéses szűrő | van de Ven és mtsai 2018, DOI 10.1007/s00158-017-1880-4 [B3] | ✅ |
+| 6 | Automatizált DfM riasztási küszöb | **> 45°** → átorientálás / lekerekítés / letörés | STEP → FDM, 2026-os eszköz | AgentsCAD, arXiv:2607.02448 [B8] | ✅ |
+| 7 | **Minimális hézag mozgó testek között (print-in-place)** | **0,5 mm** — „guarantees non-fusion of plastic parts during the printing process" | **FDM, PLA, Ultimaker 3, 0,2 mm réteg, 70 mm/s** | Cuellar és mtsai 2018, DOI 10.1177/0954411918794734, PMC6151958 [B9] | ✅ |
+| 8 | Támaszt körülzáró testek elválasztása | **≥ 1 mm** | ugyanaz a build | Cuellar és mtsai 2018 [B9] | ✅ |
+| 9 | Támasz-eltávolító nyílás | **≥ 4 mm²** nyílásterület, 1 mm testtávolság mellett | ugyanaz a build | Cuellar és mtsai 2018 [B9] | ✅ |
+| 10 | **Optimális hézag helyben nyomtatott forgó ízületnél** | **t = 0,15–0,25 mm** adja a legkisebb gördülési ellenállást | **FFF, PLA, ízület-átmérő d = 10 mm, támasz nélkül** | Chavdarov és mtsai 2025, DOI 10.3390/technologies13100436 [B11] | ✅ |
+| 11 | Vizsgált áthidalási fesztávok | **60 / 100 / 140 mm** | PLA+, 0,2 mm réteg, 215 °C fúvóka, 65 °C tálca, 45 mm/s | He és mtsai 2026, DOI 10.3390/polym18020261 [B16] | ✅ |
+| 12 | Kritikus gerendaszélesség kihajlás előtt | **1,2 mm (60 mm fesztáv) → 4,33 mm (140 mm fesztáv)** | ugyanaz | He és mtsai 2026 [B16] | ✅ |
+| 13 | Az áthidalás domináns hibaoka | **hőmérsékleti maradó feszültség**, a gravitáció „comparatively small" | támasz nélküli PLA gerendák | He és mtsai 2026 [B16] | ✅ |
+| 14 | Gyakorlati áthidalási korlát | **10 mm** — „empirical industry data suggests a practical limit of 10 mm for the span length"; a cikk kísérletileg meg is dönti | idézve egy lektorált cikkben | He és mtsai 2026 [B16] | ✅ (de maga a szám **gyakorlati** szabály) |
+| 15 | ISO 286 illesztés eltalálása asztali FDM-en | **Hole Horizontal Expansion = 0,13 mm**, Horizontal Expansion = 0,0 mm, Linear Advance = 25 | PLA, asztali FDM, Cura-család | Grgić és mtsai 2023, DOI 10.3390/pr11102810 [B17] | ✅ |
+| 16 | ABS zsugorodás | **lineáris** kapcsolat a zsugorodás és a modellméret közt (együtthatók a fizetős PDF-ben) | ABS, FDM | Xu 2016, DOI 10.1051/matecconf/20166703039 [B22] | ✅ (irány igen, szám nem) |
+| 17 | Generatív modell támaszigénye | TRELLIS nyers kimenet NSV **0,343** → nyomtathatóságra optimalizálva **0,176** (Thingi10k-Val) | text/image-to-3D | SEG, arXiv:2511.16434 [C13] | ✅ |
+| 18 | Kényszer-tudatos generatív dekóder gyárthatósági aránya | **96,8%** | egyszerzős preprint | arXiv:2601.08015 [C15] | ✅ (óvatosan) |
+| 19 | Litofánia olvashatóság | **n = 360** résztvevő, **≥ 79%** pontosság tapintással vagy látással | vak és látó résztvevők | Science Advances 8(33), DOI 10.1126/sciadv.abq2640 [D22] | ✅ |
+
+### Gyártói számok, amiket magam kértem le
+
+Forrás mindháromra a Protolabs Network (korábban 3D Hubs) tudásbázis, 2026-08-12-i lekérés.
+
+| # | Szabály | Érték | Oldal | J. |
 |---|---|---|---|---|
-| 1 | Maximális támasz nélküli túlnyúlás FDM-en | **45°** a függőlegestől; 45°-nál az új réteget az előző **50%-a** támasztja alá | https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/ | ⚠️ |
-| 2 | Ugyanez algoritmikus kényszerként | a max. túlnyúlásszög mint szűrő a topológiaoptimalizálásban | Langelaar 2016, DOI 10.1016/j.addma.2016.06.010 [B1] | ✅ |
-| 3 | Ugyanez automatizált DfM-detektorban | **45°-os küszöb** a túlnyúlás-detektáláshoz | AgentsCAD, arXiv:2607.02448 [B4] | ✅ |
-| 4 | Maximális áthidalás (bridging) látható megereszkedés nélkül | **< 5 mm** | Protolabs Network, `how-design-parts-fdm-3d-printing` | ⚠️ |
-| 5 | Minimális falvastagság, amit minden gép elvisz | **≥ 0,8 mm** | Protolabs Network, `key-design-considerations-3d-printing` | ⚠️ |
-| 6 | Ajánlott héjvastagság | **2 fúvókaátmérő** (tipikusan 0,8 mm) | Protolabs Network, `selecting-optimal-shell-and-infill-parameters` | ⚠️ |
-| 7 | Függőleges tüske (pin) küszöb | **> 5 mm** átmérő: perem + kitöltés; **< 5 mm**: csak perem, kitöltés nélkül | Protolabs Network, `how-design-parts-fdm-3d-printing` | ⚠️ |
-| 8 | Elefántláb / tapadás kezelése | **45°-os letörés vagy lekerekítés** minden tálcát érintő élre | Protolabs Network, `how-design-parts-fdm-3d-printing` | ⚠️ |
-| 9 | Függőleges furat | az FDM **alulméretezi**; kritikus furatot alulméretezve nyomtass és fúrd fel | Protolabs Network, `how-design-parts-fdm-3d-printing` | ⚠️ |
-| 10 | Alapértelmezett kitöltés | **18–20%** a legtöbb esetre elég; **≥50%** ha csavart hajtanak bele | Protolabs Network, `selecting-optimal-shell-and-infill-parameters` | ⚠️ |
-| 11 | Kitöltés → szilárdság | 25% → 50%: kb. **+25%** szilárdság; 50% → 75%: kb. **+10%** | Protolabs Network, `selecting-optimal-shell-and-infill-parameters` | ⚠️ |
-| 12 | Generatív modell támaszigénye | TRELLIS nyers kimenet NSV **0,343**, nyomtathatóságra optimalizálva **0,176** (Thingi10k-Val) | SEG, arXiv:2511.16434 [C13] | ✅ |
-| 13 | Kényszer-tudatos generatív dekóder gyárthatósági aránya | **96,8%** | arXiv:2601.08015 [C15] | ✅ (egyszerzős, óvatosan) |
-| 14 | Litofánia olvashatóság | **n = 360** résztvevő, **≥79%** pontosság tapintással vagy látással | Science Advances 8(33), DOI 10.1126/sciadv.abq2640 [D22] | ✅ |
-| 15 | **Illesztési hézag mozgó/print-in-place alkatrészek közt** | — | **NEM TALÁLTAM ellenőrizhető forrást** | ❌ |
-| 16 | **Anyagfüggő zsugorodás (PLA/PETG/ABS/ASA) számszerűen** | — | **NEM TALÁLTAM ellenőrizhető forrást** ebben a körben | ❌ |
-| 17 | **Vase mode / spiralize falvastagság-ajánlás** | — | **NEM TALÁLTAM ellenőrizhető forrást** | ❌ |
-| 18 | **Minimális domborított/mélyített szöveg mérete** | — | **NEM TALÁLTAM ellenőrizhető forrást** | ❌ |
-| 19 | **AMS/MMU purge-hulladék mennyisége színváltásonként** | — | csak kvalitatív: a gradiens-alapú szeletelés „kiküszöböli a purge-öt" | arXiv:2505.08093 [B11] — szám nélkül |
+| 20 | Túlnyúlás | **45°-ig** minőségromlás nélkül; 45°-nál az új réteget az előző **50%-a** támasztja | `how-design-parts-fdm-3d-printing` | ⚠️ |
+| 21 | Áthidalás megereszkedés / támasznyom nélkül | **< 5 mm** | `how-design-parts-fdm-3d-printing` | ⚠️ |
+| 22 | Minimális falvastagság, amit minden gép elvisz | **≥ 0,8 mm** | `key-design-considerations-3d-printing` | ⚠️ |
+| 23 | Ajánlott héjvastagság | **2 fúvókaátmérő** (tipikusan 0,8 mm) | `selecting-optimal-shell-and-infill-parameters` | ⚠️ |
+| 24 | Függőleges tüske | **> 5 mm** átmérő: perem + kitöltés; **< 5 mm**: csak perem | `how-design-parts-fdm-3d-printing` | ⚠️ |
+| 25 | Elefántláb megelőzése | **45°-os letörés vagy lekerekítés** minden tálcát érintő élre | `how-design-parts-fdm-3d-printing` | ⚠️ |
+| 26 | Függőleges furat | az FDM **alulméretezi**; kritikus furatot alulméretezve nyomtasd és fúrd fel | `how-design-parts-fdm-3d-printing` | ⚠️ |
+| 27 | Alapértelmezett kitöltés | **18–20%** a legtöbb esetre; **≥ 50%** ha csavart hajtanak bele | `selecting-optimal-shell-and-infill-parameters` | ⚠️ |
+| 28 | Kitöltés → szilárdság | 25% → 50%: kb. **+25%**; 50% → 75%: kb. **+10%** | `selecting-optimal-shell-and-infill-parameters` | ⚠️ |
 
-**Referencia-szabvány:** a DfAM tervezési követelmények hivatalos kerete az **ISO/ASTM 52910**
-(„Additive manufacturing — Design — Requirements, guidelines and recommendations"). Létezését
-Crossrefen ellenőriztem (pl. DIN EN ISO/ASTM 52910:2022-09, DOI 10.31030/3376541), de **a szabvány
-szövege fizetős, nem nyitottam meg** — a benne lévő konkrét értékeket nem tudom idézni.
+### Alügynök által jelentett, általam NEM ellenőrzött számok
+
+Ezeket **ne használjuk döntéshez ellenőrzés nélkül.** Az alügynök négy futásából csak egy jelentette
+őket ellenőrzöttként, a másik három kifejezetten azt írta, hogy a gyártói oldalak és a szeletelő-
+forráskódok nem voltak elérhetők. A pontos forrásokat megőrizzük, hogy egy következő kör
+utánanézhessen.
+
+| # | Szabály | Jelentett érték | Jelentett forrás | J. |
+|---|---|---|---|---|
+| 29 | Prusa MK4S / CORE One túlnyúlás | **45–60°, akár 75°**; 0,25 mm fúvókával 45° alá is eshet | help.prusa3d.com `modeling-with-3d-printing-in-mind_164135` | ⚠️⚠️ |
+| 30 | Mozgó alkatrész hézag (gyártói) | **≥ 0,3 mm** (Prusa) · **0,5 mm** FDM-re, 0,3 mm SLA/SLS/MJF-re (Hubs) · **0,381 mm** XY és ≥ 1 rétegnyi Z (Stratasys Direct) | Prusa KB · hubs.com snap-fit oldal · Stratasys Direct FDM Design Guide | ⚠️⚠️ |
+| 31 | Perem-vastagságok 0,4 mm fúvókán | **0,45 / 0,9 / 1,35 / 1,8 mm** = 1/2/3/4 perem | Prusa KB | ⚠️⚠️ |
+| 32 | Elefántláb-kompenzáció | **0,2 mm** 0,4 mm fúvókára, Prusa profilokban alapból bekapcsolva | help.prusa3d.com `elephant-foot-compensation_114487` | ⚠️⚠️ |
+| 33 | Vetemedés vs. hossz (ABSplus) | 20 mm → 0,16–0,27 mm; 60 mm → 0,26–0,52; 100 mm → 0,47–0,71; **140 mm → 0,71–1,08 mm**; a hossz magyarázza a variancia ~90–95%-át; **a vetemedés ~2–4 mm magasságnál tetőzik**; **vastagabb réteg jobban vetemedik** | Armillotta és mtsai 2018, DOI 10.1016/j.rcim.2017.09.007 [B18] | ⚠️⚠️ |
+| 34 | Vékonyfal (vase mode proxy) szilárdság | 1,0 mm fal: 35,57 (X) / 32,76 (Y) / **13,46 MPa (Z)**; 4,0 mm referencia: 40,83 / 44,94 / 16,89 MPa | Bochnia és mtsai 2021, DOI 10.3390/ma14227062 [B24] | ⚠️⚠️ |
+| 35 | Vékonyfal méretpontosság | vastagság **−13% … +25%**, szélesség akár **+64%** | ugyanaz [B24] | ⚠️⚠️ |
+| 36 | Anyagpár-illesztés szilárdsága | PLA/PETG: **1,6 MPa** tompa illesztés → 4,0 MPa fogazott → **25,4 MPa rétegközi** (15,9×) | Zatloukal és mtsai 2025, DOI 10.3390/ma18163846 [B25] | ⚠️⚠️ |
+| 37 | Purge / flush színváltásonként | PrusaSlicer alapérték **140 mm³**, Bambu Studio **280 mm³** (forráskód-komment: `// BBS: change 140.f => 280.f`); a purge **erősen aszimmetrikus** (fekete→fehér ~3× a fordítottja); **oldható támasznál 200–240 mm³** | PrusaSlicer / BambuStudio `PrintConfig.cpp`, Prusa KB `purging-volumes-mmu_125097` | ⚠️⚠️ |
+| 38 | Purge költsége lapkánként, nem tárgyanként | „printing more than one object on the same build plate uses no extra purge material for each additional part" | Polymaker wiki | ⚠️⚠️ — *ha igaz, ez azt jelenti, hogy többszínű terméket **készletben** érdemes árulni, nem darabonként* |
+| 39 | Vase mode szeletelő-korlátok | Cura: „should only be enabled when each layer only contains a single part"; PrusaSlicer: egy perem, nincs kitöltés, nincs felső záróréteg, nincs támasz, egyszerre csak egy tárgy; Bambu: külső perem = 1, felső héj = 0, kitöltés = 0% | Cura `fdmprinter.def.json`, PrusaSlicer / BambuStudio `PrintConfig.cpp` | ⚠️⚠️ |
+| 40 | MEX tervezési szabvány | **ASTM F3529-21**, *Standard Guide for AM — Design — Material Extrusion of Polymers*, 22 o., DOI 10.1520/F3529-21, ~104 USD | store.astm.org | ⚠️⚠️ |
+
+### Amire nincs szám
+
+| Szabály | Státusz |
+|---|---|
+| Anyagfüggő zsugorodás/vetemedés **PLA / PETG / ASA**-ra | ❌ csak ABS-re van (irány, nem szám) |
+| **Vase mode** falvastagság- vagy túlnyúlás-ajánlás | ❌ nulla lektorált irodalom |
+| Minimális domborított/mélyített **szöveg** mérete | ❌ |
+| **Élő csukló (living hinge)** vastagság vs. fáradás FFF-en | ❌ nulla találat |
+| **Elefántláb** mértéke méréssel | ❌ csak gyártói kompenzációs érték |
+| AMS/MMU **purge-hulladék** lektorált mérése | ❌ csak szeletelő-forráskód |
+
+### Szabványok
+
+- **ISO/ASTM 52910** — a DfAM keretszabvány. Létezését Crossrefen ellenőriztük (DIN EN ISO/ASTM
+  52910:2022-09, DOI 10.31030/3376541), de **szándékosan folyamat-független**, tehát konkrét
+  mm/fok értéket akkor sem adna, ha megvennénk.
+- **ISO/ASTM 52911-1/-2/-3** — lézer-porágyas fém / lézer-porágyas polimer / elektronsugaras fém.
+  **Negatív eredmény: nincs anyagextrúziós (FDM) rész.**
+- **ISO/ASTM 52902** — teszt-artefaktumok (2019, 2023).
+- **ASTM F3529-21** — az alügynök szerint ez a hiányzó MEX tervezési útmutató. ⚠️⚠️ Nem ellenőriztük.
 
 ---
 
@@ -815,20 +1077,31 @@ mérni**, és a mérést a wiki `findings/` alá kell tenni populációval együ
 
 ### Tervezés és nyomtathatóság
 
-6. **A print-in-place mechanizmusoknak nincs formális irodalma.** Az `abs:"print-in-place"`
-   lekérdezés egyetlen érdemi találatot adott (arXiv:2606.20549, robotkéz-generálás, ami
-   mellékesen említi a print-in-place ízületeket). Az ízelt karakterekről szóló grafikai munka
-   ([B9] Bächer 2012) **utólag összeszerelt** ízületeket feltételez. **A hézagméret — a
-   print-in-place termék legfontosabb egyetlen száma — sehol nincs publikálva.** Ez az első dolog,
-   amit empirikusan mérni kell.
-7. **A konkrét FDM tervezési szabályok (fok, mm, tolerancia) nincsenek arXiv-en**, és a lektorált
-   szakfolyóiratokban is inkább optimalizálási módszerként, nem táblázatos szabályként. A használható
-   számok gyártói tudásbázisokból jönnek. Ez fordítottja a papírvágásos tapasztalatunknak, ahol a
-   2 mm-es minimális web saját mérésből jött — itt is **saját teszt-artefaktumot kell nyomtatni**.
-8. **Vase mode / spiralize: nulla szakirodalom.** Se tervezési szabály, se szilárdsági vizsgálat.
-9. **A multi-material / AMS purge-hulladék mennyiségileg nincs mérve.** Egyetlen érintőleges
-   cikk [B11], az is szeletelő-oldali megoldásról, szám nélkül. Pedig ez közvetlen **anyagköltség**,
-   és a színes nyomtatás a fő termékkülönböztető lenne.
+6. **A print-in-place hézagra pontosan KÉT lektorált FDM-szám létezik**, és ezek fogják közre a
+   valódi tervezési ablakot: **0,5 mm** az összeolvadás-mentességhez [B9] és **0,15–0,25 mm** az
+   optimális gördülési ellenálláshoz egy 10 mm-es tengelyen [B11]. A kettő közti feszültség maga a
+   „összeolvad vagy lötyög" probléma. **Rétegmagasságtól, anyagtól, ízület-átmérőtől függő táblázat
+   nincs sehol** — ezt magunknak kell megmérni, ugyanúgy, ahogy a papírvágásnál a 2 mm-es webet.
+   Az `abs:"print-in-place"` arXiv-lekérdezés egyetlen érdemi találatot adott (arXiv:2606.20549,
+   robotkéz-generálás), a klasszikus grafikai munkák ([B12] Calì 2012, [B13] Bächer 2012) pedig
+   fizetős falak és lejárt tanúsítványok mögött vannak — **a hézagértékeik nálunk igazolatlanok.**
+7. **A DfAM tervezésiszabály-katalógus számai fizetős fal mögött vannak.** Adam & Zimmer 2015 [B21]
+   az egyetlen lektorált katalógus, ami az FDM-et is lefedi, és sem az Emerald, sem a paderborni
+   repozitórium nem adja ki. **A neten hozzá kötött számok („min. falvastagság 1 mm, kiálló elem
+   2 mm, csap 3 mm") nem ellenőrizhetők — ne használjuk őket.**
+8. **Nincs anyagextrúziós (FDM) tervezési szabvány az ISO/ASTM 52911 sorozatban** — a három rész
+   mind porágyas eljárás. Az 52910 folyamat-független. (Az ASTM F3529-21 lehet a hiányzó darab, de
+   ezt nem ellenőriztük és fizetős.)
+9. **Vase mode / spiralize: nulla lektorált szakirodalom.** Se tervezési szabály, se szilárdsági
+   vizsgálat, se túlnyúlás-korlát. Az egyetlen forrás a szeletelők forráskódja és dokumentációja.
+10. **A multi-material / AMS purge-hulladék lektorált mérése nem létezik.** Egyetlen érintőleges
+   arXiv-cikk [B26], az is szeletelő-oldali megoldásról, szám nélkül. A konkrét purge-térfogatok
+   (PrusaSlicer 140 mm³, Bambu Studio 280 mm³) **szeletelő-forráskódból** származnak, nem
+   irodalomból. Pedig ez közvetlen **anyagköltség**, és a színes nyomtatás lenne a fő
+   termékkülönböztető.
+11. **Elefántláb, élő csukló, PETG/PLA leválasztó hatás: mind gyakorlati folklór**, egyikre sincs
+   lektorált mérés. A „PETG leválasztóként működik PLA-n" állításnak **nulla** lektorált támogatása
+   van.
 
 ### Generatív 3D
 
@@ -874,14 +1147,24 @@ mérni**, és a mérést a wiki `findings/` alá kell tenni populációval együ
 
 ## Módszertani megjegyzések
 
+- **Munkamegosztás:** az A, B és D szakaszt egy-egy alügynök kutatta szigorú ellenőrzési
+  utasítással, a C szakaszt (generatív 3D + licencek) és a gyártói tervezési szabályokat magam.
 - **Lekérdezett források:** arXiv API (`export.arxiv.org/api/query`) és `arxiv.org/abs` oldalak;
-  Crossref API (`api.crossref.org`); GitHub raw LICENSE fájlok; HuggingFace modellkártyák; gyártói
-  tudásbázisok. A Semantic Scholar API 429-cel elutasított, ezért a DOI-ellenőrzés Crossrefen ment.
-- **Amit nem tudtam megnyitni:** a legtöbb Elsevier/Wiley/INFORMS teljes szöveg (fizetős), az
-  ISO/ASTM 52910 szabvány, és a Bambu Lab wiki (402). A SEG PDF-táblázatai a PDF-ből nem voltak
-  olvashatók, de az arXiv HTML-verzióból igen — az ott szereplő számokat használtam.
-- **A webes keresési keret elfogyott** a munkamenet során (200/200 WebSearch hívás), ami a gyártói
-  tervezési szabályok gyűjtését korlátozta. Egy következő körben a Prusa és a Bambu Lab
-  tudásbázisát érdemes célzottan végigmenni.
+  Crossref API (`api.crossref.org`); Semantic Scholar Graph API; Europe PMC (teljes szöveg XML);
+  GitHub raw LICENSE fájlok; HuggingFace modellkártyák; intézményi repozitóriumok (TU Delft,
+  Paderborn, Brunel); gyártói tudásbázisok.
+- **Amit nem tudtunk megnyitni:** a legtöbb Elsevier / Wiley / INFORMS / Emerald / SAGE teljes
+  szöveg, az ISO és ASTM szabványok szövege, az ACM DL, és a Bambu Lab wiki (402). A SEG
+  PDF-táblázatai a PDF-ből nem voltak olvashatók, de az arXiv HTML-verzióból igen — az ott szereplő
+  számokat használtam.
+- **A B szakasz alügynöke négyszer futott le**, és a futásai **ellentmondtak egymásnak** abban,
+  hogy a gyártói oldalak és a szeletelő-forráskódok elérhetők voltak-e. A lektorált magban mind a
+  négy futás egyetértett (Cuellar 0,5 mm; Chavdarov 0,15–0,25 mm; Jiang 45°; He fesztávok;
+  Grgić 0,13 mm; Wu & Xiao 30/45/80°) — ezek a szabálytábla első blokkjában vannak. Az egyetlen
+  futás által jelentett extra számok külön, ⚠️⚠️ jelöléssel szerepelnek, és **ellenőrizetlennek
+  tekintendők**.
+- **A webes keresési keret elfogyott** (200/200 WebSearch hívás), ami a gyártói tervezési szabályok
+  gyűjtését korlátozta. Egy következő körben célzottan végig kell menni a Prusa Knowledge Base és a
+  Bambu Lab wiki oldalain, és könyvtári hozzáféréssel le kell kérni Adam & Zimmer 2015-öt [B21].
 </content>
 </invoke>

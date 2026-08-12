@@ -12,7 +12,7 @@ sources:
   - resource: /assets/data/3d-print-etsy-sweep-2026-08-12.json
     title: böngészős találati-lista mintavétel, 24 lekérdezés
   - resource: /assets/data/3d-print-arxiv-2026-08-12.md
-    title: szakirodalmi felmérés (arXiv-fókusz), 887 sor
+    title: szakirodalmi felmérés (arXiv-fókusz), 1170 sor, 97 tétel
 ---
 
 # 3D nyomtatás az Etsyn — első mérés
@@ -115,8 +115,8 @@ A codex-elemzés öt pontja, amiket megtartok kritikaként a saját mérésemmel
 
 ## Amit a szakirodalom hozzátesz
 
-A párhuzamos arXiv-kutatás (`assets/data/3d-print-arxiv-2026-08-12.md`) négy dolgot mond, ami a
-terméktervezést közvetlenül érinti:
+A párhuzamos arXiv-kutatás (`assets/data/3d-print-arxiv-2026-08-12.md`, 1170 sor, 97 tétel) hat
+dolgot mond, ami a terméktervezést közvetlenül érinti:
 
 - **A fizetős fájl nem geometriát ad el.** A Thingiverse 158 373 modelljének **90,6%-a nyílt
   licencű**, és a CC-licenceknek csak 13,8%-a tiltja a kereskedelmi felhasználást. Amit fizetni
@@ -130,7 +130,17 @@ terméktervezést közvetlenül érinti:
   ami egyszínű nyomtatásnál **elvész**.
 - **Licencbuktató, ami ránk vonatkozik:** a Hunyuan3D 2.0 és 2.1 licence szó szerint **nem
   érvényes az Európai Unióban** — Magyarországról nem használható jogtisztán. Ami igen: TRELLIS
-  (MIT), TripoSR/TripoSG (MIT), InstantMesh (Apache-2.0), Shap-E (MIT).
+  (MIT), TripoSR/TripoSG (MIT), InstantMesh (Apache-2.0), Shap-E (MIT). Ugyanaz a hibaosztály,
+  mint a Depth Anything V2-nél (Small Apache-2.0, Large CC-BY-NC).
+- **A parametrikus sablon erősebb termék, mint a kész fájl.** A metamodelleket **többször
+  hasznosítják újra, mint az általuk generált konkrét modelleket** (Kyriakou, MIS Quarterly), és a
+  saját tervezésű termékre a fizetési hajlandóság kb. **+100%** (Franke–Schreier). **De** a prémium
+  az *érzékelt saját hozzájáruláson* múlik: egy „egy kattintás, kész" automata személyre szabás
+  kevesebbet érhet, mint egy lassabb, látható konfigurátor.
+- **A print-in-place tervezési ablak: két szám, és ennyi az egész irodalom.** **0,5 mm** minimális
+  hézag az összeolvadás ellen (FDM/PLA), és **0,15–0,25 mm** az optimum egy 10 mm-es forgó ízületen
+  (FFF/PLA). Anyagra és rétegmagasságra bontott táblázat **nincs** — ez ugyanaz a szerepű szám itt,
+  mint a papírvágásnál a 2 mm-es minimális web, tehát **magunknak kell megmérnünk**.
 
 ## Amit legközelebb meg kell mérni
 
@@ -138,6 +148,13 @@ Egy szám hiányzik, és az dönt: **fedezet termékfejlesztési óránként**, 
 feltételekkel futó párhuzamos teszttel — ugyanannyi új listing mindkét irányba, egyszerre indítva,
 azonos hirdetési feltétellel, és listingenként mérve a megjelenést, kattintást, rendelést, nettó
 bevételt és a tényleges fejlesztési időt.
+
+Két dolog van, amire **egyáltalán nincs irodalom**, és a döntést mindkettő érinti: az Etsy
+digitális letöltésekről nulla tudományos munka van (a Printables/Cults3D/MyMiniFactory
+akadémiailag nem létezik, és semmi nincs a fizetős STL árazásáról vagy árrugalmasságáról), és
+**nincs független benchmark arról, hogy melyik generátor hány százalékban ad vízhatlan, javítás
+nélkül szeletelhető hálót** — pedig pontosan ez a szám dönti el, használható-e a generatív 3D
+termékgyártásra.
 
 **Pilot nélkül nem váltanék.** Az adat azt támasztja alá, hogy a 3D-fájlpiac **erősebb validációt
 érdemel**, nem azt, hogy jobb.

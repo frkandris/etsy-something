@@ -37,6 +37,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[findings/keyword-database]] — **345 kulcsszó volumennel**: hol a hosszú farok a kutyákon túl
 - [[findings/keyword-demand-sweep]] — **kereslet 40+ kifejezésre**: hol a rés, és miért a thumbnail dönt
 - [[findings/etsy-first-party-search-data]] — **kereslet első kézből**: volumen, trend, és a vevői szókincs
+- [[findings/3d-shop-list]] — **3D bolt-lista** SalesDoe bevétellel, a layered lista szerkezetében
 - [[findings/3d-print-market-structure]] — **3D piacszerkezet**: boltok, hosszú farok, és a licenc mint vásárlási jelzés
 - [[findings/3d-print-first-look]] — **3D nyomtatás**: jobb kereslet/kínálat, de a konverzió nem követi
 - [[findings/2024-vs-2026-cohort]] — az egyetlen valódi idősorunk
@@ -54,6 +55,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[methods/measurement-chain]] — **kezdd itt**: a keresés → találat → bolt → termék → eladás lánc
 - [[methods/data-collection-pipeline]] — a négy lépés
 - [[methods/revenue-estimation-method]] — mit jelent a bevételszám és mit nem
+- [[methods/browser-data-endpoints]] — **böngészős végpontok**: Marketplace Insights, autocomplete, bolt-oldal, SalesDoe API
 - [[methods/apify-actors]] — melyik actor mit ad, mibe kerül
 - [[methods/keyword-tools-comparison]] — öt kulcsszóeszköz mérés alapján
 

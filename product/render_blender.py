@@ -162,11 +162,13 @@ PALETTES = {
     # terrain: water/valley dark blue-green rising to sunlit rock and snow
     # rétegelt világtérkép: mély navy -> világoskék self, majd FA a szárazföldre.
     # A tetején szándékosan ugrik a szín: a víz és a part két külön anyag.
-    "bathy": [(0.010, 0.020, 0.055, 1),   # 6000 m
-              (0.020, 0.052, 0.115, 1),   # 4000 m
-              (0.042, 0.105, 0.200, 1),   # 2000 m
-              (0.085, 0.190, 0.310, 1),   # 1000 m
-              (0.170, 0.330, 0.470, 1),   # 200 m
+    # A referencia vilagosabb: a self majdnem feher, a mely palaszurke - a
+    # navy-dominans elso valtozat tul sotet volt mellette.
+    "bathy": [(0.040, 0.055, 0.070, 1),   # 6000 m: palaszurke
+              (0.095, 0.135, 0.165, 1),   # 4000 m
+              (0.210, 0.310, 0.390, 1),   # 2000 m
+              (0.420, 0.560, 0.650, 1),   # 1000 m
+              (0.680, 0.800, 0.860, 1),   # 200 m: halvany self
               (0.430, 0.255, 0.110, 1)],  # szárazföld: dió
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
@@ -402,6 +404,10 @@ SIZE = max(maxv.x - minv.x, maxv.y - minv.y)
 # Egy 2:1-es vilagterkepnel ettol a mu a keret kozepen lebegett, korulotte
 # ures savokkal. Az arany kell, nem csak a meret.
 ASPECT = (maxv.x - minv.x) / max(1e-9, (maxv.y - minv.y))
+# Tengelyenkénti szorzók. Az első javítás /max(1.0, 1/ASPECT)-tel osztott, ami
+# sosem oszt (mindig 1.0 jön ki), ezért a keret négyzet maradt.
+AX = (maxv.x - minv.x) / max(1e-9, SIZE)
+AY = (maxv.y - minv.y) / max(1e-9, SIZE)
 print(f"[render] darab merete: {SIZE:.4f} egyseg")
 
 if ACCENT_ON:
@@ -541,7 +547,9 @@ if FRAME and not WHITE_TOP and not RECESSED:
     # largest, darkest layers - they vanished and the piece read as empty
     bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0, 0, -THICK * 1.6))
     _bk = bpy.context.object
-    _bk.scale = (SIZE * 1.10 * max(1.0, ASPECT), SIZE * 1.10 / max(1.0, 1 / ASPECT), 1.0)
+    # pontosan a mu labnyoma: az 1.10-es tulmeret feher savkent logott ki a
+    # keret mogul a nem-negyzetes tablanal
+    _bk.scale = (SIZE * 0.998 * AX, SIZE * 0.998 * AY, 1.0)
     _bk.data.materials.append(wood("backing", (0.99, 0.988, 0.982, 1), 0.72,
                                    grain=False))
     FRAME_OBJS.append(_bk)
@@ -595,13 +603,13 @@ if FRAME:
     shell = bpy.context.object
     # x-ben az oldalarany szerint szeles, y-ban a magassag szerint - kulonben a
     # nem negyzetes mu a keret kozepen lebeg, korulotte ures savokkal
-    shell.scale = (outer * 2 * max(1.0, ASPECT), outer * 2 / max(1.0, 1 / ASPECT), fd)
+    shell.scale = (outer * 2 * AX, outer * 2 * AY + fw * 2 * (1 - AY), fd)
     # the opening must go ALL THE WAY THROUGH. Starting it at 0.28*depth left
     # the back of the shell solid, and that slab sat in front of the artwork:
     # only the two frontmost layers poked out and the piece looked empty.
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2))
     hole = bpy.context.object
-    hole.scale = (inner * 2 * max(1.0, ASPECT), inner * 2 / max(1.0, 1 / ASPECT), fd * 3)
+    hole.scale = (inner * 2 * AX, inner * 2 * AY, fd * 3)
     bm = shell.modifiers.new("cut", "BOOLEAN")
     bm.operation = "DIFFERENCE"
     bm.object = hole
@@ -622,8 +630,7 @@ if FRAME:
     # inner bevel: a thin lighter lip around the opening
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd - fd * 0.06))
     _lip = bpy.context.object
-    _lip.scale = ((inner + fw * 0.16) * 2 * max(1.0, ASPECT),
-                  (inner + fw * 0.16) * 2 / max(1.0, 1 / ASPECT), fd * 0.12)
+    _lip.scale = ((inner + fw * 0.16) * 2 * AX, (inner + fw * 0.16) * 2 * AY, fd * 0.12)
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd))
     _lh = bpy.context.object
     _lh.scale = (inner * 2, inner * 2, fd)
@@ -705,6 +712,39 @@ if VIEW == "styled":
 
     for name, loc, rz, sc in PROP_SETS.get(PROP_SET, PROP_SETS["warm"]):
         bring(name, loc, rot_z=rz, scale=sc)
+
+if VIEW == "exploded":
+    # The reference listing's best-converting gallery image: the sheets fanned
+    # apart so the buyer SEES that they are buying six separate layers.
+    for o in list(bpy.data.objects):
+        # the wall/floor planes of the product-shot setups only pollute this
+        # view - the reference floats on white void
+        if o.type == "MESH" and max(o.dimensions) > SIZE * 3:
+            bpy.data.objects.remove(o, do_unlink=True)
+    for o in list(FRAME_OBJS):
+        # a keret-test a teljes stack melysegevel keszul; robbantva ez tomor
+        # doboznak latszik. Lapitsuk a lapok vastagsagara. A sik hatlapot pedig
+        # dobjuk el: a legyezoben csak egy ertelmezhetetlen feher teglalap.
+        if o.dimensions.z < THICK * 0.5:
+            FRAME_OBJS.remove(o)
+            bpy.data.objects.remove(o, do_unlink=True)
+        elif o.dimensions.z > THICK * 4:
+            o.scale.z *= (THICK * 2.5) / o.dimensions.z
+    nmax = len(objs)
+    for o in objs + FRAME_OBJS:
+        k = o.location.z / max(1e-9, THICK + GAP)      # hanyadik lap
+        if o in FRAME_OBJS:
+            k = nmax + 1.6                              # a keret a legyezo vegen
+        o.location.x += k * SIZE * 0.145
+        o.location.y -= k * SIZE * 0.015
+        o.location.z = k * SIZE * 0.052
+    # feher vakolatra kerul, mint a referencian - az atlatszo hatter itt
+    # feketenek renderelodik minden sotet nezegoteben
+    scene.render.film_transparent = False
+    _w = scene.world or bpy.data.worlds.new("w_exploded")
+    scene.world = _w; _w.use_nodes = True
+    _w.node_tree.nodes["Background"].inputs[0].default_value = (0.94, 0.935, 0.925, 1)
+    _w.node_tree.nodes["Background"].inputs[1].default_value = 3.2   # AgX alatt az 1.0 szurkenek latszik
 
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene
@@ -800,7 +840,26 @@ if FRAME:
     # the frame extends past the art, so the camera must be told the object is
     # bigger - otherwise it fits the art and crops the frame away
     MARGIN *= 1.45 * (SIZE / ART if ART else 1.0)
-if VIEW == "styled":
+if VIEW == "exploded":
+    # aim at the fan's true centre - a guessed rotation left the subject in a
+    # corner of a mostly empty frame
+    _pts = world_bbox([o for o in bpy.data.objects if o.type in ("CURVE", "MESH")])
+    cx = (min(q.x for q in _pts) + max(q.x for q in _pts)) / 2
+    cy = (min(q.y for q in _pts) + max(q.y for q in _pts)) / 2
+    cz = (min(q.z for q in _pts) + max(q.z for q in _pts)) / 2
+    ext = max(max(q.x for q in _pts) - min(q.x for q in _pts),
+              max(q.z for q in _pts) - min(q.z for q in _pts))
+    D = ext * 1.55
+    loc = (cx - D * 0.10, cy - D * 0.80, cz + D * 0.62)
+    bpy.ops.object.camera_add(location=loc)
+    cam = bpy.context.object
+    cam.data.lens = LENS
+    _dir = (cx - loc[0], cy - loc[1], cz - loc[2])
+    import mathutils as _mu
+    cam.rotation_euler = _mu.Vector(_dir).to_track_quat('-Z', 'Y').to_euler()
+    scene.camera = cam
+    print(f"[render] nezet=exploded kozeppont=({cx:.2f},{cy:.2f},{cz:.2f})")
+elif VIEW == "styled":
     D = SIZE * MARGIN * LENS / 36.0 * SCENE_ZOOM
     # aim at the artwork's centre rather than picking a tilt by hand. A fixed
     # tilt left half the picture as bare tabletop; aiming keeps the piece

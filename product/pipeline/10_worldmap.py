@@ -199,10 +199,14 @@ def main():
                     help="mm — a partvonal egyszerűsítése; a lézer alatta úgysem követi")
     ap.add_argument("--min-island", type=float, default=MIN_ISLAND)
     ap.add_argument("--borders", action="store_true", help="országhatár gravírozási réteg")
+    ap.add_argument("--countries", action="store_true",
+                    help="a szárazföld lap ország-darabokra bontva, gravírozott nevekkel")
+    ap.add_argument("--label-h", type=float, default=2.6,
+                    help="mm — gravírozott betűmagasság; ez dönti el, hány ország címkézhető")
     a = ap.parse_args()
 
     lat_min, lat_max = (float(v) for v in a.lat.split(","))
-    levels = [int(v) for v in a.levels.split(",")]
+    levels = sorted(int(v) for v in a.levels.split(","))
     if 0 in levels:
         sys.exit("a 0 m-es szint azonos a szárazfölddel — hagyd ki a --levels listából")
     for lv in levels:
@@ -234,14 +238,68 @@ def main():
     out = pathlib.Path(a.out); out.mkdir(parents=True, exist_ok=True)
     # a regi lapok kitakaritasa: egy korabbi, mas --levels futas fajljai kulonben
     # bennmaradnak, es a renderelo egy kevert keszletet olvas be
-    for old in list(out.glob("layer_*.svg")) + list(out.glob("layer_*.dxf")):
+    for old in (list(out.glob("layer_*.svg")) + list(out.glob("layer_*.dxf"))
+                + list(out.glob("engrave_*.svg")) + list(out.glob("engrave_*.dxf"))):
         old.unlink()
 
     # A lapok: a legfelső a szárazföld, alatta minden lépcsővel nagyobb a MEGMARADÓ
     # anyag, mert a mélyebb víz nyílása kisebb. Ez a papíros lánc süllyesztett
     # szerkezetének a fordítottja: ott a mező volt a felső lap, itt a szárazföld.
+    if a.countries:
+        # FOK-TERBEN polygonize-olunk, es a kesz lapokat vetitjuk. Merve:
+        # fok-terben a lapok a szarazfold 92%-at fedik; mm-terben (vetites es
+        # place utan) ugyanez a lanc a 11%-at adta - a nagy koordinatak es a
+        # racsra pattintas tori a gyuruzarast.
+        from shapely.ops import polygonize
+        from shapely.algorithms.polylabel import polylabel as _plabel
+        gj = fetch("ne_10m_admin_0_countries")
+        land_deg = geoms_of(fetch("ne_10m_land")).intersection(box(-180, lat_min, 180, lat_max))
+        borders_deg, country_geoms = [], []
+        for f in gj.get("features", []):
+            try:
+                g = shape(f["geometry"])
+            except Exception:
+                continue
+            if not g.is_valid:
+                g = make_valid(g)
+            g = g.intersection(box(-180, lat_min, 180, lat_max))
+            if g.is_empty:
+                continue
+            name = (f.get("properties", {}) or {}).get("NAME", "")
+            country_geoms.append((name, g))
+            borders_deg.append(g.boundary)
+        linework = unary_union([land_deg.boundary] + borders_deg)
+        faces = list(polygonize(linework))
+        min_island_deg = a.min_island / (( (a.width - 2*a.margin) / 360.0 ) ** 2)  # mm2 -> deg2 kozelites
+        pieces = []
+        for q in faces:
+            if q.intersection(land_deg).area < q.area * 0.5:
+                continue
+            pm = place(project(q, lat_min, lat_max))
+            pm = pm.simplify(a.simplify * 0.6).buffer(-0.05).buffer(0)
+            if not pm.is_empty and pm.area >= a.min_island:
+                pieces.extend(polys(pm))
+        labels = []
+        land_snap = set_precision(land.buffer(0), 0.01)
+        for name, g in country_geoms:
+            gp = set_precision(place(project(g, lat_min, lat_max)), 0.01)
+            gp = gp.intersection(land_snap)
+            big = max(polys(gp), key=lambda x: x.area, default=None)
+            if big is None:
+                continue
+            r = widest_inscribed(big) / 2
+            if name and r >= a.label_h * 0.9 and big.area >= 350:
+                c = _plabel(big, tolerance=0.5)
+                labels.append((name.upper(), c.x, c.y, min(a.label_h, r * 0.9)))
+        print(f"[i] orszag-darabok (polygonize, fok-terben): {len(pieces)}, cimkezheto: {len(labels)}")
+        land_cut = MultiPolygon(pieces)
+        print(f"[i] orszag-lapok ossz-terulete: {sum(x.area for x in pieces):,.0f} mm2 (teljes szarazfold: {land.area:,.0f})")
+    else:
+        land_cut, labels = None, []
+
     sheets = []
-    sheets.append(("szárazföld", land))
+    sheets.append(("szárazföld",
+                   land_cut if (a.countries and land_cut is not None) else land))
     for lv in levels:
         sheets.append((f"{lv} m", panel.difference(seas[lv]).union(land)))
     sheets.reverse()          # 1. lap = a legmélyebb (a hátlap), N. = szárazföld
@@ -263,8 +321,10 @@ def main():
     rows = []
     for i, (name, g) in enumerate(sheets, 1):
         g = set_precision(make_valid(g), 0.001).simplify(a.simplify)
-        if a.thicken > 0:
-            # zárás: a nyak összeforr, a forma mérete lényegében marad
+        if a.thicken > 0 and not (a.countries and name == "szárazföld"):
+            # zárás: a nyak összeforr, a forma mérete lényegében marad.
+            # Az orszag-darabos lapra TILOS: a zaras a szomszedos orszagokat
+            # a kozos hatar menten osszehegeszti, es megint egy tomb lenne.
             g = g.buffer(a.thicken).buffer(-a.thicken * 0.72)
         # a keretsáv minden lapon anyag: ez tartja össze a szigeteket is
         g = g.union(panel.difference(box(a.margin, a.margin, a.width - a.margin, H - a.margin)))
@@ -309,6 +369,59 @@ def main():
         to_svg(lines, a.width, H, out / "engrave_borders.svg", stroke_only=True)
         to_dxf(lines, H, out / "engrave_borders.dxf")
         print(f"[i] gravírozási réteg: országhatárok ({lines.length:.0f} mm vonalhossz)")
+
+    if a.countries and labels:
+        # SVG szoveg-elemek: a LightBurn es a Glowforge is olvassa; a DXF-be
+        # R12 TEXT entitasok mennek ugyanazokkal a pozíciókkal
+        txt = ['<svg xmlns="http://www.w3.org/2000/svg" '
+               f'width="{a.width:.2f}mm" height="{H:.2f}mm" viewBox="0 0 {a.width:.3f} {H:.3f}">']
+        for name, x, y, hgt in labels:
+            txt.append(f'  <text x="{x:.2f}" y="{H - y:.2f}" font-size="{hgt:.2f}" '
+                       'font-family="Arial, sans-serif" text-anchor="middle" '
+                       'fill="none" stroke="#f00" stroke-width="0.08">' + name + "</text>")
+        # cimtabla kozepre alul + iranytu balra alul
+        txt.append(f'  <text x="{a.width/2:.2f}" y="{H - a.margin*0.35:.2f}" font-size="4.2" '
+                   'font-family="Arial, sans-serif" text-anchor="middle" '
+                   'fill="none" stroke="#f00" stroke-width="0.1">WORLD MAP</text>')
+        cxr, cyr, rr = a.margin + 11.0, a.margin + 11.0, 7.0
+        txt.append(f'  <circle cx="{cxr:.2f}" cy="{H - cyr:.2f}" r="{rr:.2f}" '
+                   'fill="none" stroke="#f00" stroke-width="0.15"/>')
+        for lab, dx, dy in (("N", 0, rr + 3.2), ("S", 0, -rr - 1.2),
+                            ("E", rr + 2.4, 1.0), ("W", -rr - 2.4, 1.0)):
+            txt.append(f'  <text x="{cxr + dx:.2f}" y="{H - cyr - dy + 1.2:.2f}" font-size="3.2" '
+                       'font-family="Arial, sans-serif" text-anchor="middle" '
+                       'fill="none" stroke="#f00" stroke-width="0.1">' + lab + "</text>")
+        txt.append(f'  <path d="M {cxr:.2f},{H - cyr - rr*0.82:.2f} L {cxr - 1.6:.2f},{H - cyr:.2f} '
+                   f'L {cxr:.2f},{H - cyr + rr*0.82:.2f} L {cxr + 1.6:.2f},{H - cyr:.2f} Z" '
+                   'fill="none" stroke="#f00" stroke-width="0.15"/>')
+        txt.append("</svg>")
+        (out / "engrave_labels.svg").write_text("\n".join(txt))
+        dxf = ["0", "SECTION", "2", "ENTITIES"]
+        # a vago-DXF minden Y-t H-y alakban ir - a cimkeknek is igy kell,
+        # kulonben fuggolegesen tukrozve gravirozodnanak (codex merte ki)
+        for name, x, y, hgt in labels + [("WORLD MAP", a.width/2, H - a.margin*0.35, 4.2)]:
+            dxf += ["0", "TEXT", "8", "0", "10", f"{x:.3f}", "20", f"{y:.3f}",
+                    "40", f"{hgt:.3f}", "72", "1", "11", f"{x:.3f}", "21", f"{y:.3f}",
+                    "1", name]
+        # iranytu: kor (32 szakaszos POLYLINE) + rombusz + N/S/E/W
+        import math as _m
+        cxr, cyr, rr = a.margin + 11.0, a.margin + 11.0, 7.0
+        dxf += ["0", "POLYLINE", "8", "0", "66", "1", "70", "1"]
+        for k in range(33):
+            ang = 2 * _m.pi * k / 32
+            dxf += ["0", "VERTEX", "8", "0", "10", f"{cxr + rr*_m.cos(ang):.3f}",
+                    "20", f"{cyr + rr*_m.sin(ang):.3f}"]
+        dxf += ["0", "SEQEND"]
+        dxf += ["0", "POLYLINE", "8", "0", "66", "1", "70", "1"]
+        for px, py in ((cxr, cyr + rr*0.82), (cxr - 1.6, cyr), (cxr, cyr - rr*0.82), (cxr + 1.6, cyr)):
+            dxf += ["0", "VERTEX", "8", "0", "10", f"{px:.3f}", "20", f"{py:.3f}"]
+        dxf += ["0", "SEQEND"]
+        for lab, dx, dy in (("N", 0, rr + 2.0), ("S", 0, -rr - 3.4), ("E", rr + 2.4, -1.0), ("W", -rr - 2.4, -1.0)):
+            dxf += ["0", "TEXT", "8", "0", "10", f"{cxr + dx:.3f}", "20", f"{cyr + dy:.3f}",
+                    "40", "3.2", "72", "1", "11", f"{cxr + dx:.3f}", "21", f"{cyr + dy:.3f}", "1", lab]
+        dxf += ["0", "ENDSEC", "0", "EOF"]
+        (out / "engrave_labels.dxf").write_text("\n".join(dxf))
+        print(f"[i] gravírozott nevek: {len(labels)} ország + címtábla + iránytű")
 
     print(f"\nkész tábla: {a.width:.0f} x {H:.0f} mm\n")
     print(f"{'lap':>4}{'mélység':>12}{'darab':>7}{'lyuk':>6}{'terület mm2':>13}"

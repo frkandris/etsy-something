@@ -164,11 +164,13 @@ PALETTES = {
     # A tetején szándékosan ugrik a szín: a víz és a part két külön anyag.
     # A referencia vilagosabb: a self majdnem feher, a mely palaszurke - a
     # navy-dominans elso valtozat tul sotet volt mellette.
-    "bathy": [(0.040, 0.055, 0.070, 1),   # 6000 m: palaszurke
-              (0.095, 0.135, 0.165, 1),   # 4000 m
-              (0.210, 0.310, 0.390, 1),   # 2000 m
-              (0.420, 0.560, 0.650, 1),   # 1000 m
-              (0.680, 0.800, 0.860, 1),   # 200 m: halvany self
+    # A reviewer P1-e: a melyviz ne kozelitsen feketehez - vilagos-kek rampa,
+    # a fa szarazfold adja a kontrasztot
+    "bathy": [(0.115, 0.220, 0.320, 1),   # 6000 m
+              (0.185, 0.330, 0.450, 1),   # 4000 m
+              (0.300, 0.470, 0.590, 1),   # 2000 m
+              (0.460, 0.630, 0.730, 1),   # 1000 m
+              (0.660, 0.800, 0.870, 1),   # 200 m: halvany self
               (0.430, 0.255, 0.110, 1)],  # szárazföld: dió
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
@@ -735,16 +737,12 @@ if VIEW == "exploded":
         k = o.location.z / max(1e-9, THICK + GAP)      # hanyadik lap
         if o in FRAME_OBJS:
             k = nmax + 1.6                              # a keret a legyezo vegen
-        o.location.x += k * SIZE * 0.145
-        o.location.y -= k * SIZE * 0.015
-        o.location.z = k * SIZE * 0.052
+        o.location.x += k * SIZE * 0.105
+        o.location.y -= k * SIZE * 0.012
+        o.location.z = k * SIZE * 0.046
     # feher vakolatra kerul, mint a referencian - az atlatszo hatter itt
     # feketenek renderelodik minden sotet nezegoteben
     scene.render.film_transparent = False
-    _w = scene.world or bpy.data.worlds.new("w_exploded")
-    scene.world = _w; _w.use_nodes = True
-    _w.node_tree.nodes["Background"].inputs[0].default_value = (0.94, 0.935, 0.925, 1)
-    _w.node_tree.nodes["Background"].inputs[1].default_value = 3.2   # AgX alatt az 1.0 szurkenek latszik
 
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene
@@ -849,7 +847,7 @@ if VIEW == "exploded":
     cz = (min(q.z for q in _pts) + max(q.z for q in _pts)) / 2
     ext = max(max(q.x for q in _pts) - min(q.x for q in _pts),
               max(q.z for q in _pts) - min(q.z for q in _pts))
-    D = ext * 1.55
+    D = ext * 1.9
     loc = (cx - D * 0.10, cy - D * 0.80, cz + D * 0.62)
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
@@ -938,6 +936,11 @@ fo.location = (SIZE * 1.6, -SIZE * 0.9, SIZE * 0.9); fo.rotation_euler = (math.r
 
 world = bpy.data.worlds.new("w"); scene.world = world
 world.use_nodes = True
+if VIEW == "exploded":
+    # a vilag itt jon letre, MINDEN nezet-blokk utan - a korabban beallitott
+    # hatter csendben elveszett. Node nelkul a legegyszerubb es debugolhato.
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.90, 0.885, 0.87, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 1.6
 if SCENE_HDRI:
     _hdr = pathlib.Path(__file__).resolve().parent / "pipeline" / "assets" / "hdris" / f"{SCENE_HDRI}.hdr"
     if _hdr.exists():
@@ -958,7 +961,10 @@ if SCENE_HDRI:
 if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
-else:
+elif VIEW != "exploded":
+    # Ez a sotet alap-hatter irta felul csendben az exploded nezet feher
+    # vakolat-hatteret is - a debug-lanc (magenta-teszt, objektum-dump) vegen a
+    # 0,55 x 0,06 = 0,033 pontosan a mert 43-as szurket adta.
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.52, 0.48, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.06
 

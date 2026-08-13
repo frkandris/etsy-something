@@ -71,12 +71,12 @@
   {
    "n": 6,
    "depth": "szárazföld",
-   "pieces": 4,
-   "holes": 19,
-   "area_mm2": 37573,
-   "weakest_mm": 3.77,
-   "necks": 6,
-   "dropped_islands": 220
+   "pieces": 16,
+   "holes": 2,
+   "area_mm2": 16797,
+   "weakest_mm": 2.37,
+   "necks": 0,
+   "dropped_islands": 0
   }
  ]
 }

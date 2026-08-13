@@ -2,6 +2,8 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-13 — Harmadik pipeline-valtozat: reteges vilagterkep Natural Earth batimetriabol (kozkincs). Itt NINCS kepgenerator - a melyseg mert, nem becsult, es a kontarok eleve egymasba agyazottak. Ket tanulsag: a 0 m-es szint azonos a partvonallal (ket egyforma lap), es a NE kontarjai megsem tokeletesen agyazottak - a 200 m-es lap 32,7%-a kilogott az alatta levo alol, ugyanaz a klippeles kellett, mint a papirvagas-lancban (workflows/worldmap-pipeline)
+
 2026-08-12 — Layered vs 3D azonos alapu osszehasonlitas: mindket oldal ujramerve SalesDoe API-val ugyanaznap. Auditalt layered median 706 907 vs 3D 489 456 HUF/ho - a 3D 31%-kal KEVESEBB, de 33 listinggel a layered 326-javal szemben (HUF/listing 1 845 vs 11 698) (findings/niche-comparison)
 2026-08-12 — KORREKCIO: az osszehasonlitast eloszor a HIBAS 33-as layered listan szamoltam, pedig a sajat pitfall-om szerint az auditalt populacio 21. A javitas 68%-kal emelte a layered mediant es megforditotta a fo kovetkeztetest. Plusz kevert percentilis-definicio es egy visszavont 'egyotod annyi ido' allitas (pitfalls/2026-08-12-rossz-populacio-harmadszor)
 

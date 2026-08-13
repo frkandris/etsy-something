@@ -160,6 +160,14 @@ PALETTES = {
                (0.84, 0.72, 0.55, 1), (0.13, 0.09, 0.07, 1), (0.55, 0.28, 0.10, 1),
                (0.16, 0.11, 0.08, 1)],
     # terrain: water/valley dark blue-green rising to sunlit rock and snow
+    # rétegelt világtérkép: mély navy -> világoskék self, majd FA a szárazföldre.
+    # A tetején szándékosan ugrik a szín: a víz és a part két külön anyag.
+    "bathy": [(0.010, 0.020, 0.055, 1),   # 6000 m
+              (0.020, 0.052, 0.115, 1),   # 4000 m
+              (0.042, 0.105, 0.200, 1),   # 2000 m
+              (0.085, 0.190, 0.310, 1),   # 1000 m
+              (0.170, 0.330, 0.470, 1),   # 200 m
+              (0.430, 0.255, 0.110, 1)],  # szárazföld: dió
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
                 (0.97, 0.97, 0.96, 1)],
@@ -390,6 +398,10 @@ pts = world_bbox(objs)
 minv = mathutils.Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
 maxv = mathutils.Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
 SIZE = max(maxv.x - minv.x, maxv.y - minv.y)
+# A keret eddig mindig NEGYZET volt, mert csak a nagyobbik oldalt hasznaltuk.
+# Egy 2:1-es vilagterkepnel ettol a mu a keret kozepen lebegett, korulotte
+# ures savokkal. Az arany kell, nem csak a meret.
+ASPECT = (maxv.x - minv.x) / max(1e-9, (maxv.y - minv.y))
 print(f"[render] darab merete: {SIZE:.4f} egyseg")
 
 if ACCENT_ON:
@@ -527,9 +539,9 @@ if FRAME and not WHITE_TOP and not RECESSED:
     # tie the backing to THICK: a fixed -0.4 mm sat INSIDE the layer-1 extrusion
     # once paper thickness went to 2 mm, and the plane won the z-fight over the
     # largest, darkest layers - they vanished and the piece read as empty
-    bpy.ops.mesh.primitive_plane_add(size=SIZE * 1.10,
-                                     location=(0, 0, -THICK * 1.6))
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0, 0, -THICK * 1.6))
     _bk = bpy.context.object
+    _bk.scale = (SIZE * 1.10 * max(1.0, ASPECT), SIZE * 1.10 / max(1.0, 1 / ASPECT), 1.0)
     _bk.data.materials.append(wood("backing", (0.99, 0.988, 0.982, 1), 0.72,
                                    grain=False))
     FRAME_OBJS.append(_bk)
@@ -581,13 +593,15 @@ if FRAME:
     outer = inner + fw
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2 - 0.0006))
     shell = bpy.context.object
-    shell.scale = (outer * 2, outer * 2, fd)
+    # x-ben az oldalarany szerint szeles, y-ban a magassag szerint - kulonben a
+    # nem negyzetes mu a keret kozepen lebeg, korulotte ures savokkal
+    shell.scale = (outer * 2 * max(1.0, ASPECT), outer * 2 / max(1.0, 1 / ASPECT), fd)
     # the opening must go ALL THE WAY THROUGH. Starting it at 0.28*depth left
     # the back of the shell solid, and that slab sat in front of the artwork:
     # only the two frontmost layers poked out and the piece looked empty.
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd / 2))
     hole = bpy.context.object
-    hole.scale = (inner * 2, inner * 2, fd * 3)
+    hole.scale = (inner * 2 * max(1.0, ASPECT), inner * 2 / max(1.0, 1 / ASPECT), fd * 3)
     bm = shell.modifiers.new("cut", "BOOLEAN")
     bm.operation = "DIFFERENCE"
     bm.object = hole
@@ -608,7 +622,8 @@ if FRAME:
     # inner bevel: a thin lighter lip around the opening
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd - fd * 0.06))
     _lip = bpy.context.object
-    _lip.scale = ((inner + fw * 0.16) * 2, (inner + fw * 0.16) * 2, fd * 0.12)
+    _lip.scale = ((inner + fw * 0.16) * 2 * max(1.0, ASPECT),
+                  (inner + fw * 0.16) * 2 / max(1.0, 1 / ASPECT), fd * 0.12)
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd))
     _lh = bpy.context.object
     _lh.scale = (inner * 2, inner * 2, fd)

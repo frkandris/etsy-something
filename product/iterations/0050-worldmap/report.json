@@ -1,0 +1,82 @@
+{
+ "width_mm": 400.0,
+ "height_mm": 202.2,
+ "sheets": 6,
+ "levels_m": [
+  200,
+  1000,
+  2000,
+  4000,
+  6000
+ ],
+ "lat_clip": [
+  -58.0,
+  80.0
+ ],
+ "min_web_mm": 2.0,
+ "min_island_mm2": 25.0,
+ "all_ok": false,
+ "source": "Natural Earth (public domain)",
+ "layers": [
+  {
+   "n": 1,
+   "depth": "6000 m",
+   "pieces": 1,
+   "holes": 0,
+   "area_mm2": 81184,
+   "weakest_mm": 12.0,
+   "necks": 0,
+   "dropped_islands": 0
+  },
+  {
+   "n": 2,
+   "depth": "4000 m",
+   "pieces": 2,
+   "holes": 23,
+   "area_mm2": 76241,
+   "weakest_mm": 3.09,
+   "necks": 0,
+   "dropped_islands": 70
+  },
+  {
+   "n": 3,
+   "depth": "2000 m",
+   "pieces": 8,
+   "holes": 22,
+   "area_mm2": 54030,
+   "weakest_mm": 2.59,
+   "necks": 1,
+   "dropped_islands": 359
+  },
+  {
+   "n": 4,
+   "depth": "1000 m",
+   "pieces": 5,
+   "holes": 19,
+   "area_mm2": 46417,
+   "weakest_mm": 2.7,
+   "necks": 1,
+   "dropped_islands": 315
+  },
+  {
+   "n": 5,
+   "depth": "200 m",
+   "pieces": 5,
+   "holes": 18,
+   "area_mm2": 43851,
+   "weakest_mm": 2.7,
+   "necks": 2,
+   "dropped_islands": 284
+  },
+  {
+   "n": 6,
+   "depth": "szárazföld",
+   "pieces": 4,
+   "holes": 19,
+   "area_mm2": 37573,
+   "weakest_mm": 3.77,
+   "necks": 6,
+   "dropped_islands": 220
+  }
+ ]
+}

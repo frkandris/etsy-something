@@ -16,6 +16,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 - [[longtail]] — **hosszú farok szógyűjtemény** (412 kifejezés, 8 család, bővíthető)
 
+- [[workflows/worldmap-pipeline]] — **világtérkép-lánc**: mért mélység, generátor nélkül
 - [[workflows/recessed-papercut-pipeline]] — **a süllyesztett papírvágás-lánc** (a tényleges termékszerkezet)
 
 ## Eredmények — `findings/`

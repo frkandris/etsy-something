@@ -130,6 +130,24 @@ def widest_inscribed(p):
     return lo
 
 
+def widen_necks(geom, add=0.45):
+    """Lokalis kiszelesites CSAK a nyak-szakaszon (Epilog-ajanlas: offset ~0,5 mm
+    es unio - de mi nem az egesz format hizlaljuk, csak a nyak-zonat, igy a
+    kontur karaktere marad). A nyak-zona: a darab minusz a kover reszek."""
+    out = []
+    for p in polys(geom):
+        er = p.buffer(-MIN_WEB / 2)
+        frags = [f for f in polys(er) if f.area >= 5.0]
+        if len(frags) <= 1:
+            out.append(p)
+            continue
+        fat = unary_union([f.buffer(MIN_WEB / 2 + 0.05) for f in frags])
+        neck_zone = p.difference(fat)
+        widened = p.union(neck_zone.buffer(add)).buffer(0)
+        out.append(widened)
+    return unary_union(out)
+
+
 def necks(geom):
     """Vékony nyak: ahol MIN_WEB/2-vel erodálva a darab több érdemi részre esik."""
     n = 0
@@ -201,7 +219,7 @@ def main():
     ap.add_argument("--borders", action="store_true", help="országhatár gravírozási réteg")
     ap.add_argument("--countries", action="store_true",
                     help="a szárazföld lap ország-darabokra bontva, gravírozott nevekkel")
-    ap.add_argument("--label-h", type=float, default=2.6,
+    ap.add_argument("--label-h", type=float, default=2.2,
                     help="mm — gravírozott betűmagasság; ez dönti el, hány ország címkézhető")
     a = ap.parse_args()
 
@@ -288,7 +306,7 @@ def main():
             if big is None:
                 continue
             r = widest_inscribed(big) / 2
-            if name and r >= a.label_h * 0.9 and big.area >= 350:
+            if name and r >= a.label_h * 0.72 and big.area >= 150:
                 c = _plabel(big, tolerance=0.5)
                 labels.append((name.upper(), c.x, c.y, min(a.label_h, r * 0.9)))
         print(f"[i] orszag-darabok (polygonize, fok-terben): {len(pieces)}, cimkezheto: {len(labels)}")
@@ -309,9 +327,17 @@ def main():
     # az 1000 m-esé, tehát a k. lap NEM fért bele a k-1.-be. Ha ezt nem javítjuk,
     # a fizikai stackben az egyik lap kilóg a másik alól. Ugyanaz a lépés, mint a
     # papírvágás-láncban: minden lapot a mögötte lévőre klippelünk.
-    fixed = [sheets[0]]
+    fixed = [(sheets[0][0], set_precision(make_valid(sheets[0][1]), 0.01))]
     for name, g in sheets[1:]:
+        # snap mindket oldalra: a 167 darabos orszag-lap hajszal-elei GEOS
+        # side-location-conflictot adtak a klippelesnel
+        g = set_precision(make_valid(g), 0.01)
         clipped = g.intersection(fixed[-1][1])
+        if not (a.countries and name == "szárazföld"):
+            # a codex merte ki: a klippeles UJ nyakat gyart (200 m: 0 -> 1),
+            # ezert a szelesites a klippeles UTAN fut, majd meg egy klippeles
+            clipped = widen_necks(clipped)
+            clipped = set_precision(make_valid(clipped), 0.01).intersection(fixed[-1][1])
         if clipped.area < g.area * 0.999:
             print(f"[i] {name}: beágyazásra klippelve "
                   f"({(1 - clipped.area / g.area) * 100:.1f}% lógott ki)")
@@ -319,15 +345,22 @@ def main():
     sheets = fixed
 
     rows = []
+    final_land = None
     for i, (name, g) in enumerate(sheets, 1):
-        g = set_precision(make_valid(g), 0.001).simplify(a.simplify)
+        is_pieces = (a.countries and name == "szárazföld")
+        g = set_precision(make_valid(g), 0.001)
+        if not is_pieces:
+            g = g.simplify(a.simplify)
         if a.thicken > 0 and not (a.countries and name == "szárazföld"):
             # zárás: a nyak összeforr, a forma mérete lényegében marad.
             # Az orszag-darabos lapra TILOS: a zaras a szomszedos orszagokat
             # a kozos hatar menten osszehegeszti, es megint egy tomb lenne.
             g = g.buffer(a.thicken).buffer(-a.thicken * 0.72)
-        # a keretsáv minden lapon anyag: ez tartja össze a szigeteket is
-        g = g.union(panel.difference(box(a.margin, a.margin, a.width - a.margin, H - a.margin)))
+        if not is_pieces:
+            # a keretsáv a TENGER-lapokon anyag: egyben tartja a lapot. Az
+            # orszag-darabok lapjára NEM kerül: a referencián a darabok
+            # szabadon állnak, az alattuk lévő lapra ragasztva.
+            g = g.union(panel.difference(box(a.margin, a.margin, a.width - a.margin, H - a.margin)))
         g, dropped = drop_specks(g, a.min_island)
         if g is None:
             print(f"[!] {i}. lap ({name}) üres")
@@ -341,6 +374,8 @@ def main():
         rows.append((i, name, len(parts), sum(len(p.interiors) for p in parts),
                      g.area, frail, nk, dropped))
         tag = name.replace(" ", "")
+        if is_pieces:
+            final_land = g
         to_svg(g, a.width, H, out / f"layer_{i}_of_{len(sheets)}.svg")
         to_dxf(g, H, out / f"layer_{i}_of_{len(sheets)}_{tag}.dxf")
 
@@ -422,6 +457,27 @@ def main():
         dxf += ["0", "ENDSEC", "0", "EOF"]
         (out / "engrave_labels.dxf").write_text("\n".join(dxf))
         print(f"[i] gravírozott nevek: {len(labels)} ország + címtábla + iránytű")
+
+    if a.countries and final_land is not None:
+        # GHOST-OUTLINE: minden orszagdarab konturja 0,5 mm-rel BELJEBB
+        # offsetelve, halvany gravirkent a fogado (legfelso tenger-) lapra -
+        # ragasztas utan nem latszik ki, de a vevo pontosan tudja, hova
+        # kerul a darab. A referencia sarok-stenciljenel erosebb: itt maga a
+        # lap a sablon.
+        ghosts = []
+        for pc in polys(final_land):
+            gi = pc.buffer(-0.5)
+            if not gi.is_empty:
+                for q in polys(gi):
+                    ghosts.append(q.boundary)
+        if not ghosts:
+            print("[!] ghost-outline: nincs eleg nagy darab, kihagyva")
+        else:
+            gl = unary_union(ghosts).simplify(a.simplify)
+            to_svg(gl, a.width, H, out / "engrave_ghost.svg", stroke_only=True)
+            to_dxf(gl, H, out / "engrave_ghost.dxf")
+            print(f"[i] ghost-outline gravir: {len(ghosts)} darab-kontur "
+                  f"({gl.length:.0f} mm) - a 200 m-es lapra megy")
 
     print(f"\nkész tábla: {a.width:.0f} x {H:.0f} mm\n")
     print(f"{'lap':>4}{'mélység':>12}{'darab':>7}{'lyuk':>6}{'terület mm2':>13}"

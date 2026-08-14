@@ -844,7 +844,7 @@ if VIEW == "styled":
     _wall = bpy.context.object
     _wall.rotation_euler = (math.radians(90), 0, 0)
     _wall.scale = (SIZE * 12, SIZE * 7, 1.0)
-    _wall.data.materials.append(wood("wall", (0.895, 0.862, 0.808, 1), 0.92, grain=False))
+    _wall.data.materials.append(wood("wall", (0.860, 0.775, 0.625, 1), 0.92, grain=False))
 
     # balra vesszokosar az asztalon, jobbra ket feher facettalt vaza -
     # a vazak procedurálisak: alacsony oldalszamu, flat-shaded kup-henger
@@ -1088,7 +1088,10 @@ elif VIEW == "styled":
     D = max(_fW * LENS / 36.0 / 0.46, _fH * LENS / 24.0 / 0.42) * SCENE_ZOOM
     TGT = _fcz
     camz = _fcz + _fH * 0.30
-    _lx = -D * 0.18   # enyhe 3/4: latszodjon a komod oldala/melysege (referencia)
+    # ~20 fokos 3/4-es szog + enyhe letekintes: a frontalis kamera lapitotta
+    # a retegek melyseget (reviewer); a referencia-foto igy keszult
+    _lx = -D * 0.36
+    camz = _fcz + D * 0.12
     bpy.ops.object.camera_add(location=(_lx, -D, camz))
     import mathutils as _mu3
     _cam = bpy.context.object
@@ -1150,9 +1153,9 @@ KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 105 if VIEW == "plate" els
 key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E
 # a small emitter throws a hard, short shadow off every cut edge - that step
 # shadow IS the depth cue, and a broad soft light erased it
-key.size = SIZE * (0.35 if VIEW == "plate" else 1.5)
-if VIEW in ("lifestyle", "plate"):
-    key.color = (1.0, 0.93, 0.84)          # warm daylight, matching the backdrop
+key.size = SIZE * (0.35 if VIEW == "plate" else 2.0)
+if VIEW in ("lifestyle", "plate", "styled"):
+    key.color = (1.0, 0.80, 0.60)          # ~2850K, a referencia meleg estifeny-tonusa
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
 if VIEW == "plate":
     # lower and further round: a grazing key lengthens every step shadow
@@ -1174,8 +1177,8 @@ world.use_nodes = True
 if VIEW == "exploded":
     # a vilag itt jon letre, MINDEN nezet-blokk utan - a korabban beallitott
     # hatter csendben elveszett. Node nelkul a legegyszerubb es debugolhato.
-    world.node_tree.nodes["Background"].inputs[0].default_value = (0.965, 0.962, 0.958, 1)
-    world.node_tree.nodes["Background"].inputs[1].default_value = 2.0
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.982, 0.980, 0.978, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 2.3
 if SCENE_HDRI:
     _hdr = pathlib.Path(__file__).resolve().parent / "pipeline" / "assets" / "hdris" / f"{SCENE_HDRI}.hdr"
     if _hdr.exists():
@@ -1198,7 +1201,7 @@ if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
 elif VIEW == "plate":
     # vilagos studio-hatter: a darab alljon fenyben, ne fekete urben
-    world.node_tree.nodes["Background"].inputs[0].default_value = (0.94, 0.93, 0.915, 1)
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.930, 0.895, 0.835, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 1.15
 elif VIEW != "exploded":
     # Ez a sotet alap-hatter irta felul csendben az exploded nezet feher

@@ -1,0 +1,40 @@
+{
+  "name": "relief-portrait",
+  "title": "Kiemelkedő reliefes állatportré, kontúrkövető sziluettel",
+  "note": "Referencia: MagicVectorLaser 4328814517 (német juhász, 8 réteg). Ez a KIEMELKEDŐ változat — a rétegek előre lépcsőznek és árnyékot vetnek. Ugyanez volt a papírvágás-lánc első nyolc körének szerkezete, mielőtt kiderült, hogy AZ a referencia süllyesztett; a képesség tehát megvan, csak ki volt kapcsolva.",
+  "structure": {
+    "layers": 8,
+    "relief": "raised",
+    "outline": "contour-following",
+    "frame": false,
+    "size_mm": [157, 254],
+    "materials": ["plywood", "cardboard", "paper", "plexiglass"],
+    "machines": ["laser", "cricut", "silhouette"]
+  },
+  "differences_from_papercut": [
+    "A külső vágásél MAGA a sziluett — nincs fedőlap, nincs ablak, nincs keret. A papírvágás-lánc --full-panel kapcsolója pont az ellenkezőjét csinálja.",
+    "KIEMELKEDŐ relief: a rétegek előre lépcsőznek. A --recessed elhagyása adja vissza.",
+    "ANATÓMIAI zóna-bontás (fül / homlok / szemgödör / orrnyereg / pofaszakáll), nem tónus-lépcső. Ez a legnehezebb rész: a k-means tónus-küszöb domborzat-jellegű gyűrűket ad, nem anatómiai zónákat — a forrásképnek kell zónákat adnia.",
+    "Festett, többtónusú felület, nem natúr fa és nem papír-paletta.",
+    "Több anyagra és több géptípusra pozicionálva egyetlen fájlkészlettel."
+  ],
+  "pipeline": {
+    "script": "02_trace.py",
+    "args": ["--levels", "8", "--min-part", "60", "--merge-below", "0.005",
+             "--margin", "0", "--no-keyhole", "--connected"],
+    "note": "--full-panel és --recessed SZÁNDÉKOSAN kimarad: azok adnák a keretes, süllyesztett szerkezetet. A --connected marad, mert kiemelkedő reliefnél is egyben kell jönnie minden lapnak a vágóasztalról."
+  },
+  "render": {
+    "palette": "wood",
+    "frame": false,
+    "paper": false,
+    "recessed": false,
+    "studio_bg": true,
+    "explode": "fan",
+    "room": "shelf",
+    "canvas": "2000x2000"
+  },
+  "views": ["plate", "exploded"],
+  "gallery_note": "Másolható fogás a referenciától: a záróképük infografika nagy '8 LAYER' jelvénnyel és a formátumlistával — a rétegszámot nem csak leírják, hanem bizonyítják. Emellett hét makró-közeli oldalnézet sötét háttéren, ami a fizikai reliefet igazolja.",
+  "blocked_on": "Forráskép. A lánc bemenete egy lapos illusztráció vagy mélységtérkép; német juhászhoz ilyet még nem generáltunk, és a képmodell kulcsa nincs a jelenlegi munkamenetben."
+}

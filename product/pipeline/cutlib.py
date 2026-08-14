@@ -287,6 +287,14 @@ def bridge_components(geom, width=2.5, min_area=0.0, anchor=None,
             b2 = (b.x + dx / ln * ov, b.y + dy / ln * ov)
             bridges.append(LineString([a2, b2]).buffer(width / 2, cap_style=2))
         joined.append(p)
+        # Ha az imenti hid MAR atmetszett egy meg szabad darabot, az onnantol
+        # osszekottetesben van - kulon hidat epiteni ra felesleges kereszt-
+        # kotes lenne, amit a docstring kifejezetten kizar (codex).
+        if bridges:
+            last, still = bridges[-1], []
+            for f in free:
+                (joined if f.intersects(last) else still).append(f)
+            free = still
 
     keep = [p for p in joined if anchor is None or p is not anchor]
     return unary_union(keep + bridges).buffer(0), orphans
@@ -346,10 +354,29 @@ def tile_piece(geom, max_w, max_h, min_area=25.0):
                         mnx + (c + 1) * step_x, mny + (r + 1) * step_y)
             part = geom.intersection(cell)
             for q in polys(part):
-                # A csempezes NEM veszithet anyagot: a csempehataron keletkezo
-                # apro fragmentum a darab resze, nem kulonallo sziget. Merve:
-                # a min_area itteni alkalmazasa 34 712 mm2-t tuntetett el az
-                # azsiai darabbol (codex). A kuszob a BEMENETRE vonatkozik,
-                # nem a vagas melléktermékeire.
                 out.append((q, (r, c)))
-    return out
+
+    # A csempezes NEM veszithet anyagot (a min_area itteni alkalmazasa
+    # 34 712 mm2-t tuntetett el az azsiai darabbol), de nem is gyarthat
+    # hasznalhatatlan szilankokat: a puszta megorzes 3,09 x 0,74 mm-es onallo
+    # csempet adott, vekonyabbat a minimalis webnel (codex). A helyes valasz:
+    # a tul kicsi fragmentum BEOLVAD abba a szomszedba, amivel a leghosszabb
+    # kozos hatara van.
+    usable, tiny = [], []
+    for q, rc in out:
+        b = q.bounds
+        if q.area >= min_area and min(b[2] - b[0], b[3] - b[1]) >= MIN_WEB:
+            usable.append([q, rc])
+        else:
+            tiny.append(q)
+    if not usable:
+        return out
+    for q in tiny:
+        best, blen = None, -1.0
+        for i, (u, _rc) in enumerate(usable):
+            shared = q.buffer(0.02).intersection(u).area
+            if shared > blen:
+                best, blen = i, shared
+        if best is not None:
+            usable[best][0] = unary_union([usable[best][0], q]).buffer(0)
+    return [(u, rc) for u, rc in usable]

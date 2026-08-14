@@ -37,6 +37,7 @@ from cutlib import (components, heal_to_convergence, necks,  # noqa: E402
                     text_paths, text_width, tile_piece, widest_inscribed)
 from geolib import fetch, project  # noqa: E402
 from shapely import affinity, make_valid  # noqa: E402
+from shapely.errors import GEOSException  # noqa: E402
 
 # A vago konvencioja (a referenciatermek is ezt hasznalja): a szin mondja meg,
 # mit csinaljon a gep. Ugyanez a DXF-ben kulon retegnev.
@@ -345,6 +346,9 @@ def main():
     # lezerágyon meg sem lehetett nyitni. Itt minden csempe sajat fajlt kap,
     # 0,0-ba tolva, a ra eso score-vonalakkal es cimkekkel egyutt.
     tdir = out / "tiles"
+    if tdir.exists():        # regi sorszamozott fajlok maradnanak (codex)
+        for _f in tdir.glob("*.svg"):
+            _f.unlink()
     tdir.mkdir(exist_ok=True)
     n_tiles = 0
     tile_seq = {}
@@ -369,7 +373,7 @@ def main():
                 continue
             try:
                 cut = snap(sg).intersection(snap(q.buffer(0.02)))
-            except Exception as exc:               # noqa: BLE001
+            except GEOSException as exc:
                 # A negyedik azsiai csempen ez TopologyException-nel LEALLT, es
                 # emiatt a csempe-fajl meg sem szuletett meg (codex). A karcolas
                 # kihagyasa elviselheto; a hianyzo vagofajl nem.

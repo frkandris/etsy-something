@@ -569,7 +569,7 @@ if VIEW == "shelf":
                                      rotation=(math.radians(90), 0, 0))
     bpy.context.object.data.materials.append(wood("wall", (0.84, 0.80, 0.74, 1), 0.8,
                                                   grain=False))
-elif VIEW not in ("plate", "wall"):
+elif VIEW not in ("plate", "wall", "macro"):
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
     # whitewashed board, not a 60% grey sweep - the grey read as CGI.
     # NEVER in plate view: the piece stands up there, and a horizontal plane
@@ -1059,6 +1059,15 @@ if VIEW == "exploded":
     # feketenek renderelodik minden sotet nezegoteben
     scene.render.film_transparent = False
 
+if VIEW == "macro":
+    # A referencia galeria fo bizonyito-eszkoze: kozeli 3/4-es oldalnezet SOTET
+    # hatteren, ahol a retegelek elkapjak a fenyt. 14 kepbol 7 ilyen naluk -
+    # ez az, ami elhiteti, hogy a mu fizikailag retegzett, nem nyomtatott.
+    for o in objs + FRAME_OBJS:
+        o.rotation_euler = (math.radians(90), 0, 0)
+        ox, oy, oz = o.location.x, o.location.y, o.location.z
+        o.location = (ox, -oz, oy)
+
 if VIEW == "wall":
     # EGYRETEGU, FALRA SZERELT termek (11_worldmap_flat.py): nincs keret, nincs
     # hatlap, es a darabok kozotti "tenger" maga a fal. A melyseget itt nem a
@@ -1259,6 +1268,31 @@ elif VIEW == "styled":
     cam.data.dof.aperture_fstop = 2.8
     scene.camera = cam
     print(f"[render] nezet=styled tavolsag={D:.3f}")
+elif VIEW == "macro":
+    # szoros, alacsony 3/4: a kamera a mu FELSO harmadara nez oldalrol, hogy a
+    # lepcsok elhajlasa maximalis legyen. A hosszu objektiv lapitana a
+    # melyseget, ezert 50 mm.
+    bpy.context.view_layer.update()
+    _mb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS])
+    _mw = max(q.x for q in _mb) - min(q.x for q in _mb)
+    _mh = max(q.z for q in _mb) - min(q.z for q in _mb)
+    _mcz = min(q.z for q in _mb) + _mh * 0.62
+    LENS = 50.0
+    # 0.52 felismerhetetlenul kozel volt: a referencia makroi a fej
+    # EGY-EGY zonajat mutatjak (ful+szem), nem egy nevtelen reszletet
+    D = _mw * LENS / 36.0 * 1.35
+    import mathutils as _mu4
+    loc = (-D * 0.62, -D * 0.72, _mcz + D * 0.20)
+    bpy.ops.object.camera_add(location=loc)
+    cam = bpy.context.object
+    cam.data.lens = LENS
+    cam.data.dof.use_dof = True
+    cam.data.dof.focus_distance = D
+    cam.data.dof.aperture_fstop = 9.0   # 3.5 az egesz kepet elmosta
+    cam.rotation_euler = _mu4.Vector(
+        (0 - loc[0], 0 - loc[1], _mcz - loc[2])).to_track_quat('-Z', 'Y').to_euler()
+    scene.camera = cam
+    print(f"[render] nezet=macro tavolsag={D:.3f}")
 elif VIEW == "wall":
     # frontalis, a mu tenyleges bboxara illesztve. Nincs keret, tehat a MARGIN
     # keret-korrekcioja nem ervenyes - a darabok maguk a mu.
@@ -1323,7 +1357,7 @@ KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 105 if VIEW == "plate" els
 key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E
 # a small emitter throws a hard, short shadow off every cut edge - that step
 # shadow IS the depth cue, and a broad soft light erased it
-key.size = SIZE * (0.35 if VIEW in ("plate", "wall") else 2.0)
+key.size = SIZE * (0.35 if VIEW in ("plate", "wall", "macro") else 2.0)
 if VIEW in ("lifestyle", "plate", "styled", "wall"):
     key.color = (1.0, 0.80, 0.60)          # ~2850K, a referencia meleg estifeny-tonusa
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
@@ -1375,6 +1409,11 @@ if SCENE_HDRI:
 if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
+elif VIEW == "macro":
+    # antracit ur: a referencia makroi mind sotet hatteren allnak,
+    # mert a vilagos hatter elnyeli a lepcsok arnyekat
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.022, 0.020, 0.019, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.5
 elif VIEW == "wall":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.90, 0.875, 0.83, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55

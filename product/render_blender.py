@@ -1352,8 +1352,11 @@ elif VIEW == "plate":
     # 0.78 a KERETES muhez: ott a keret toltse ki a vaszon ~85%-at. Keret
     # nelkul (kontukoveto relief) a motivum maga a mu, es ezzel kilogott a
     # vaszonrol - ilyenkor kell a levego.
-    # 1.18-nal a fej a keret ~55%-at toltotte (reviewer); a referencia ~85%
-    D = SIZE * MARGIN * LENS / 36.0 * (0.78 if FRAME else 0.82)
+    # 1.18: a fej csak ~55%-ot toltott. 0.82: a fulhegyek es a mellszorzet
+    # NULLA margoval ertek a vaszon szelet - a bíráló pixel-mintavetellel
+    # merte, hogy anyagszin all a szelso sorban, nem hatter. 0.90 hagy
+    # 3-5% fekete margot korben, a fej meg mindig ~80%-ot tolt.
+    D = SIZE * MARGIN * LENS / 36.0 * (0.78 if FRAME else 0.90)
     # a darab mar a padlon ul, a kozepe nem z=0 - oda celozzunk
     bpy.context.view_layer.update()
     _pc = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)

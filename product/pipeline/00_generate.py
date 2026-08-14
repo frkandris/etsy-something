@@ -169,9 +169,18 @@ texture, no cross-hatching, no outlines drawn on top. Darkest tone = the
 deepest, largest sheet at the back; lightest tone = the smallest sheet at the
 front.
 
-CUTTABLE. Nothing narrower than a finger anywhere. Every zone is a single
-connected shape that touches the zone below it - no free-floating islands, no
-detached specks, no shape that only exists as a thin line.
+CUTTABLE - AND THIS IS WHERE DRAWINGS USUALLY FAIL. Each tone must form a few
+BIG SOLID MASSES, not many thin slivers:
+- NO thin crescent, sickle, ring or arc-shaped bands. A zone that is a narrow
+  curved strip cannot be cut, and when the layers are shown separated it reads
+  as a broken fragment rather than a sheet.
+- Do NOT separate individual fur strands into their own tone. Group the fur
+  into a few broad masses and let the ZONE EDGE be jagged; the jaggedness lives
+  on the outline, never as a standalone sliver.
+- Every tone appears as at most 2-3 connected shapes in the whole picture, each
+  at least as wide as a thumb at its narrowest.
+- No free-floating islands, no detached specks, no shape that exists only as a
+  thin line. Every zone touches the zone below it along a long edge.
 
 COMPOSITION. The head fills at least 80 percent of the picture. Pure white
 background outside the silhouette. Square, centred, no text, no signature, no

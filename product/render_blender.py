@@ -88,7 +88,7 @@ for _i, _a in enumerate(argv):
 DARK_FRAME = PROFILE.get("dark_frame", False) or "--dark-frame" in argv
 # sotet studio-hatter: a referencia hero-ja es MIND a 7 makroja sotet
 # hatteren all, mert a vilagos hatter elnyeli a lepcsok arnyekat
-DARK_BG = PROFILE.get("dark_bg", False) or "--dark-bg" in argv
+DARK_BG = _pf("dark_bg", False, "--dark-bg")
 ENGRAVE = PROFILE.get("engrave", False) or "--engrave" in argv
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0

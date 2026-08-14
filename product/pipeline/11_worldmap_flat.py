@@ -347,6 +347,7 @@ def main():
     tdir = out / "tiles"
     tdir.mkdir(exist_ok=True)
     n_tiles = 0
+    tile_seq = {}
     for cont, i, q, (r, c) in [(a_, b_, c_, d_) for a_, b_, c_, d_, e_ in tiled if e_]:
         b = q.bounds
         loc = affinity.translate(q, -b[0], -b[1])
@@ -366,7 +367,14 @@ def main():
         for c2, i2, sg in scores:
             if c2 != cont or i2 != i:
                 continue
-            cut = sg.intersection(q.buffer(0.02))
+            try:
+                cut = snap(sg).intersection(snap(q.buffer(0.02)))
+            except Exception as exc:               # noqa: BLE001
+                # A negyedik azsiai csempen ez TopologyException-nel LEALLT, es
+                # emiatt a csempe-fajl meg sem szuletett meg (codex). A karcolas
+                # kihagyasa elviselheto; a hianyzo vagofajl nem.
+                print(f"[!] {cont} {i}/{r}{c}: karcolas kihagyva ({exc.__class__.__name__})")
+                continue
             if cut.is_empty:
                 continue
             cut = affinity.translate(cut, -b[0], -b[1])
@@ -377,7 +385,13 @@ def main():
                 buf2.append(f'  <path d="{" ".join(dd)}" fill="none" '
                             f'stroke="{SCORE}" stroke-width="0.08"/>')
         buf2.append("</svg>")
-        nm = f"{cont.replace(' ', '_').lower()}_{i}_{r}{c}.svg"
+        # A fragmentum-megorzes utan tobb poligon eshet UGYANABBA a cellaba, es
+        # azonos nevvel FELULIRTAK egymast (a naplo 12 csempet szamolt, a
+        # mappaban 8 fajl volt). Sorszam kell.
+        base = f"{cont.replace(' ', '_').lower()}_{i}_{r}{c}"
+        seq = tile_seq.get(base, 0)
+        tile_seq[base] = seq + 1
+        nm = f"{base}.svg" if seq == 0 else f"{base}_{seq}.svg"
         (tdir / nm).write_text("\n".join(buf2) + "\n")
         n_tiles += 1
     if n_tiles:

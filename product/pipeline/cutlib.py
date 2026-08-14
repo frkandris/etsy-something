@@ -262,6 +262,18 @@ def bridge_components(geom, width=2.5, min_area=0.0, anchor=None,
         _touch_only = d <= 1e-9 and p.intersection(q).area <= 1e-12
         if d > 1e-9 or _touch_only:
             a, b = nearest_points(p, q)
+            if a.distance(b) <= 1e-9:
+                # PONT-ERINTKEZES: a nearest_points ugyanazt a pontot adja, a
+                # nulla hosszu LineString buffere pedig URES - az elozo
+                # javitasom ezert volt hatastalan (codex). Az iranyt a ket
+                # darab kozeppontja adja, es a hidat arra huzzuk at.
+                from shapely.geometry import Point as _Pt
+                pc, qc = p.representative_point(), q.representative_point()
+                dxc, dyc = qc.x - pc.x, qc.y - pc.y
+                ln0 = math.hypot(dxc, dyc) or 1.0
+                off = max(width, min_web)
+                a = _Pt(a.x - dxc / ln0 * off, a.y - dyc / ln0 * off)
+                b = _Pt(b.x + dxc / ln0 * off, b.y + dyc / ln0 * off)
             from shapely.geometry import LineString
             # A hid NYULJON BELE mindket darabba. A puszta vegpont-erintes
             # (lapos sapka) nem olvad ossze; a kerek sapka width/2-vel tulnyul,
@@ -320,9 +332,11 @@ def tile_piece(geom, max_w, max_h, min_area=25.0):
     nx = max(1, math.ceil((mxx - mnx) / max_w - 1e-9))
     ny = max(1, math.ceil((mxy - mny) / max_h - 1e-9))
     if nx == 1 and ny == 1:
-        # a korai visszateres megkerulte a min_area szurest, mikozben ugyanez a
-        # fragmentum csempezett geometriabol eltunt volna (codex)
-        return [(geom, (0, 0))] if geom.area >= min_area else []
+        # KOMPONENSENKENT szurunk, ahogy a csempezett ag is: az osszterulet-
+        # vizsgalat atengedett tobb, kulon-kulon kuszob alatti poligonbol allo
+        # MultiPolygont (codex)
+        keep = [(q, (0, 0)) for q in polys(geom) if q.area >= min_area]
+        return keep
     from shapely.geometry import box as _box
     step_x, step_y = (mxx - mnx) / nx, (mxy - mny) / ny
     out = []
@@ -332,6 +346,10 @@ def tile_piece(geom, max_w, max_h, min_area=25.0):
                         mnx + (c + 1) * step_x, mny + (r + 1) * step_y)
             part = geom.intersection(cell)
             for q in polys(part):
-                if q.area >= min_area:
-                    out.append((q, (r, c)))
+                # A csempezes NEM veszithet anyagot: a csempehataron keletkezo
+                # apro fragmentum a darab resze, nem kulonallo sziget. Merve:
+                # a min_area itteni alkalmazasa 34 712 mm2-t tuntetett el az
+                # azsiai darabbol (codex). A kuszob a BEMENETRE vonatkozik,
+                # nem a vagas melléktermékeire.
+                out.append((q, (r, c)))
     return out

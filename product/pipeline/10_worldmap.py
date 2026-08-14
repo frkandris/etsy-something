@@ -219,6 +219,9 @@ def main():
                          "a szárazföld lap nyakas marad.")
     ap.add_argument("--lat", default="-58,80", help="szélességi vágás (dél,észak)")
     ap.add_argument("--margin", type=float, default=12.0, help="mm keretsáv")
+    ap.add_argument("--y-stretch", type=float, default=1.21,
+                    help="fuggoleges nyujtas: a referenciatermek ~1,6:1-es "
+                         "tablajahoz a Miller ~2:1-et y-ban nyujtani kell")
     ap.add_argument("--simplify", type=float, default=0.25,
                     help="mm — a partvonal egyszerűsítése; a lézer alatta úgysem követi")
     ap.add_argument("--min-island", type=float, default=MIN_ISLAND)
@@ -249,14 +252,18 @@ def main():
     ref_geom = land if a.style == "ripple" else land.union(seas[levels[0]])
     mnx, mny, mxx, mxy = ref_geom.bounds
     sc = (a.width - 2 * a.margin) / (mxx - mnx)
-    H = (mxy - mny) * sc + 2 * a.margin
+    # A referenciatermek terkepe fuggolegesen nyujtott: a tabla ~1,6:1, nem a
+    # Miller termeszetes ~2:1-e. Ugyanigy nyujtjuk y-ban - a foldrajz enyhen
+    # torzul, de a terkep kitolti a tablat (a felhasznalo explicit kerese).
+    ysc = sc * a.y_stretch
+    H = (mxy - mny) * ysc + 2 * a.margin
 
     def place(g):
         # ELŐBB az origóba, AZTÁN skálázni. A scale(origin=(mnx,mny)) a pontot a
         # helyén hagyja, tehát a térkép a -180..180 tartományban maradt volna, és
         # a panelnek csak a jobb fele fedte volna — a nyugati féltekét levágta.
         g = affinity.translate(g, -mnx, -mny)
-        g = affinity.scale(g, xfact=sc, yfact=sc, origin=(0, 0))
+        g = affinity.scale(g, xfact=sc, yfact=ysc, origin=(0, 0))
         return affinity.translate(g, a.margin, a.margin)
 
     land = place(land)

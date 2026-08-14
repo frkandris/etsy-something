@@ -177,12 +177,13 @@ PALETTES = {
     # A referencia (VyvaStudio 22-es kep) szinei: telitett vilagoskek parti sav,
     # lefele melyulo kekek, a hatlap grafitsotet - az elozo halvany szurkes-
     # feher ramp "lapos palettat" kapott a reviewertol (2/5)
-    "bathy": [(0.010, 0.011, 0.013, 1),   # hatlap: kozel-fekete (melyseg-horgony)
-              (0.040, 0.085, 0.135, 1),   # palakek
-              (0.095, 0.200, 0.320, 1),
-              (0.180, 0.340, 0.500, 1),
-              (0.300, 0.500, 0.680, 1),
-              (0.470, 0.650, 0.810, 1),   # parti sav: lathato vilagoskek
+    # az EREDETI listing turkizes palettaja (a felhasznalo explicit kerese)
+    "bathy": [(0.010, 0.016, 0.020, 1),   # hatlap: sotet pala-turkiz
+              (0.040, 0.100, 0.140, 1),
+              (0.100, 0.240, 0.330, 1),
+              (0.220, 0.460, 0.590, 1),
+              (0.420, 0.680, 0.790, 1),
+              (0.650, 0.840, 0.900, 1),   # parti sav: halvany cian
               (0.430, 0.255, 0.110, 1)],  # szárazföld: dió (per-spline felulirva)
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
@@ -632,7 +633,7 @@ if FRAME:
     _ab = world_bbox(objs)
     ART = max(max(q.x for q in _ab) - min(q.x for q in _ab),
               max(q.y for q in _ab) - min(q.y for q in _ab))
-    fw = ART * 0.085
+    fw = ART * 0.052
     # a recessed sheet sits right up against the rabbet; a deep empty well in
     # front of it reads as a floating tile
     if RECESSED:
@@ -819,11 +820,11 @@ if VIEW == "styled":
     tb.scale = (SIZE * 5.0, SIZE * 1.05, SIZE * 0.042)
     tb.data.materials.append(wood("tabletop", OAK, 0.55, grain=True))
     # szekrenytest a lap alatt, ket ajtofronttal (kozepen res)
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.14, -SIZE * 0.35))
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.14, -SIZE * 0.62))
     _body = bpy.context.object
-    _body.scale = (SIZE * 4.9, SIZE * 1.0, SIZE * 0.62)
-    _body.data.materials.append(wood("cabinet", tuple(c * 0.94 for c in OAK[:3]) + (1,),
-                                     0.6, grain=True))
+    _body.scale = (SIZE * 4.9, SIZE * 1.0, SIZE * 1.15)
+    _body.data.materials.append(wood("cabinet", (0.470, 0.350, 0.225, 1),
+                                     0.62, grain=True))
     for _dz in (0.155, 0.395):
         bpy.ops.mesh.primitive_cube_add(size=1,
                                         location=(0, -SIZE * 0.655, -SIZE * (0.042 + _dz)))
@@ -894,10 +895,32 @@ if VIEW == "exploded":
     # a lapok szama a fajlokbol, ne az objektumszambol: a gravir-gorbekkel
     # egyutt a keret a 230. legyezo-poziciora repult (codex)
     nmax = len(svgs)
-    for o in objs:
-        if o not in ENGRAVE_OBJS:
-            # a lapel latszodjon fa-vastagsagunak, ne papirnak (reviewer P2)
-            o.data.extrude *= 2.0
+    # A referencia robbantott kepen a lapok szine sotet acel-teal, a hatlap
+    # fekete, es MINDEN lap vagott elet fekete vonal emeli ki (a lezervagott
+    # lemez egett ele). Mesh-re konvertalunk: az oldallapok kulon sotet
+    # anyagot kapnak, amit a curve-objektum nem tud.
+    _expl_faces = [(0.006, 0.008, 0.009, 1), (0.030, 0.055, 0.065, 1),
+                   (0.060, 0.100, 0.115, 1), (0.105, 0.165, 0.185, 1),
+                   (0.220, 0.290, 0.315, 1), (0.480, 0.560, 0.590, 1)]
+    _edge_mat = wood("expl_edge", (0.016, 0.011, 0.008, 1), 0.75, grain=False)
+    for _i, _o in enumerate(list(objs)):
+        if _o in ENGRAVE_OBJS:
+            continue
+        _o.data.extrude *= 2.0
+        bpy.ops.object.select_all(action="DESELECT")
+        _o.select_set(True)
+        bpy.context.view_layer.objects.active = _o
+        bpy.ops.object.convert(target="MESH")
+        _m = _o.data
+        if _i < nmax - 1:
+            _fm = wood(f"expl_face{_i}", _expl_faces[min(_i, 5)], 0.6, grain=False)
+            _m.materials.clear()
+            _m.materials.append(_fm)
+        _m.materials.append(_edge_mat)
+        _ei = len(_m.materials) - 1
+        for _poly in _m.polygons:
+            if abs(_poly.normal.z) < 0.5:
+                _poly.material_index = _ei
     # ALLITOTT lapok melysegi sorban (a felhasznalo 21-es referencia-kepe):
     # minden lap fuggolegesen all, a hatso (grafit hatlap) balra-hatul, minden
     # kovetkezo elorebb (a kamera fele) es kicsit jobbra. A regi vizszintes
@@ -1061,12 +1084,13 @@ if VIEW == "exploded":
     # allo lapok, 3/4-es nezet balrol-elolrol, enyhen felulrol - a 21-es
     # referencia-kep kameraja. 55 mm: merheto perspektiva-konvergencia,
     # ahogy a referencian, a 85 mm-es tavkep tul lapos volt ehhez.
-    D = ext * 3.4
+    D = ext * 3.7
     print(f"[render] exploded fit: ext={ext:.3f} D={D:.3f} c=({cx:.2f},{cy:.2f},{cz:.2f})")
-    loc = (cx - D * 0.20, cy - D * 0.88, cz + D * 0.14)
+    # atlos nezet balrol, mint a referencian - de az egesz stack a vasznon
+    loc = (cx - D * 0.30, cy - D * 0.80, cz + D * 0.11)
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
-    cam.data.lens = 55.0
+    cam.data.lens = 48.0
     _dir = (cx - loc[0], cy - loc[1], cz - loc[2])
     import mathutils as _mu
     cam.rotation_euler = _mu.Vector(_dir).to_track_quat('-Z', 'Y').to_euler()
@@ -1085,13 +1109,16 @@ elif VIEW == "styled":
     # a referencia arany: a keret a kepszelesseg ~56%-a, korulotte lelegzo fal
     # es komod - a korabbi 74%-os kitoltes tul szoros volt ehhez a kephez
     LENS = 60.0
-    D = max(_fW * LENS / 36.0 / 0.46, _fH * LENS / 24.0 / 0.42) * SCENE_ZOOM
-    TGT = _fcz
+    D = max(_fW * LENS / 36.0 / 0.54, _fH * LENS / 24.0 / 0.44) * SCENE_ZOOM
+    # a cel a keretkozep ala tolodik: a termek feljebb ul a kepben, alatta
+    # LATSZIK a komod teste (a felhasznalo kerese: ne csak asztallap legyen)
+    TGT = _fcz - _fH * 0.28
     camz = _fcz + _fH * 0.30
     # ~20 fokos 3/4-es szog + enyhe letekintes: a frontalis kamera lapitotta
     # a retegek melyseget (reviewer); a referencia-foto igy keszult
     _lx = -D * 0.36
-    camz = _fcz + D * 0.12
+    # kozel vizszintes kamera: igy a komod ELULSO frontja latszik
+    camz = _fcz + _fH * 0.05
     bpy.ops.object.camera_add(location=(_lx, -D, camz))
     import mathutils as _mu3
     _cam = bpy.context.object

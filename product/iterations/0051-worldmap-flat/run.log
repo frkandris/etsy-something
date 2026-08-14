@@ -1,0 +1,8 @@
+[i] legnagyobb darab: 254 x 278 mm (engedett 330 x 280)
+[i] karcolt hatar: 8160 mm, gravirozott nev: 144, nyak: 9
+[!] 65 orszag a fizikai also hatar alatt maradt, nem kerult a keszletbe: Puerto Rico, Cyprus, Solomon Is., Trinidad and Tobago, N. Cyprus, Vanuatu, Bahamas, Åland
+kiirva: product/iterations/0051-worldmap-flat
+=== PIPE-KESZ ===
+[render] nezet=wall tavolsag=3.555 mu=1.325x0.645
+[render] nezet=wall emelkedes=34 tavolsag=3.555
+=== WALL3-KESZ ===

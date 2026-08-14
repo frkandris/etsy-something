@@ -548,7 +548,7 @@ if VIEW == "shelf":
                                      rotation=(math.radians(90), 0, 0))
     bpy.context.object.data.materials.append(wood("wall", (0.84, 0.80, 0.74, 1), 0.8,
                                                   grain=False))
-elif VIEW != "plate":
+elif VIEW not in ("plate", "wall"):
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 6, location=(0, 0, -0.0005))
     # whitewashed board, not a 60% grey sweep - the grey read as CGI.
     # NEVER in plate view: the piece stands up there, and a horizontal plane
@@ -1037,6 +1037,27 @@ if VIEW == "exploded":
     # feketenek renderelodik minden sotet nezegoteben
     scene.render.film_transparent = False
 
+if VIEW == "wall":
+    # EGYRETEGU, FALRA SZERELT termek (11_worldmap_flat.py): nincs keret, nincs
+    # hatlap, es a darabok kozotti "tenger" maga a fal. A melyseget itt nem a
+    # retegek adjak, hanem a VETETT ARNYEK - ezert a fal kozel van, a fenyt
+    # pedig oldalrol kell adni, kulonben a mu lapos matricanak latszik.
+    for o in objs + FRAME_OBJS:
+        o.rotation_euler = (math.radians(90), 0, 0)
+        ox, oy, oz = o.location.x, o.location.y, o.location.z
+        o.location = (ox, -oz, oy)
+    bpy.context.view_layer.update()
+    _wb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS])
+    _wz = (min(q.z for q in _wb) + max(q.z for q in _wb)) / 2
+    # a fal KOZVETLENUL a darabok mogott: tavolabb az arnyek szetkenodik es
+    # elveszik a "falra szerelve" olvasat
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 9, location=(0, THICK * 1.2, _wz))
+    _w = bpy.context.object
+    _w.name = "wall_plane"
+    _w.rotation_euler = (math.radians(90), 0, 0)
+    _w.data.materials.append(wood("wall", (0.885, 0.855, 0.805, 1), 0.93,
+                                  grain=False))
+
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene
     for o in objs + FRAME_OBJS:
@@ -1216,6 +1237,21 @@ elif VIEW == "styled":
     cam.data.dof.aperture_fstop = 2.8
     scene.camera = cam
     print(f"[render] nezet=styled tavolsag={D:.3f}")
+elif VIEW == "wall":
+    # frontalis, a mu tenyleges bboxara illesztve. Nincs keret, tehat a MARGIN
+    # keret-korrekcioja nem ervenyes - a darabok maguk a mu.
+    bpy.context.view_layer.update()
+    _cb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS])
+    _cw = max(q.x for q in _cb) - min(q.x for q in _cb)
+    _ch = max(q.z for q in _cb) - min(q.z for q in _cb)
+    _ccz = (min(q.z for q in _cb) + max(q.z for q in _cb)) / 2
+    D = max(_cw * LENS / 36.0 / 0.88, _ch * LENS / 24.0 / 0.80)
+    bpy.ops.object.camera_add(location=(0, -D, _ccz),
+                              rotation=(math.radians(90), 0, 0))
+    cam = bpy.context.object
+    cam.data.lens = LENS
+    scene.camera = cam
+    print(f"[render] nezet=wall tavolsag={D:.3f} mu={_cw:.3f}x{_ch:.3f}")
 elif VIEW == "plate":
     # 0.78: a keret a vaszon ~85%-at toltse ki - az 1.0-s szorzoval a kep fele
     # ures fal es padlo volt (reviewer P1)
@@ -1264,11 +1300,17 @@ KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 105 if VIEW == "plate" els
 key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E
 # a small emitter throws a hard, short shadow off every cut edge - that step
 # shadow IS the depth cue, and a broad soft light erased it
-key.size = SIZE * (0.35 if VIEW == "plate" else 2.0)
-if VIEW in ("lifestyle", "plate", "styled"):
+key.size = SIZE * (0.35 if VIEW in ("plate", "wall") else 2.0)
+if VIEW in ("lifestyle", "plate", "styled", "wall"):
     key.color = (1.0, 0.80, 0.60)          # ~2850K, a referencia meleg estifeny-tonusa
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
-if VIEW == "plate":
+if VIEW == "wall":
+    # SULYOS oldalfeny: a referencia legjobb kepen kemeny, atlos arnyek fut a
+    # falon - ez teszi lathatova, hogy a darabok ALLNAK a falon, nincsenek
+    # rafestve. Alacsony, eros oldalszog.
+    ko.location = (-SIZE * 1.9, -SIZE * 1.2, SIZE * 0.95)
+    ko.rotation_euler = (math.radians(74), 0, math.radians(-52))
+elif VIEW == "plate":
     # lower and further round: a grazing key lengthens every step shadow
     ko.location = (-SIZE * 1.7, -SIZE * 1.5, SIZE * 0.75)
     ko.rotation_euler = (math.radians(68), 0, math.radians(-42))
@@ -1309,6 +1351,9 @@ if SCENE_HDRI:
         print(f"[render] HDRI: {SCENE_HDRI}")
 if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
+elif VIEW == "wall":
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.90, 0.875, 0.83, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
 elif VIEW == "plate" and STUDIO_BG:
     # vilagos studio-hatter: a darab alljon fenyben, ne fekete urben

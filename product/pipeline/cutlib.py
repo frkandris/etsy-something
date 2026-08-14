@@ -292,3 +292,32 @@ def graticule(panel, step_mm, width=1.2, origin=(0.0, 0.0)):
         return None
     web = unary_union([ln.buffer(width / 2, cap_style=2) for ln in lines])
     return web.intersection(panel).buffer(0)
+
+
+def tile_piece(geom, max_w, max_h, min_area=25.0):
+    """A lezerágynál nagyobb darabot szamozott zonakra vagja.
+
+    A referenciatermek 1325 mm szeles, a legnagyobb egyedi darabja 330x280 mm -
+    kulonben nem fer a kis gepekbe. A vagas TENGELYRE MEROLEGES egyenes menten
+    megy, mert az illeszkedes igy a legkonnyebb: a vevo egyenes el menten tolja
+    ossze a darabokat.
+
+    Visszaad: [(alkatresz, (sor, oszlop)), ...] balrol-jobbra, fentrol-lefele.
+    """
+    mnx, mny, mxx, mxy = geom.bounds
+    nx = max(1, math.ceil((mxx - mnx) / max_w - 1e-9))
+    ny = max(1, math.ceil((mxy - mny) / max_h - 1e-9))
+    if nx == 1 and ny == 1:
+        return [(geom, (0, 0))]
+    from shapely.geometry import box as _box
+    step_x, step_y = (mxx - mnx) / nx, (mxy - mny) / ny
+    out = []
+    for r in range(ny):
+        for c in range(nx):
+            cell = _box(mnx + c * step_x, mny + r * step_y,
+                        mnx + (c + 1) * step_x, mny + (r + 1) * step_y)
+            part = geom.intersection(cell)
+            for q in polys(part):
+                if q.area >= min_area:
+                    out.append((q, (r, c)))
+    return out

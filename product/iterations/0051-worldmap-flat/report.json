@@ -1,0 +1,281 @@
+{
+ "tabla_mm": [
+  1325.0,
+  649.3
+ ],
+ "darabok": 79,
+ "csempezve": 86,
+ "legnagyobb_darab_mm": [
+  253.8,
+  277.7
+ ],
+ "max_engedett_mm": [
+  330.0,
+  280.0
+ ],
+ "nyakak": 9,
+ "karcolt_hatar_mm": 8160.2,
+ "gravirozott_nevek": 144,
+ "kimaradt_orszagok": [
+  {
+   "nev": "Puerto Rico",
+   "mm2": 10.5
+  },
+  {
+   "nev": "Cyprus",
+   "mm2": 7.9
+  },
+  {
+   "nev": "Solomon Is.",
+   "mm2": 6.0
+  },
+  {
+   "nev": "Trinidad and Tobago",
+   "mm2": 5.5
+  },
+  {
+   "nev": "N. Cyprus",
+   "mm2": 5.1
+  },
+  {
+   "nev": "Vanuatu",
+   "mm2": 4.8
+  },
+  {
+   "nev": "Bahamas",
+   "mm2": 4.6
+  },
+  {
+   "nev": "Åland",
+   "mm2": 1.9
+  },
+  {
+   "nev": "Samoa",
+   "mm2": 1.9
+  },
+  {
+   "nev": "Isle of Man",
+   "mm2": 1.5
+  },
+  {
+   "nev": "Faeroe Is.",
+   "mm2": 1.3
+  },
+  {
+   "nev": "Fr. Polynesia",
+   "mm2": 1.2
+  },
+  {
+   "nev": "Comoros",
+   "mm2": 1.2
+  },
+  {
+   "nev": "Cabo Verde",
+   "mm2": 1.1
+  },
+  {
+   "nev": "São Tomé and Principe",
+   "mm2": 1.0
+  },
+  {
+   "nev": "Dominica",
+   "mm2": 0.9
+  },
+  {
+   "nev": "Bahrain",
+   "mm2": 0.8
+  },
+  {
+   "nev": "Saint Lucia",
+   "mm2": 0.7
+  },
+  {
+   "nev": "Guam",
+   "mm2": 0.6
+  },
+  {
+   "nev": "Singapore",
+   "mm2": 0.6
+  },
+  {
+   "nev": "Curaçao",
+   "mm2": 0.5
+  },
+  {
+   "nev": "Barbados",
+   "mm2": 0.5
+  },
+  {
+   "nev": "Kiribati",
+   "mm2": 0.5
+  },
+  {
+   "nev": "Cyprus U.N. Buffer Zone",
+   "mm2": 0.5
+  },
+  {
+   "nev": "St. Pierre and Miquelon",
+   "mm2": 0.4
+  },
+  {
+   "nev": "Malta",
+   "mm2": 0.4
+  },
+  {
+   "nev": "Palau",
+   "mm2": 0.4
+  },
+  {
+   "nev": "Micronesia",
+   "mm2": 0.4
+  },
+  {
+   "nev": "St. Vin. and Gren.",
+   "mm2": 0.4
+  },
+  {
+   "nev": "Grenada",
+   "mm2": 0.4
+  },
+  {
+   "nev": "Antigua and Barb.",
+   "mm2": 0.3
+  },
+  {
+   "nev": "Tonga",
+   "mm2": 0.3
+  },
+  {
+   "nev": "Cayman Is.",
+   "mm2": 0.3
+  },
+  {
+   "nev": "Niue",
+   "mm2": 0.3
+  },
+  {
+   "nev": "Jersey",
+   "mm2": 0.3
+  },
+  {
+   "nev": "U.S. Virgin Is.",
+   "mm2": 0.3
+  },
+  {
+   "nev": "St. Kitts and Nevis",
+   "mm2": 0.2
+  },
+  {
+   "nev": "Aruba",
+   "mm2": 0.2
+  },
+  {
+   "nev": "Dhekelia",
+   "mm2": 0.2
+  },
+  {
+   "nev": "Turks and Caicos Is.",
+   "mm2": 0.2
+  },
+  {
+   "nev": "N. Mariana Is.",
+   "mm2": 0.2
+  },
+  {
+   "nev": "American Samoa",
+   "mm2": 0.2
+  },
+  {
+   "nev": "Akrotiri",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Guernsey",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Montserrat",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Indian Ocean Ter.",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Anguilla",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Wallis and Futuna Is.",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Bermuda",
+   "mm2": 0.1
+  },
+  {
+   "nev": "St-Martin",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Cook Is.",
+   "mm2": 0.1
+  },
+  {
+   "nev": "British Virgin Is.",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Norfolk Island",
+   "mm2": 0.1
+  },
+  {
+   "nev": "Pitcairn Is.",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Marshall Is.",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Nauru",
+   "mm2": 0.0
+  },
+  {
+   "nev": "St-Barthélemy",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Sint Maarten",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Macao",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Tuvalu",
+   "mm2": 0.0
+  },
+  {
+   "nev": "U.S. Minor Outlying Is.",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Ashmore and Cartier Is.",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Spratly Is.",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Scarborough Reef",
+   "mm2": 0.0
+  },
+  {
+   "nev": "Serranilla Bank",
+   "mm2": 0.0
+  }
+ ]
+}

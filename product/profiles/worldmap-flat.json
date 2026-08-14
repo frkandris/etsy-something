@@ -1,0 +1,45 @@
+{
+  "name": "worldmap-flat",
+  "title": "Egyrétegű világtérkép, kontinensenként külön darab",
+  "note": "NEM réteges és NEM összefüggő: minden kontinens (és nagyobb sziget) külön darab, a köztük lévő tenger maga a fal. Nincs keret, nincs hátlap. Referencia: MarLaserCut listing 1516752782.",
+  "structure": {
+    "layers": 1,
+    "connected": false,
+    "sea": "wall",
+    "line_types": {
+      "cut": "kontinens- és szigetkontúr (#ff0000)",
+      "score": "országhatár a darabon belül (#0000ff) — NEM vágjuk át, mert szétesne",
+      "engrave": "feliratok (#808080)"
+    }
+  },
+  "pipeline": {
+    "script": "11_worldmap_flat.py",
+    "args": [
+      "--width",
+      "1325",
+      "--max-piece",
+      "330x280",
+      "--min-island",
+      "40",
+      "--hard-floor",
+      "12",
+      "--label-h",
+      "4.0"
+    ]
+  },
+  "render": {
+    "palette": "wood",
+    "frame": false,
+    "paper": false,
+    "recessed": false,
+    "studio_bg": false,
+    "frame_width": 0.085,
+    "explode": "fan",
+    "room": "shelf",
+    "canvas": "2000x1120",
+    "mixed_wood": true
+  },
+  "views": [
+    "wall"
+  ]
+}

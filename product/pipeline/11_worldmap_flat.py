@@ -39,6 +39,7 @@ from shapely import affinity, make_valid  # noqa: E402
 
 # A vago konvencioja (a referenciatermek is ezt hasznalja): a szin mondja meg,
 # mit csinaljon a gep. Ugyanez a DXF-ben kulon retegnev.
+RUSSIA_TO_ASIA = {"Russia"}
 CUT, SCORE, ENGRAVE = "#ff0000", "#0000ff", "#808080"
 LAYERS = {CUT: "CUT", SCORE: "SCORE", ENGRAVE: "ENGRAVE"}
 
@@ -63,7 +64,7 @@ def main():
     ap.add_argument("--min-island", type=float, default=40.0,
                     help="mm2 — ennel kisebb sziget kiesik (kulon darabkent "
                          "nehezen kezelheto)")
-    ap.add_argument("--hard-floor", type=float, default=12.0,
+    ap.add_argument("--hard-floor", type=float, default=40.0,
                     help="mm2 — ez alatt meg orszagmento kivetellel sem tartunk "
                          "meg darabot: kezzel kezelhetetlen")
     ap.add_argument("--simplify", type=float, default=0.25)
@@ -84,6 +85,14 @@ def main():
         cont = pr.get("CONTINENT") or "Other"
         if cont == "Seven seas (open ocean)":
             continue                       # ezek szigetcsoportok, nem kontinens
+        # A Natural Earth OROSZORSZAGOT EUROPABA sorolja. Fali terkepnel ez
+        # katasztrofa: az "Europa" darab igy Portugaliatol Csukotkaig er, 697 mm
+        # szeles lesz (merve) - egyetlen hobbi-lezerbe sem fer bele, es a
+        # csempezes csak onkenyesen tudja elvagni. A hagyomanyos fali-terkep
+        # besorolas Oroszorszagot Azsiahoz teszi; igy Europa kompakt marad, az
+        # Azsia-blokk vagasa pedig a kontinenshataron megy.
+        if cont == "Europe" and pr.get("NAME") in RUSSIA_TO_ASIA:
+            cont = "Asia"
         from shapely.geometry import shape
         g = make_valid(shape(f["geometry"]))
         if g.geom_type not in ("Polygon", "MultiPolygon"):

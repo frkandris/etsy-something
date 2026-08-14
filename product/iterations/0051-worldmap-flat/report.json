@@ -3,20 +3,40 @@
   1325.0,
   649.3
  ],
- "darabok": 79,
- "csempezve": 86,
+ "darabok": 76,
+ "csempezve": 83,
  "legnagyobb_darab_mm": [
-  253.8,
-  277.7
+  283.3,
+  180.1
  ],
  "max_engedett_mm": [
   330.0,
   280.0
  ],
  "nyakak": 9,
- "karcolt_hatar_mm": 8160.2,
+ "karcolt_hatar_mm": 8580.3,
  "gravirozott_nevek": 144,
  "kimaradt_orszagok": [
+  {
+   "nev": "New Caledonia",
+   "mm2": 20.4
+  },
+  {
+   "nev": "Timor-Leste",
+   "mm2": 15.9
+  },
+  {
+   "nev": "Falkland Is.",
+   "mm2": 14.8
+  },
+  {
+   "nev": "Jamaica",
+   "mm2": 13.2
+  },
+  {
+   "nev": "Fiji",
+   "mm2": 13.0
+  },
   {
    "nev": "Puerto Rico",
    "mm2": 10.5

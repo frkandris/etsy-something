@@ -514,20 +514,31 @@ if MIXED_WOOD and FRONT:
               wood("mixwood_gold", (0.360, 0.220, 0.115, 1), 0.5, grain=True),
               wood("mixwood_dark", (0.135, 0.068, 0.034, 1), 0.5, grain=True)]
     _top = max(i for i, _ in FRONT)
-    for i, o in FRONT:
-        if i != _top or o.type != "CURVE":
-            continue
-        o.data.materials.clear()
-        for m in _woods:
-            o.data.materials.append(m)
-        for sp in o.data.splines:
-            pts = [p.co for p in (sp.bezier_points if sp.type == "BEZIER" else sp.points)]
-            if not pts:
-                continue
-            _cx = sum(q[0] for q in pts) / len(pts)
-            _cy = sum(q[1] for q in pts) / len(pts)
-            sp.material_index = int(abs(_cx * 7919.0 + _cy * 104729.0) * 997) % 3
-    print("[render] vegyes fatonus a szarazfold-lapon")
+    _tops = [o for i, o in FRONT if i == _top and o.type == "CURVE"]
+    if len(_tops) > 4:
+        # SOK KULON OBJEKTUM (egyretegu, darabonkent kulon path): a tonus
+        # OBJEKTUM-INDEX szerint valt. A centroid-hash itt megbukott: Afrika es
+        # Eurazsia azonos tonust kapott, es mivel a Sinai-nal osszeernek,
+        # egyetlen tombnek olvasodtak. A ciklikus kiosztas garantalja, hogy a
+        # fajlban egymast koveto darabok kulonbozzenek.
+        for _n, o in enumerate(_tops):
+            o.data.materials.clear()
+            o.data.materials.append(_woods[_n % len(_woods)])
+    else:
+        # EGY objektum sok spline-nal (reteges lanc): per-spline hash
+        for o in _tops:
+            o.data.materials.clear()
+            for m in _woods:
+                o.data.materials.append(m)
+            for sp in o.data.splines:
+                pts = [p.co for p in (sp.bezier_points if sp.type == "BEZIER"
+                                      else sp.points)]
+                if not pts:
+                    continue
+                _cx = sum(q[0] for q in pts) / len(pts)
+                _cy = sum(q[1] for q in pts) / len(pts)
+                sp.material_index = int(abs(_cx * 7919.0 + _cy * 104729.0) * 997) % 3
+    print(f"[render] vegyes fatonus: {len(_tops)} objektum")
 
 # ------------------------------------------------------------------ backdrop
 if VIEW == "shelf":

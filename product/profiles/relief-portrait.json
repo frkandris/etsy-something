@@ -55,10 +55,12 @@
     "studio_bg": true,
     "explode": "fan",
     "room": "shelf",
-    "canvas": "2000x2000"
+    "canvas": "2000x2000",
+    "dark_bg": true
   },
   "views": [
     "plate",
+    "macro",
     "exploded"
   ],
   "gallery_note": "Másolható fogás a referenciától: a záróképük infografika nagy '8 LAYER' jelvénnyel és a formátumlistával — a rétegszámot nem csak leírják, hanem bizonyítják. Emellett hét makró-közeli oldalnézet sötét háttéren, ami a fizikai reliefet igazolja."

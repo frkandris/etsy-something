@@ -147,13 +147,19 @@ def main():
         # kezzel kezelhetetlen es a lezer alatt is elveszik.
         rescued = []
         for n, g in cgeoms:
-            if any(q.intersects(g) and q.intersection(g).area > g.area * 0.4
-                   for q in parts):
-                continue
+            # A korabbi teszt (atfedes > az ORSZAG teruletenek 40%-a) atengedte
+            # azt az esetet, amikor az orszag fodarabja MAR benne van a parts-ban:
+            # Indonezia 584 mm2-es es a Fulop-szigetek 124 mm2-es fodarabja
+            # 100%-ban atfedett egy letezo elemet, megis ujra bekerult - dupla
+            # vagokontur, dupla score es dupla cimke lett belole (codex merte ki).
+            # A helyes kerdes: van-e MAR olyan darab, ami az orszag legnagyobb
+            # komponenset erdemben lefedi.
             cand = components(snap(g))
             if not cand:
                 continue
             big = cand[0]
+            if any(q.intersection(big).area > big.area * 0.5 for q in parts):
+                continue
             if big.area >= a.hard_floor:
                 parts.append(big)
                 rescued.append((n, big.area))

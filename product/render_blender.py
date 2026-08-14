@@ -42,11 +42,19 @@ def _pf(key, default, flag=None, cast=None):
     """Profil-ertek, amit a parancssor felulirhat."""
     val = PROFILE.get(key, default)
     if flag:
-        if flag in argv:                       # kapcsolo -> True
-            val = True
-        for _j, _b in enumerate(argv):         # "--flag ertek" alak
-            if _b == flag and _j + 1 < len(argv) and not argv[_j + 1].startswith("--"):
-                val = argv[_j + 1]
+        for _j, _b in enumerate(argv):
+            if _b != flag:
+                continue
+            nxt = argv[_j + 1] if _j + 1 < len(argv) else None
+            if nxt is not None and not nxt.startswith("--"):
+                # "--flag false" a "false" STRINGET adta vissza, ami igaz ertek,
+                # es a szuro sem vette ki -> eltolta a SRC/OUT/VIEW poziciokat
+                if nxt.lower() in ("true", "false", "0", "1"):
+                    val = nxt.lower() in ("true", "1")
+                else:
+                    val = nxt
+            else:
+                val = True
     return cast(val) if (cast and val is not None) else val
 
 
@@ -78,6 +86,9 @@ for _i, _a in enumerate(argv):
     if _a == "--palette-file" and _i + 1 < len(argv):
         PALETTE_FILE = argv[_i + 1]
 DARK_FRAME = PROFILE.get("dark_frame", False) or "--dark-frame" in argv
+# sotet studio-hatter: a referencia hero-ja es MIND a 7 makroja sotet
+# hatteren all, mert a vilagos hatter elnyeli a lepcsok arnyekat
+DARK_BG = PROFILE.get("dark_bg", False) or "--dark-bg" in argv
 ENGRAVE = PROFILE.get("engrave", False) or "--engrave" in argv
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
@@ -96,9 +107,13 @@ for i, a in enumerate(argv):
     if a in ("--profile", "--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
              "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom",
              "--props", "--palette-file", "--dark-frame", "--engrave",
-             "--studio-bg", "--mixed-wood", "--frame-width", "--explode",
+             "--studio-bg", "--mixed-wood", "--dark-bg", "--frame-width", "--explode",
              "--room", "--canvas"):
         skip.add(i)
+        # "--flag true/false" alaknal az erteket is ki kell szurni
+        if a in ("--studio-bg", "--mixed-wood", "--dark-bg") and i + 1 < len(argv) \
+                and argv[i + 1].lower() in ("true", "false", "0", "1"):
+            skip.add(i + 1)
         if a in ("--profile", "--orbit", "--scene", "--scene-zoom", "--props", "--palette-file",
                  "--frame-width", "--explode", "--room", "--canvas"):
             skip.add(i + 1)
@@ -234,14 +249,18 @@ PALETTES = {
               (0.430, 0.255, 0.110, 1)],  # szárazföld: dió (per-spline felulirva)
     # nemet juhasz: fekete nyereg, tan arc, krem kiemelesek - a referencia
     # festett, tobbtonusu feluletet ad el, nem naturt fat
-    "shepherd": [(0.045, 0.038, 0.032, 1),   # legalso, legnagyobb lap: antracit
-                 (0.105, 0.078, 0.055, 1),
-                 (0.205, 0.130, 0.070, 1),
-                 (0.330, 0.195, 0.090, 1),
-                 (0.470, 0.290, 0.120, 1),
-                 (0.610, 0.410, 0.180, 1),
-                 (0.760, 0.580, 0.320, 1),
-                 (0.880, 0.790, 0.620, 1)],  # legfelso, legkisebb: krem
+    # A reviewer konkret hex-ertekei. FENNTARTAS: ez REteg-indexelt paletta,
+    # tehat nem tud anatomiai zonat celozni - a kekesszurke fulbelso csak
+    # azert kerul a helyere, mert a ful-zona epp erre a melysegre esik. Zona-
+    # pontos szinezeshez szemantikus retegbontas kell (arxiv-layering-research).
+    "shepherd": [(0.026, 0.020, 0.016, 1),   # #2B2420 antracit - kontraszt-horgony
+                 (0.055, 0.038, 0.026, 1),
+                 (0.170, 0.088, 0.042, 1),   # #7A4526 sotetbarna
+                 (0.375, 0.130, 0.048, 1),   # #A85C32 rezszin voroses
+                 (0.255, 0.300, 0.345, 1),   # #8C97A0 KEKESSZURKE fulbelso
+                 (0.560, 0.330, 0.145, 1),
+                 (0.720, 0.560, 0.310, 1),
+                 (0.835, 0.720, 0.500, 1)],  # #E8D9B8 krem highlight
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
                 (0.97, 0.97, 0.96, 1)],
@@ -981,32 +1000,40 @@ if VIEW == "exploded":
     # a lapok szama a fajlokbol, ne az objektumszambol: a gravir-gorbekkel
     # egyutt a keret a 230. legyezo-poziciora repult (codex)
     nmax = len(svgs)
-    # A referencia robbantott kepen a lapok szine sotet acel-teal, a hatlap
-    # fekete, es MINDEN lap vagott elet fekete vonal emeli ki (a lezervagott
-    # lemez egett ele). Mesh-re konvertalunk: az oldallapok kulon sotet
-    # anyagot kapnak, amit a curve-objektum nem tud.
-    _expl_faces = [(0.006, 0.008, 0.009, 1), (0.030, 0.055, 0.065, 1),
-                   (0.060, 0.100, 0.115, 1), (0.105, 0.165, 0.185, 1),
-                   (0.220, 0.290, 0.315, 1), (0.480, 0.560, 0.590, 1)]
-    _edge_mat = wood("expl_edge", (0.016, 0.011, 0.008, 1), 0.75, grain=False)
-    for _i, _o in enumerate(list(objs)):
-        if _o in ENGRAVE_OBJS:
-            continue
-        _o.data.extrude *= 2.0
-        bpy.ops.object.select_all(action="DESELECT")
-        _o.select_set(True)
-        bpy.context.view_layer.objects.active = _o
-        bpy.ops.object.convert(target="MESH")
-        _m = _o.data
-        if _i < nmax - 1:
-            _fm = wood(f"expl_face{_i}", _expl_faces[min(_i, 5)], 0.6, grain=False)
-            _m.materials.clear()
-            _m.materials.append(_fm)
-        _m.materials.append(_edge_mat)
-        _ei = len(_m.materials) - 1
-        for _poly in _m.polygons:
-            if abs(_poly.normal.z) < 0.5:
-                _poly.material_index = _ei
+    if EXPLODE == "standing":
+        # A referencia robbantott kepen a lapok szine sotet acel-teal, a hatlap
+        # fekete, es MINDEN lap vagott elet fekete vonal emeli ki (a lezervagott
+        # lemez egett ele). Mesh-re konvertalunk: az oldallapok kulon sotet
+        # anyagot kapnak, amit a curve-objektum nem tud.
+        _expl_faces = [(0.006, 0.008, 0.009, 1), (0.030, 0.055, 0.065, 1),
+                       (0.060, 0.100, 0.115, 1), (0.105, 0.165, 0.185, 1),
+                       (0.220, 0.290, 0.315, 1), (0.480, 0.560, 0.590, 1)]
+        _edge_mat = wood("expl_edge", (0.016, 0.011, 0.008, 1), 0.75, grain=False)
+        for _i, _o in enumerate(list(objs)):
+            if _o in ENGRAVE_OBJS:
+                continue
+            _o.data.extrude *= 2.0
+            bpy.ops.object.select_all(action="DESELECT")
+            _o.select_set(True)
+            bpy.context.view_layer.objects.active = _o
+            bpy.ops.object.convert(target="MESH")
+            _m = _o.data
+            if _i < nmax - 1:
+                _fm = wood(f"expl_face{_i}", _expl_faces[min(_i, 5)], 0.6, grain=False)
+                _m.materials.clear()
+                _m.materials.append(_fm)
+            _m.materials.append(_edge_mat)
+            _ei = len(_m.materials) - 1
+            for _poly in _m.polygons:
+                if abs(_poly.normal.z) < 0.5:
+                    _poly.material_index = _ei
+    else:
+        # a legyezo-stilus MEGTARTJA a sajat palettajat es lapvastagsagat:
+        # a mesh-konverzio + acel-teal a vilagterkep allo valtozatahoz
+        # keszult, es csendben elvitte a papirvagas jovahagyott legyezojet
+        for _o in objs:
+            if _o not in ENGRAVE_OBJS:
+                _o.data.extrude *= 2.0
     # KET ROBBANTASI STILUS. A "standing" a vilagterkep referenciaja (allo
     # lapok melysegi sorban); a "fan" a papirvagas-termekek eredeti,
     # reviewer-jovahagyott legyezoje. Alapertelmezes a fan.
@@ -1106,7 +1133,7 @@ if VIEW == "plate":
     _pzmin = min(q.z for q in _pb)
     for o in objs + FRAME_OBJS:
         o.location.z -= _pzmin
-    if STUDIO_BG:
+    if STUDIO_BG and not DARK_BG:
         bpy.ops.mesh.primitive_plane_add(size=SIZE * 8,
                                          location=(0, -SIZE * 0.5, -0.0004))
         bpy.context.object.data.materials.append(
@@ -1218,8 +1245,10 @@ if VIEW == "exploded":
         D = ext * 3.7
         loc = (cx - D * 0.30, cy - D * 0.80, cz + D * 0.11)   # atlos, balrol
     else:
-        D = ext * 2.2
-        loc = (cx - D * 0.08, cy - D * 0.78, cz + D * 0.60)   # felulrol, legyezore
+        # a reviewer szerint a suroló szog olvashatatlanna tette a motivumot:
+        # ~40 fokos emeles kell, hogy a lapok kepe is lathato legyen
+        D = ext * 2.35
+        loc = (cx - D * 0.10, cy - D * 0.66, cz + D * 0.72)
     print(f"[render] exploded({EXPLODE}) fit: ext={ext:.3f} D={D:.3f}")
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
@@ -1312,7 +1341,8 @@ elif VIEW == "plate":
     # 0.78 a KERETES muhez: ott a keret toltse ki a vaszon ~85%-at. Keret
     # nelkul (kontukoveto relief) a motivum maga a mu, es ezzel kilogott a
     # vaszonrol - ilyenkor kell a levego.
-    D = SIZE * MARGIN * LENS / 36.0 * (0.78 if FRAME else 1.18)
+    # 1.18-nal a fej a keret ~55%-at toltotte (reviewer); a referencia ~85%
+    D = SIZE * MARGIN * LENS / 36.0 * (0.78 if FRAME else 0.82)
     # a darab mar a padlon ul, a kozepe nem z=0 - oda celozzunk
     bpy.context.view_layer.update()
     _pc = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)
@@ -1357,7 +1387,10 @@ KEY_E = SIZE * SIZE * (95 if VIEW == "lifestyle" else 105 if VIEW == "plate" els
 key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E
 # a small emitter throws a hard, short shadow off every cut edge - that step
 # shadow IS the depth cue, and a broad soft light erased it
-key.size = SIZE * (0.35 if VIEW in ("plate", "wall", "macro") else 2.0)
+# 1.5 volt az eredeti minden mas nezetre; a 2.0 a wall/macro-hoz kell,
+# es csendben ellagyitotta a hero/angled/shelf/orbit arnyekait is
+key.size = SIZE * (0.35 if VIEW in ("plate", "wall", "macro")
+                   else 2.0 if VIEW in ("styled",) else 1.5)
 if VIEW in ("lifestyle", "plate", "styled", "wall"):
     key.color = (1.0, 0.80, 0.60)          # ~2850K, a referencia meleg estifeny-tonusa
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
@@ -1417,6 +1450,9 @@ elif VIEW == "macro":
 elif VIEW == "wall":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.90, 0.875, 0.83, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
+elif VIEW == "plate" and DARK_BG:
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.022, 0.020, 0.019, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.5
 elif VIEW == "plate" and STUDIO_BG:
     # vilagos studio-hatter: a darab alljon fenyben, ne fekete urben
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.930, 0.895, 0.835, 1)

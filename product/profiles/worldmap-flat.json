@@ -37,7 +37,8 @@
     "explode": "fan",
     "room": "shelf",
     "canvas": "2000x1120",
-    "mixed_wood": true
+    "mixed_wood": true,
+    "engrave": true
   },
   "views": [
     "wall"

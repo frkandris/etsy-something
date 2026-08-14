@@ -327,13 +327,20 @@ def main():
                          prop=_FP(family="DejaVu Sans", weight="bold"))
                 tw = _t.get_extents().width
                 bw = big.bounds[2] - big.bounds[0]
+                # atlos orszagok: a vizszintes felirat kilogott a darabbol
+                # (MEXICO), a referencia ferden irja ra - mi is
+                LABEL_ROT = {"MEXICO": -38, "CHILE": -75, "ARGENTINA": -70}
+                rot = LABEL_ROT.get(name.upper(), 0.0)
+                if rot:
+                    bh = big.bounds[3] - big.bounds[1]
+                    bw = math.hypot(bw, bh) * 0.72
                 if tw > bw * 0.85:
                     hgt *= (bw * 0.85) / tw
                 if hgt < 2.2:
                     # a 1.6 mm-es kuszob alatt a betu a renderen halandzsava
                     # mosodott (reviewer) - inkabb nincs cimke, mint olvashatatlan
                     continue
-                labels.append((name.upper(), c.x, c.y, hgt))
+                labels.append((name.upper(), c.x, c.y, hgt, rot))
         print(f"[i] orszag-darabok (polygonize, fok-terben): {len(pieces)}, cimkezheto: {len(labels)}")
         land_cut = MultiPolygon(pieces)
         print(f"[i] orszag-lapok ossz-terulete: {sum(x.area for x in pieces):,.0f} mm2 (teljes szarazfold: {land.area:,.0f})")
@@ -452,8 +459,8 @@ def main():
         to_dxf(lines, H, out / "engrave_borders.dxf")
         print(f"[i] gravírozási réteg: országhatárok ({lines.length:.0f} mm vonalhossz)")
 
-    def text_paths(name, x, y, hgt):
-        """Szoveg -> zart konturok (mm), kozepre igazitva."""
+    def text_paths(name, x, y, hgt, rot=0.0):
+        """Szoveg -> zart konturok (mm), kozepre igazitva, opcionalis forgatassal."""
         from matplotlib.textpath import TextPath
         from matplotlib.font_manager import FontProperties
         tp = TextPath((0, 0), name, size=hgt,
@@ -463,9 +470,15 @@ def main():
             return []
         xs = [pt[0] for poly in polysets for pt in poly]
         w = max(xs) - min(xs) if xs else 0
+        cr, sr = math.cos(math.radians(rot)), math.sin(math.radians(rot))
         out = []
         for poly in polysets:
-            out.append([(x - w / 2 + px - min(xs), y - hgt / 2 + py) for px, py in poly])
+            pts = []
+            for px, py in poly:
+                dx = px - min(xs) - w / 2
+                dy = py - hgt / 2
+                pts.append((x + dx * cr - dy * sr, y + dx * sr + dy * cr))
+            out.append(pts)
         return out
 
     if a.countries and labels:
@@ -473,32 +486,29 @@ def main():
         # R12 TEXT entitasok mennek ugyanazokkal a pozíciókkal
         txt = ['<svg xmlns="http://www.w3.org/2000/svg" '
                f'width="{a.width:.2f}mm" height="{H:.2f}mm" viewBox="0 0 {a.width:.3f} {H:.3f}">']
-        def emit_text(name, x, y, hgt, sw="0.08"):
+        def emit_text(name, x, y, hgt, sw="0.08", rot=0.0):
             # EGY path, minden kontur alutvonalkent: kulon path-onkent a betuk
             # lyuk-konturjai (O, A, R belseje) tomor foltta valtak, es a
             # graviro nagyitasban halandzsanak olvasodott (reviewer)
             subs = []
-            for poly in text_paths(name, x, y, hgt):
+            for poly in text_paths(name, x, y, hgt, rot):
                 subs.append("M " + " L ".join(f"{px:.2f},{H - py:.2f}"
                                               for px, py in poly) + " Z")
             if subs:
                 txt.append(f'  <path d="{" ".join(subs)}" fill="#803c14" '
                            'fill-rule="evenodd" stroke="none"/>')
-        for name, x, y, hgt in labels:
-            emit_text(name, x, y, hgt)
-        # cimtabla kozepre alul. Iranytu NINCS tobbe: a szelen ulve a paszpartu
-        # levagta, az exploded-ben pedig egy elszakadt "S" betu lebegett a keret
-        # alatt - a reviewer 3 korben jelolt hibat rajta, torolve biztonsagosabb.
+        for name, x, y, hgt, rot in labels:
+            emit_text(name, x, y, hgt, rot=rot)
         emit_text("WORLD MAP", a.width / 2, a.margin * 0.35 + 2.1, 4.2, sw="0.1")
         txt.append("</svg>")
         (out / "engrave_labels.svg").write_text("\n".join(txt))
         dxf = ["0", "SECTION", "2", "ENTITIES"]
         # a vago-DXF minden Y-t H-y alakban ir - a cimkeknek is igy kell,
         # kulonben fuggolegesen tukrozve gravirozodnanak (codex merte ki)
-        for name, x, y, hgt in labels + [("WORLD MAP", a.width/2, H - a.margin*0.35, 4.2)]:
+        for name, x, y, hgt, rot in labels + [("WORLD MAP", a.width/2, H - a.margin*0.35, 4.2, 0.0)]:
             dxf += ["0", "TEXT", "8", "0", "10", f"{x:.3f}", "20", f"{y:.3f}",
-                    "40", f"{hgt:.3f}", "72", "1", "11", f"{x:.3f}", "21", f"{y:.3f}",
-                    "1", name]
+                    "40", f"{hgt:.3f}", "50", f"{rot:.1f}", "72", "1",
+                    "11", f"{x:.3f}", "21", f"{y:.3f}", "1", name]
         dxf += ["0", "ENDSEC", "0", "EOF"]
         (out / "engrave_labels.dxf").write_text("\n".join(dxf))
         print(f"[i] gravírozott nevek: {len(labels)} ország + címtábla")

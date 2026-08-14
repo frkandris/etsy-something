@@ -196,3 +196,99 @@ def drop_specks(geom, min_area):
         holes = [r for r in p.interiors if Polygon(r).area >= min_area]
         keep.append(Polygon(p.exterior, holes))
     return (unary_union(keep) if keep else None), dropped
+
+
+# --- EGY LAPBOL VAGOTT MU: osszefuggoseg -----------------------------------
+# Reteges terméknél a keretet nem ero sziget eldobhato, mert a mogotte levo
+# lapon ott az anyag (lasd 02_trace.py --connected). EGY lapbol vagott munal
+# ez nem jarhato: ott a darabokat OSSZE KELL KOTNI, kulonben a vago asztalarol
+# kulon darabokban jon le. Ez az a kepesseg, ami a reteges lancokbol hianyzik.
+
+def components(geom, min_area=0.0):
+    """A geometria kulonallo darabjai, terulet szerint csokkenoen."""
+    ps = [p for p in polys(geom) if p.area >= min_area]
+    return sorted(ps, key=lambda p: p.area, reverse=True)
+
+
+def bridge_components(geom, width=2.5, min_area=0.0, anchor=None,
+                      max_span=None, min_web=MIN_WEB):
+    """A kulonallo darabokat EGY osszefuggo darabba koti hidakkal.
+
+    Minimalis feszitofa a darabok kozott: minden lepesben a mar osszekotott
+    halmazhoz LEGKOZELEBBI meg szabad darabot kotjuk be, a ket legkozelebbi
+    pontjuk kozott huzott `width` szeles hiddal. Igy a hidak ossz-hossza kicsi,
+    es nincs felesleges kereszt-kotes.
+
+    anchor    -- ha meg van adva (pl. keretgyuru), ez a kiindulo halmaz, tehat
+                 minden darab hozza kapcsolodik, nem csak egymashoz
+    max_span  -- ennel tavolabbi darabot nem kot be (a tul hosszu hid csunya);
+                 az ilyen darab kimarad, es a hivo dolga eldonteni, mi legyen
+                 vele. A visszaadott masodik ertek ezek listaja.
+
+    Visszaad: (osszekotott_geometria, be_nem_kotott_darabok)
+    """
+    parts = components(geom, min_area)
+    if not parts:
+        return geom, []
+    from shapely.ops import nearest_points
+
+    if anchor is not None:
+        joined, free = [anchor], list(parts)
+    else:
+        joined, free = [parts[0]], list(parts[1:])
+    bridges, orphans = [], []
+
+    while free:
+        best = None
+        for i, p in enumerate(free):
+            for q in joined:
+                d = p.distance(q)
+                if best is None or d < best[0]:
+                    best = (d, i, q)
+        d, i, q = best
+        p = free.pop(i)
+        if max_span is not None and d > max_span:
+            orphans.append(p)
+            continue
+        if d > 1e-9:
+            a, b = nearest_points(p, q)
+            from shapely.geometry import LineString
+            # A hid NYULJON BELE mindket darabba. A puszta vegpont-erintes
+            # (lapos sapka) nem olvad ossze; a kerek sapka width/2-vel tulnyul,
+            # de a nyak-detektor erozioja a gorbult csatlakozasnal meg atvagja.
+            # Merve: 2,5 mm-es hid MIN_WEB=2,0 mellett meg nyaknak szamit,
+            # 3,0 mm-es mar nem. Fix tulnyulassal a szelesseg szabadon valhat.
+            dx, dy = b.x - a.x, b.y - a.y
+            ln = math.hypot(dx, dy) or 1.0
+            ov = max(width, min_web)          # ennyivel er bele mindket oldalon
+            a2 = (a.x - dx / ln * ov, a.y - dy / ln * ov)
+            b2 = (b.x + dx / ln * ov, b.y + dy / ln * ov)
+            bridges.append(LineString([a2, b2]).buffer(width / 2, cap_style=2))
+        joined.append(p)
+
+    keep = [p for p in joined if anchor is None or p is not anchor]
+    return unary_union(keep + bridges).buffer(0), orphans
+
+
+def graticule(panel, step_mm, width=1.2, origin=(0.0, 0.0)):
+    """Szelessegi/hosszusagi racs anyagcsikokkent a panelen belul.
+
+    Egy lapbol vagott terkepnel ez a legelegansabb osszekoto halo: egyszerre
+    dekoracio es szerkezet - a kontinensek a racson keresztul fuggenek ossze,
+    nem kell kulon hidat rajzolni.
+    """
+    from shapely.geometry import LineString
+    mnx, mny, mxx, mxy = panel.bounds
+    lines = []
+    x = origin[0] + math.ceil((mnx - origin[0]) / step_mm) * step_mm
+    while x <= mxx:
+        lines.append(LineString([(x, mny), (x, mxy)]))
+        x += step_mm
+    y = origin[1] + math.ceil((mny - origin[1]) / step_mm) * step_mm
+    while y <= mxy:
+        lines.append(LineString([(mnx, y), (mxx, y)]))
+        y += step_mm
+    if not lines:
+        return None
+    web = unary_union([ln.buffer(width / 2, cap_style=2) for ln in lines])
+    return web.intersection(panel).buffer(0)

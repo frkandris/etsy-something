@@ -61,7 +61,22 @@ def _pf(key, default, flag=None, cast=None):
 STUDIO_BG = _pf("studio_bg", False, "--studio-bg")    # plate: tomor hatter+padlo.
                                       # Nelkule atlatszo, mert a 04_composite
                                       # az alfabol szamol bbox-ot es arnyekot.
-MIXED_WOOD = _pf("mixed_wood", False, "--mixed-wood")  # valtakozo fatonusok
+MIXED_WOOD = _pf("mixed_wood", False, "--mixed-wood")
+# A referencia HET makrot ad kulonbozo zonakrol. Egy elnevezett beallitas-
+# keszlet, hogy a sorozat egyetlen ciklusbol kijojjon.
+MACRO_SHOT = _pf("macro_shot", "eye", "--macro-shot")
+MACRO_SHOTS = {
+    # nev: (cel_x_arany, cel_y_arany, tavolsag_szorzo, yaw, emeles)
+    "eye":     (0.42, 0.60, 0.46, -0.55, 0.18),
+    # 0.42 + -0.40 yaw: a kamera a geometrian BELULRE kerult
+    "nose":    (0.50, 0.34, 0.62, -0.22, 0.12),
+    "brow":    (0.50, 0.70, 0.52, -0.28, 0.30),
+    "ear":     (0.24, 0.84, 0.50, -0.62, 0.22),
+    # 0.95 tul tavoli volt: az egesz fej belefert, nem zona-kozeli
+    "profile": (0.46, 0.52, 0.60, -1.30, 0.04),
+    "ruff":    (0.50, 0.20, 0.55, -0.50, 0.18),
+    "quarter": (0.58, 0.56, 0.85, -0.80, 0.26),
+}  # valtakozo fatonusok
 FRAME_W = _pf("frame_width", 0.085, "--frame-width", float)
 EXPLODE = _pf("explode", "fan", "--explode")           # fan | standing
 ROOM = _pf("room", "shelf", "--room")                  # shelf | sideboard
@@ -107,7 +122,8 @@ for i, a in enumerate(argv):
     if a in ("--profile", "--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
              "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom",
              "--props", "--palette-file", "--dark-frame", "--engrave",
-             "--studio-bg", "--mixed-wood", "--dark-bg", "--frame-width", "--explode",
+             "--studio-bg", "--mixed-wood", "--dark-bg", "--macro-shot",
+             "--frame-width", "--explode",
              "--room", "--canvas"):
         skip.add(i)
         # "--flag true/false" alaknal az erteket is ki kell szurni
@@ -115,7 +131,8 @@ for i, a in enumerate(argv):
                 and argv[i + 1].lower() in ("true", "false", "0", "1"):
             skip.add(i + 1)
         if a in ("--profile", "--orbit", "--scene", "--scene-zoom", "--props", "--palette-file",
-                 "--frame-width", "--explode", "--room", "--canvas"):
+                 "--frame-width", "--explode", "--room", "--canvas",
+                 "--macro-shot"):
             skip.add(i + 1)
 argv = [a for i, a in enumerate(argv) if i not in skip]
 SRC = pathlib.Path(argv[0])
@@ -1316,13 +1333,18 @@ elif VIEW == "macro":
     _mb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS])
     _mw = max(q.x for q in _mb) - min(q.x for q in _mb)
     _mh = max(q.z for q in _mb) - min(q.z for q in _mb)
-    _mcz = min(q.z for q in _mb) + _mh * 0.62
+    _tx, _ty, _dm, _yaw, _elev = MACRO_SHOTS.get(MACRO_SHOT, MACRO_SHOTS["eye"])
+    _mx0, _mz0 = min(q.x for q in _mb), min(q.z for q in _mb)
+    _my = (min(q.y for q in _mb) + max(q.y for q in _mb)) / 2
+    # A ZONA kozeppontja a celpont, es ez kerul a kep kozepere. Az elso
+    # valtozat y=0-ra celzott a tenyleges bbox-kozep helyett, ezert csusztak
+    # el a kepek; a 1.05-1.70-es tavolsagok pedig teljes fejet adtak, nem
+    # zona-kozelit. A referencia makroi a fej szelessegenek 0,4-0,8-at fogjak.
+    _cx4, _mcz = _mx0 + _mw * _tx, _mz0 + _mh * _ty
     LENS = 50.0
-    # 0.52 felismerhetetlenul kozel volt: a referencia makroi a fej
-    # EGY-EGY zonajat mutatjak (ful+szem), nem egy nevtelen reszletet
-    D = _mw * LENS / 36.0 * 1.35
+    D = _mw * LENS / 36.0 * _dm
     import mathutils as _mu4
-    loc = (-D * 0.62, -D * 0.72, _mcz + D * 0.20)
+    loc = (_cx4 + D * _yaw, _my - D * 0.72, _mcz + D * _elev)
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
     cam.data.lens = LENS
@@ -1330,9 +1352,9 @@ elif VIEW == "macro":
     cam.data.dof.focus_distance = D
     cam.data.dof.aperture_fstop = 9.0   # 3.5 az egesz kepet elmosta
     cam.rotation_euler = _mu4.Vector(
-        (0 - loc[0], 0 - loc[1], _mcz - loc[2])).to_track_quat('-Z', 'Y').to_euler()
+        (_cx4 - loc[0], _my - loc[1], _mcz - loc[2])).to_track_quat('-Z', 'Y').to_euler()
     scene.camera = cam
-    print(f"[render] nezet=macro tavolsag={D:.3f}")
+    print(f"[render] nezet=macro/{MACRO_SHOT} tavolsag={D:.3f}")
 elif VIEW == "wall":
     # frontalis, a mu tenyleges bboxara illesztve. Nincs keret, tehat a MARGIN
     # keret-korrekcioja nem ervenyes - a darabok maguk a mu.

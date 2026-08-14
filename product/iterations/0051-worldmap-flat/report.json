@@ -4,17 +4,17 @@
   649.3
  ],
  "darabok": 76,
- "csempezve": 83,
+ "csempezve": 84,
  "legnagyobb_darab_mm": [
-  283.3,
+  283.7,
   180.1
  ],
  "max_engedett_mm": [
   330.0,
   280.0
  ],
- "nyakak": 9,
- "karcolt_hatar_mm": 8580.3,
+ "nyakak": 0,
+ "karcolt_hatar_mm": 9328.4,
  "gravirozott_nevek": 144,
  "kimaradt_orszagok": [
   {

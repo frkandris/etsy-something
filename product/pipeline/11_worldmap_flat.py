@@ -32,7 +32,8 @@ from shapely.geometry import MultiLineString
 from shapely.ops import unary_union
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from cutlib import (components, necks, polys, snap,  # noqa: E402
+from cutlib import (components, heal_to_convergence, necks,  # noqa: E402
+                    polys, snap,
                     text_paths, text_width, tile_piece, widest_inscribed)
 from geolib import fetch, project  # noqa: E402
 from shapely import affinity, make_valid  # noqa: E402
@@ -70,6 +71,10 @@ def main():
     ap.add_argument("--simplify", type=float, default=0.25)
     ap.add_argument("--label-h", type=float, default=4.0, help="mm betumagassag")
     ap.add_argument("--no-labels", action="store_true")
+    ap.add_argument("--no-heal", dest="heal", action="store_false",
+                    help="ne gyogyitsa a vekony nyakakat (alapbol gyogyit)")
+    ap.add_argument("--min-web", type=float, default=2.0,
+                    help="mm — a lezer altal elviselt legkeskenyebb anyag")
     a = ap.parse_args()
 
     lat_min, lat_max = (float(v) for v in a.lat.split(","))
@@ -119,6 +124,7 @@ def main():
 
     # ---- darabok: kontinensenkent, komponensekre bontva -----------------
     lost = []            # (orszagnev, terulet) — a hard-floor alatt
+    healed = []          # (kontinens, nyak_elotte, nyak_utana)
     pieces = []          # (kontinens, index, geometria)
     scores = []          # (kontinens, index, hatarvonalak a darabon belul)
     labels = []          # (nev, x, y, magassag)
@@ -162,6 +168,17 @@ def main():
             p = p.simplify(a.simplify).buffer(0)
             if p.is_empty:
                 continue
+            # NYAK-GYOGYITAS. Reteges terméknél a vekony nyak esztetikai kerdes
+            # (a mogotte levo lapon ott az anyag), EGYRETEGU fadarabnal viszont
+            # toresveszely: merve Panama, a Malaj-felsziget es Sulawesi karjai
+            # mennek MIN_WEB ala. A gyogyitas lokalis - csak a nyak-zonat
+            # szelesiti -, es konvergenciaig iteral, mert egy kor nem eleg.
+            p_raw = p          # a gyogyitas ELOTTI perem - a karcolas ehhez mer
+            if a.heal:
+                n0 = necks(p)
+                if n0:
+                    p = heal_to_convergence(p, min_web=a.min_web)
+                    healed.append((cont, n0, necks(p)))
             pieces.append((cont, i, p))
             # KARCOLT orszaghatarok: a darabon BELULI hatarok. A kulso
             # kontur mar vagas, azt le kell vonni, kulonben ketszer megy rajta
@@ -179,7 +196,12 @@ def main():
                 # GEOS "side location conflict": a bevalt javitas mindket
                 # operandus racsra kerekitese - ez a sor maradt ki belole.
                 try:
-                    b = snap(gi.boundary).difference(snap(p.boundary.buffer(0.35)))
+                    # A levonas a GYOGYITAS ELOTTI peremhez mer: a gyogyitas
+                    # elmozditja a kontur egy reszet, es akkor a partvonal mar
+                    # nem esik egybe a kulso hatarral - a karcolt hossz 8580-rol
+                    # 18589 mm-re ugrott, vagyis a gep a mar KIVAGOTT konturt is
+                    # vegigkarcolta volna.
+                    b = snap(gi.boundary).difference(snap(p_raw.boundary.buffer(0.35)))
                 except Exception as exc:                       # noqa: BLE001
                     print(f"[!] {n}: karcolt hatar kihagyva ({exc.__class__.__name__})")
                     b = None
@@ -217,6 +239,10 @@ def main():
             oversize += 1
         for q, (r, c) in zones:
             tiled.append((cont, i, q, (r, c), len(zones) > 1))
+    if healed:
+        _b = sum(h[1] for h in healed)
+        _a2 = sum(h[2] for h in healed)
+        print(f"[i] nyak-gyogyitas: {_b} -> {_a2} ({len(healed)} darabon)")
     print(f"[i] darabok: {len(pieces)} -> csempezve {len(tiled)} "
           f"({oversize} darab volt tul nagy)")
 

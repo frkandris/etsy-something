@@ -34,6 +34,8 @@ for _i, _a in enumerate(argv):
         PROP_SET = argv[_i + 1]
     if _a == "--palette-file" and _i + 1 < len(argv):
         PALETTE_FILE = argv[_i + 1]
+DARK_FRAME = "--dark-frame" in argv
+ENGRAVE = "--engrave" in argv
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
 for i, a in enumerate(argv):
@@ -50,7 +52,7 @@ skip = set()
 for i, a in enumerate(argv):
     if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
              "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom",
-             "--props", "--palette-file"):
+             "--props", "--palette-file", "--dark-frame", "--engrave"):
         skip.add(i)
         if a in ("--orbit", "--scene", "--scene-zoom", "--props", "--palette-file"):
             skip.add(i + 1)
@@ -95,7 +97,9 @@ for _k, _v in (("taa_render_samples", 96), ("use_gtao", True),
         pass
 scene.render.resolution_x = 2000
 scene.render.resolution_y = 2000
-scene.render.film_transparent = (VIEW == "plate")
+# plate: kordbban atlatszo volt (kompozit-cel), de sotet nezegetoben feketenek
+# renderelodott, es a reviewer render-szagunak jelolte - studio-hatter lett
+scene.render.film_transparent = False
 scene.view_settings.look = "AgX - Base Contrast"
 scene.view_settings.exposure = -0.05
 if VIEW == "plate":
@@ -166,11 +170,14 @@ PALETTES = {
     # navy-dominans elso valtozat tul sotet volt mellette.
     # A reviewer P1-e: a melyviz ne kozelitsen feketehez - vilagos-kek rampa,
     # a fa szarazfold adja a kontrasztot
-    "bathy": [(0.115, 0.220, 0.320, 1),   # 6000 m
-              (0.185, 0.330, 0.450, 1),   # 4000 m
-              (0.300, 0.470, 0.590, 1),   # 2000 m
-              (0.460, 0.630, 0.730, 1),   # 1000 m
-              (0.660, 0.800, 0.870, 1),   # 200 m: halvany self
+    # 7 szin, mert a ripple-keszlet 5 sav + szarazfold + hatlap = 7 lap - a
+    # 6 szinu valtozatnal a ramp a felso savra dio-kek keverek szint adott
+    "bathy": [(0.115, 0.220, 0.320, 1),   # legmelyebb / hatlap
+              (0.185, 0.330, 0.450, 1),
+              (0.300, 0.470, 0.590, 1),
+              (0.460, 0.630, 0.730, 1),
+              (0.660, 0.800, 0.870, 1),
+              (0.820, 0.900, 0.940, 1),   # parti sav: majdnem feher
               (0.430, 0.255, 0.110, 1)],  # szárazföld: dió
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
@@ -379,14 +386,23 @@ import mathutils
 
 
 def world_bbox(objects):
-    """True world-space bounds. o.bound_box is the UNEVALUATED cage: for curves
-    with extrude/bevel it lags behind, and the frame built from it opened 1.8x
-    too wide. Only the evaluated depsgraph copy is correct."""
+    """True world-space bounds. o.bound_box is the UNEVALUATED cage, es meg az
+    evaluated masolate is hazudik az SVG-importalt gorbeknel: a 0.4 egyseges
+    lapok ±1.2-es dobozt jelentettek, ami az exploded kamerat es a styled
+    ultetest is elvitte. A tesszellalt to_mesh() csucsok az egyetlen igazsag."""
     dg = bpy.context.evaluated_depsgraph_get()
     pts = []
     for o in objects:
         oe = o.evaluated_get(dg)
-        pts += [oe.matrix_world @ mathutils.Vector(c) for c in oe.bound_box]
+        try:
+            me = oe.to_mesh()
+        except RuntimeError:
+            me = None
+        if me is not None and len(me.vertices):
+            pts += [oe.matrix_world @ v.co for v in me.vertices]
+            oe.to_mesh_clear()
+        else:
+            pts += [oe.matrix_world @ mathutils.Vector(c) for c in oe.bound_box]
     return pts
 
 
@@ -532,9 +548,11 @@ PROP_SETS = {
     # Two behind and blurred, two in FRONT of the frame's plane and cut by the
     # picture edge - that front pair is what the reference uses to sell depth,
     # and a prop that is only ever behind cannot do it.
+    # a vaza 0.94-nel pont a kepszelen vagodott le (reviewer P3) - beljebb;
+    # a kosar elorebb es nagyobb, hogy legyen melysegi horgony az eloterben
     "warm": [("potted_plant_02",          (-0.92,  0.55, 0.0),  25, 0.62),
-             ("antique_ceramic_vase_01",  ( 0.94,  0.45, 0.0), -15, 0.58),
-             ("wicker_basket_01",         ( 0.86, -0.85, 0.0),  30, 0.50),
+             ("antique_ceramic_vase_01",  ( 0.76,  0.50, 0.0), -15, 0.58),
+             ("wicker_basket_01",         ( 0.72, -0.95, 0.0),  30, 0.58),
              ("wooden_candlestick",       (-0.84, -0.80, 0.0),   0, 0.55)],
 }
 
@@ -621,7 +639,8 @@ if FRAME:
     # Light oak, not walnut. The reference frame is a pale, warm, visibly
     # grained oak; the near-black walnut swallowed the corner light and made
     # the whole listing read heavy.
-    fc = (0.318, 0.170, 0.068, 1) if WOODFRAME else (0.94, 0.933, 0.920, 1)
+    fc = ((0.115, 0.052, 0.022, 1) if DARK_FRAME else (0.318, 0.170, 0.068, 1)) \
+        if WOODFRAME else (0.94, 0.933, 0.920, 1)
     # A flat matte plane reads as plastic. Real frame stock has grain running
     # one way, a slight sheen, and a bevel that catches a warm highlight.
     _fmat = wood("frame", fc, 0.34 if WOODFRAME else 0.42, grain=WOODFRAME)
@@ -632,10 +651,14 @@ if FRAME:
     # inner bevel: a thin lighter lip around the opening
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd - fd * 0.06))
     _lip = bpy.context.object
-    _lip.scale = ((inner + fw * 0.16) * 2 * AX, (inner + fw * 0.16) * 2 * AY, fd * 0.12)
+    # a gyuru vastagsaga legyen egyenletes (fw*0.16): a kulso meret AX/AY-
+    # szorzasa a vizszintes szakaszokat fele olyan vastagra nyomta (codex)
+    _lip.scale = ((inner * AX + fw * 0.16) * 2, (inner * AY + fw * 0.16) * 2, fd * 0.12)
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, fd))
     _lh = bpy.context.object
-    _lh.scale = (inner * 2, inner * 2, fd)
+    # a lyukat is AX/AY szerint: a negyzetes lyuk a 2:1-es müböl kivagta a lip
+    # vizszintes szakaszait, es csak ket fuggoleges csik maradt a nyilas szelein
+    _lh.scale = (inner * 2 * AX, inner * 2 * AY, fd)
     _bm2 = _lip.modifiers.new("cut", "BOOLEAN")
     _bm2.operation = "DIFFERENCE"; _bm2.object = _lh
     bpy.context.view_layer.objects.active = _lip
@@ -653,6 +676,67 @@ if FRAME:
     print(f"[render] mu={ART:.4f} keret-nyilas={inner*2:.4f} "
           f"kitoltes={ART/(inner*2)*100:.0f}%")
     FRAME_OBJS.append(shell)
+
+# A frissen importalt gravir-gorbek bound_box-a hamis (a world_bbox docstringje
+# pont erre int) - a keszlet 2.3 egyseg szelesnek merte magat a 0.4-es muvon.
+# Ezert MINDEN bbox-alapu szamitasbol (kamera-illesztes, asztalra ultetes)
+# kizarjuk oket; a tenyleges kiterjedesuk ugyis a retegeken belul van.
+ENGRAVE_OBJS = []
+# shelf: a mu mar az import elott 84 fokkal elfordult, a gravir laposan a
+# levegoben maradna - ott egyszeruen nincs overlay (codex)
+if ENGRAVE and VIEW != "shelf" and (SRC / "engrave_labels.svg").exists():
+    _n_before = set(bpy.data.objects)
+    bpy.ops.import_curve.svg(filepath=str(SRC / "engrave_labels.svg"))
+    _eng = [o for o in bpy.data.objects if o not in _n_before and o.type == "CURVE"]
+    _zt = max(o.location.z for o in objs) + THICK * 1.05
+    # sotetebb es vastagabb, mint az elso valtozat: a 0.16-os barna + 0.15 mm-es
+    # extrude a plate tavolsagabol olvashatatlan volt (reviewer P1)
+    _em = wood("engrave", (0.085, 0.042, 0.020, 1), 0.75, grain=False)
+    for o in _eng:
+        # A retegek origojat az origin_set attette a sajat bbox-kozepukre, ezert
+        # az objs[0].location masolasa a cimkeket a terben szorta szet. A helyes
+        # igazitas ugyanaz az eltolas, amit a retegek kaptak: (-cx, -cy). A
+        # lepteket nem kell allitani - azonos viewBox, azonos importer-skala.
+        o.location.x -= cx
+        o.location.y -= cy
+        o.location.z = _zt
+        if FRAME and not RECESSED:
+            # a nem-sullyesztett keret 0.72-re zsugoritja a muvet - a gravirt
+            # ugyanugy kell, kulonben tulmeretes es elcsuszott (codex)
+            o.scale = tuple(c * 0.72 for c in o.scale)
+            o.location.x *= 0.72
+            o.location.y *= 0.72
+        o.data.extrude = 0.00015
+        if o.data.materials:
+            o.data.materials[0] = _em
+        else:
+            o.data.materials.append(_em)
+        objs.append(o)
+        ENGRAVE_OBJS.append(o)
+    # Minden gorbe a SAJAT alatta levo feluletere uljon, ne a globalis stack-
+    # tetore: a cim az also margosavban ~15 mm-rel a hatlap ELOTT lebegett, es
+    # a vetett arnyeka masodik, elmosott feliratkent jelent meg (reviewer,
+    # styled). Sugarvetes lefele, a keret- es gravir-objektumokat atugorva.
+    bpy.context.view_layer.update()
+    _dg = bpy.context.evaluated_depsgraph_get()
+    import mathutils as _mu2
+    for o in _eng:
+        _b = world_bbox([o])
+        _cx0 = (min(q.x for q in _b) + max(q.x for q in _b)) / 2
+        _cy0 = (min(q.y for q in _b) + max(q.y for q in _b)) / 2
+        _orig = _mu2.Vector((_cx0, _cy0, _zt + 0.5))
+        for _ in range(6):
+            _ok, _loc, _n, _i, _obj, _mw = scene.ray_cast(
+                _dg, _orig, _mu2.Vector((0, 0, -1)))
+            if not _ok:
+                break
+            _oo = getattr(_obj, "original", _obj)
+            if _oo in ENGRAVE_OBJS or _oo in FRAME_OBJS:
+                _orig = _loc + _mu2.Vector((0, 0, -0.0005))
+                continue
+            o.location.z = _loc.z + 0.0004
+            break
+    print(f"[render] gravir-overlay: {len(_eng)} gorbe")
 
 if VIEW == "styled":
     # A real room built from CC0 geometry, lit by an HDRI. The point is the
@@ -684,6 +768,15 @@ if VIEW == "styled":
         o.rotation_euler = (math.radians(90), 0, 0)
         ox, oy, oz = o.location.x, o.location.y, o.location.z
         o.location = (ox, -oz, oy + SIZE * 0.60)
+    # a 0.60*SIZE emeles negyzetes mure volt merve; a 2:1-es terkep fele olyan
+    # magas, ezert a keret az asztal FOLOTT lebegett. Ules a tenyleges also
+    # pontrol, ne a feltetelezett magassagbol.
+    bpy.context.view_layer.update()
+    _wb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)
+    _zmin = min(q.z for q in _wb)
+    print(f"[render] styled ules: zmin={_zmin:.4f}")
+    for o in objs + FRAME_OBJS:
+        o.location.z -= _zmin
 
     # the surface everything stands on
     # runs well past the camera so its front edge never enters frame - a visible
@@ -715,6 +808,7 @@ if VIEW == "styled":
     for name, loc, rz, sc in PROP_SETS.get(PROP_SET, PROP_SETS["warm"]):
         bring(name, loc, rot_z=rz, scale=sc)
 
+
 if VIEW == "exploded":
     # The reference listing's best-converting gallery image: the sheets fanned
     # apart so the buyer SEES that they are buying six separate layers.
@@ -732,14 +826,36 @@ if VIEW == "exploded":
             bpy.data.objects.remove(o, do_unlink=True)
         elif o.dimensions.z > THICK * 4:
             o.scale.z *= (THICK * 2.5) / o.dimensions.z
-    nmax = len(objs)
+    # a lapok szama a fajlokbol, ne az objektumszambol: a gravir-gorbekkel
+    # egyutt a keret a 230. legyezo-poziciora repult (codex)
+    nmax = len(svgs)
+    for o in objs:
+        if o not in ENGRAVE_OBJS:
+            # a lapel latszodjon fa-vastagsagunak, ne papirnak (reviewer P2)
+            o.data.extrude *= 2.0
     for o in objs + FRAME_OBJS:
-        k = o.location.z / max(1e-9, THICK + GAP)      # hanyadik lap
+        k = kx = o.location.z / max(1e-9, THICK + GAP)  # hanyadik lap
         if o in FRAME_OBJS:
-            k = nmax + 1.6                              # a keret a legyezo vegen
-        o.location.x += k * SIZE * 0.105
-        o.location.y -= k * SIZE * 0.012
+            # a keret NE fusson tovabb oldalra: a felso lap folott lebeg,
+            # ugyanazon a tengelyen - a legyezo vegen kulon uszo keret
+            # "leszakadt elemkent" olvasodott (reviewer P1)
+            kx = nmax - 1
+            k = nmax + 1.4
+        elif o in ENGRAVE_OBJS:
+            # a gravir a felso lappal utazzon; a _zt-bol szamolt k majdnem egy
+            # teljes legyezo-lepessel elcsusztatta (codex)
+            k = kx = nmax - 1 + 0.18
+        o.location.x += kx * SIZE * 0.105
+        o.location.y -= kx * SIZE * 0.012
         o.location.z = k * SIZE * 0.046
+    # padlo + kontakt-arnyek: a legyezo ne lebegjen szurke urben (reviewer P1).
+    # A nev alapjan zarjuk ki a kamera-illesztesbol.
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 12,
+                                     location=(SIZE * 0.4, 0, -SIZE * 0.07))
+    _fl = bpy.context.object
+    _fl.name = "expl_floor"
+    _fl.data.materials.append(wood("expl_floor", (0.93, 0.92, 0.90, 1), 0.9,
+                                   grain=False))
     # feher vakolatra kerul, mint a referencian - az atlatszo hatter itt
     # feketenek renderelodik minden sotet nezegoteben
     scene.render.film_transparent = False
@@ -747,9 +863,22 @@ if VIEW == "exploded":
 if VIEW == "plate":
     # stand the piece up, nothing else in the scene
     for o in objs + FRAME_OBJS:
-        o.rotation_euler = (math.radians(88), 0, 0)
+        # pontosan 90: a 88 fok es a 90 fokos pozicio-atkepzes kozti elteres
+        # melysegben elnyelte a 0,2 mm-es gravir-rest, es a cimkek a lap moge
+        # sullyedtek a kep nagy reszen
+        o.rotation_euler = (math.radians(90), 0, 0)
         ox, oy, oz = o.location.x, o.location.y, o.location.z
         o.location = (ox, -oz, oy)
+    # ultetes a padlora + vilagos padlolap: a darab alljon valahol, ne
+    # lebegjen fekete urben (reviewer P3)
+    bpy.context.view_layer.update()
+    _pb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)
+    _pzmin = min(q.z for q in _pb)
+    for o in objs + FRAME_OBJS:
+        o.location.z -= _pzmin
+    bpy.ops.mesh.primitive_plane_add(size=SIZE * 8, location=(0, -SIZE * 0.5, -0.0004))
+    bpy.context.object.data.materials.append(
+        wood("studio_floor", (0.90, 0.885, 0.862, 1), 0.85, grain=False))
 
 if VIEW == "lifestyle":
     # A warm styled shelf with out-of-focus props. The winning listings put the
@@ -841,14 +970,17 @@ if FRAME:
 if VIEW == "exploded":
     # aim at the fan's true centre - a guessed rotation left the subject in a
     # corner of a mostly empty frame
-    _pts = world_bbox([o for o in bpy.data.objects if o.type in ("CURVE", "MESH")])
+    _pts = world_bbox([o for o in bpy.data.objects if o.type in ("CURVE", "MESH")
+                       and o not in ENGRAVE_OBJS and o.name != "expl_floor"])
     cx = (min(q.x for q in _pts) + max(q.x for q in _pts)) / 2
     cy = (min(q.y for q in _pts) + max(q.y for q in _pts)) / 2
     cz = (min(q.z for q in _pts) + max(q.z for q in _pts)) / 2
     ext = max(max(q.x for q in _pts) - min(q.x for q in _pts),
               max(q.z for q in _pts) - min(q.z for q in _pts))
-    D = ext * 1.9
-    loc = (cx - D * 0.10, cy - D * 0.80, cz + D * 0.62)
+    # 2.2 keves volt 85 mm-en (a szelso lapok levagodtak - codex), a 2.7 tul
+    # sok (a stack a vaszon ~55%-at toltotte ki - reviewer). 2.45: ~75% kitoltes.
+    D = ext * 2.2
+    loc = (cx - D * 0.08, cy - D * 0.78, cz + D * 0.60)
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
     cam.data.lens = LENS
@@ -858,12 +990,18 @@ if VIEW == "exploded":
     scene.camera = cam
     print(f"[render] nezet=exploded kozeppont=({cx:.2f},{cy:.2f},{cz:.2f})")
 elif VIEW == "styled":
-    D = SIZE * MARGIN * LENS / 36.0 * SCENE_ZOOM
-    # aim at the artwork's centre rather than picking a tilt by hand. A fixed
-    # tilt left half the picture as bare tabletop; aiming keeps the piece
-    # centred whatever the zoom, so zoom stays a free dial.
-    TGT = SIZE * 0.62
-    camz = SIZE * 1.05
+    # A fix 0.62*SIZE celmagassag negyzetes mure volt merve; a 2:1-es terkep
+    # kozepe ~0.20-nal van, es a kep felso fele ures fal maradt (reviewer P1,
+    # codex). Illesszuk a kamerat a TENYLEGES keret-bboxra: a keret toltse ki
+    # a magassag ~65-75%-at.
+    bpy.context.view_layer.update()
+    _fb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)
+    _fW = max(q.x for q in _fb) - min(q.x for q in _fb)
+    _fH = max(q.z for q in _fb) - min(q.z for q in _fb)
+    _fcz = (min(q.z for q in _fb) + max(q.z for q in _fb)) / 2
+    D = max(_fW * LENS / 36.0 / 0.74, _fH * LENS / 24.0 / 0.62) * SCENE_ZOOM
+    TGT = _fcz
+    camz = _fcz + _fH * 0.28
     bpy.ops.object.camera_add(location=(0, -D, camz),
                               rotation=(math.atan2(D, camz - TGT), 0, 0))
     cam = bpy.context.object
@@ -874,8 +1012,14 @@ elif VIEW == "styled":
     scene.camera = cam
     print(f"[render] nezet=styled tavolsag={D:.3f}")
 elif VIEW == "plate":
-    D = SIZE * MARGIN * LENS / 36.0 * 1.0
-    bpy.ops.object.camera_add(location=(0, -D, 0), rotation=(math.radians(90), 0, 0))
+    # 0.78: a keret a vaszon ~85%-at toltse ki - az 1.0-s szorzoval a kep fele
+    # ures fal es padlo volt (reviewer P1)
+    D = SIZE * MARGIN * LENS / 36.0 * 0.78
+    # a darab mar a padlon ul, a kozepe nem z=0 - oda celozzunk
+    bpy.context.view_layer.update()
+    _pc = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)
+    _pcz = (min(q.z for q in _pc) + max(q.z for q in _pc)) / 2
+    bpy.ops.object.camera_add(location=(0, -D, _pcz), rotation=(math.radians(90), 0, 0))
     cam = bpy.context.object
     cam.data.lens = LENS
     scene.camera = cam
@@ -961,6 +1105,10 @@ if SCENE_HDRI:
 if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
+elif VIEW == "plate":
+    # vilagos studio-hatter: a darab alljon fenyben, ne fekete urben
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.94, 0.93, 0.915, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 1.15
 elif VIEW != "exploded":
     # Ez a sotet alap-hatter irta felul csendben az exploded nezet feher
     # vakolat-hatteret is - a debug-lanc (magenta-teszt, objektum-dump) vegen a

@@ -58,6 +58,18 @@ nélkül.
 országokat, és pont a belső határok tűnnek el — az egész réteg 2 mm hosszú lett tőle. Országonként
 véve 2 428 mm.
 
+**A gravír-overlay igazítása nem az objektum-origókon múlik.** A renderelő a rétegek origóját
+áthelyezi (`origin_set` + középre tolás), ezért az `objs[0].location` másolása a címkéket a térben
+szórta szét. A helyes igazítás ugyanaz a `(-cx, -cy)` eltolás, amit a rétegek kaptak — a lépték
+magától stimmel, mert a viewBox közös.
+
+**Az SVG-importált görbék `bound_box`-a hamis — mindegyiké, nem csak a gravíré.** Először a 223
+gravírgörbénél tűnt fel (2,3 egységnek mérték magukat a 0,4 egységes művön), és a kizárásuk
+(`ENGRAVE_OBJS`) elégnek látszott. A következő körben kiderült, hogy a **lapok** görbéi is ±1,2-es
+dobozt jelentenek a valós ±0,2 helyett — az evaluated depsgraph-os másolat sem igaz. Ez mérgezte
+az exploded kamera-illesztését (a mű aprócska lett) és a styled ültetést (a mű a padló alá
+süllyedt). A végleges javítás: a `world_bbox` a görbéket tesszellált `to_mesh()` csúcsokból méri.
+
 **A kimeneti mappát takarítani kell.** Egy korábbi, más `--levels` futás fájljai bennmaradtak, és a
 renderelő egy kevert készletet olvasott be.
 

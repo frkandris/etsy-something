@@ -144,6 +144,40 @@ Do NOT copy its subject, its pose, its frame, its background or its photograph
 quality. Output the FLAT ILLUSTRATION described above, nothing else - no frame,
 no room, no shadow, no photographic lighting."""
 
+RELIEF = """A design for a MULTILAYER RAISED-RELIEF LASER-CUT WALL PORTRAIT,
+drawn as a flat greyscale map of STACKING ZONES.
+
+Subject: {subject}
+
+THE STRUCTURE - THIS IS THE WHOLE POINT.
+The finished object is a stack of {levels} shaped wooden sheets. There is NO
+frame, NO background panel and NO window: the OUTER EDGE OF THE DRAWING IS THE
+SILHOUETTE OF THE SUBJECT ITSELF. The bottom sheet is the full silhouette; each
+sheet above it is a smaller shape sitting ON TOP of the one below, so the piece
+builds FORWARD off the wall and every step casts a shadow.
+
+ZONES, NOT SHADING. Divide the subject into {levels} distinct tones, and let the
+boundaries follow its ANATOMY, not a smooth light gradient:
+- the inner ear, the brow ridge, the eye socket, the muzzle bridge, the cheek
+  ruff, the nose - each is its own flat zone with a clean edge
+- the fur is drawn as GROUPED STRANDS forming a zone edge, never as soft
+  airbrushed shading
+- a zone boundary is a decision about depth, so it must be a crisp line
+
+FLAT SOLID TONES. Every zone is one flat grey. No gradients, no blur, no
+texture, no cross-hatching, no outlines drawn on top. Darkest tone = the
+deepest, largest sheet at the back; lightest tone = the smallest sheet at the
+front.
+
+CUTTABLE. Nothing narrower than a finger anywhere. Every zone is a single
+connected shape that touches the zone below it - no free-floating islands, no
+detached specks, no shape that only exists as a thin line.
+
+COMPOSITION. The head fills at least 80 percent of the picture. Pure white
+background outside the silhouette. Square, centred, no text, no signature, no
+frame, no room, no photographic lighting, no drop shadow."""
+
+
 PROMPT = """A design for LAYERED LASER-CUT WALL ART, drawn as a flat greyscale DEPTH MAP.
 
 Subject: {subject}
@@ -314,7 +348,7 @@ def _multipart(fields, files):
 
 
 def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
-             levels=LEVELS, subject_text=None, name=None, recessed=False, flat=False):
+             levels=LEVELS, subject_text=None, name=None, recessed=False, flat=False, relief=False):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
@@ -322,7 +356,14 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
         subj, fmt = subject_text, "square"
     else:
         subj, fmt = SUBJECTS[subject_key]
-    if flat:
+    if relief:
+        # KIEMELKEDO relief, kontukoveto sziluettel (MagicVectorLaser-tipus).
+        # A FLAT prompt "folyekony szalag / ontott festek" nyelve ide rossz: ott
+        # a keretes, sullyesztett papirvagas a cel. Itt a kulso el MAGA a
+        # sziluett, es a zonahatarok az ANATOMIAT kovetik, nem a tonus-atmenetet.
+        prompt = RELIEF.format(subject=subj, levels=levels)
+        recessed = False
+    elif flat:
         # the model draws the PICTURE, not a plan for one; 01b_depth.py works
         # out which sheet sits in front of which. Asking one model to do both
         # is what kept producing unreadable depth maps.
@@ -394,6 +435,9 @@ if __name__ == "__main__":
                     help="lapos papercut illusztracio (a melyseget 01b_depth.py adja)")
     ap.add_argument("--recessed", action="store_true",
                     help="sullyesztett szerkezet: a mezo a legfelso, legvilagosabb lap")
+    ap.add_argument("--relief", action="store_true",
+                    help="kiemelkedo relief kontukoveto sziluettel, anatomiai "
+                         "zonakkal (nincs keret, nincs hatlap)")
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--n", type=int, default=1)
     ap.add_argument("--levels", type=int, default=LEVELS)
@@ -403,4 +447,4 @@ if __name__ == "__main__":
     a = ap.parse_args()
     crop = tuple(int(v) for v in a.crop.split(",")) if a.crop else None
     generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop, a.levels,
-             a.subject_text, a.name, a.recessed, a.flat)
+             a.subject_text, a.name, a.recessed, a.flat, a.relief)

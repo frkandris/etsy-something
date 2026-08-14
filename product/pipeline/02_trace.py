@@ -499,6 +499,9 @@ def main():
                     help="minden lap teljes negyzet legyen, csak nyilasokkal")
     ap.add_argument("--recessed", action="store_true",
                     help="sullyesztett szerkezet: felul teljes lap, lefele szukulo nyilasok")
+    ap.add_argument("--drop-field", action="store_true",
+                    help="a legvilagosabb szint (a forraskep hattere) NEM lap: "
+                         "kontukoveto reliefnel a kulso el maga a sziluett")
     ap.add_argument("--solid-back", action="store_true",
                     help="a hatlap lyukai kitoltve - tomor hatter a csipke moge, "
                          "ahogy a keretezett shadow boxoknal szokas")
@@ -569,6 +572,21 @@ def main():
                 dropped[k] = drp
     if 1 not in geoms:
         raise SystemExit("az 1. reteg (hatlap) ures - hasznalhatatlan bemenet")
+
+    if a.drop_field:
+        # KONTUKOVETO (kiemelkedo) relief: a forraskep FEHER HATTERE nem lap,
+        # hanem a semmi - a kulso vagasel maga a motivum sziluettje. Merve: a
+        # nemet juhasz forrasan a pixelek 51,5%-a esett a legvilagosabb savba,
+        # es abbol egy krem lekerekitett negyzet-lap lett a kutya mogott.
+        # A mezo eldobasa utan a legnagyobb megmarado szint MAGA a sziluett.
+        if len(geoms) < 2:
+            raise SystemExit("--drop-field: nem maradna reteg")
+        del geoms[1]
+        ks = sorted(geoms)
+        geoms = {i + 1: geoms[k] for i, k in enumerate(ks)}
+        src_level = {i + 1: src_level[k] for i, k in enumerate(ks)}
+        dropped = {i + 1: dropped[k] for i, k in enumerate(ks) if k in dropped}
+        print(f"[i] --drop-field: a mezo eldobva, {len(geoms)} reteg maradt")
 
     # anchor the object at the origin
     minx, miny, maxx, maxy = geoms[1].bounds
@@ -993,12 +1011,15 @@ def main():
               f"{ta*100:>8.2f}%{nk:>6}  {st}")
         rows.append((k, geom, len(pieces), holes, nw, ta))
 
-    # a deliberately merged level is not a missing one
-    if len(geoms) + MERGED < a.levels:
+    # a deliberately merged level is not a missing one - and neither is the
+    # field, ha --drop-field-del SZANDEKOSAN dobtuk el (kontukoveto relief)
+    _expect = a.levels - (1 if a.drop_field else 0)
+    if len(geoms) + MERGED < _expect:
         all_ok = False
-        print(f"[!] {a.levels} szintbol csak {len(geoms) + MERGED} adott reteget")
+        print(f"[!] {_expect} varhato szintbol csak {len(geoms) + MERGED} "
+              f"adott reteget")
     elif MERGED:
-        print(f"[i] {a.levels} kert szintbol {len(geoms)} valodi reteg "
+        print(f"[i] {_expect} varhato szintbol {len(geoms)} valodi reteg "
               f"({MERGED} osszevonva)")
     if not all_ok and not a.draft:
         raise SystemExit("HIBAS RETEG - nem irok ki fajlokat. Reszeredmenyhez: --draft")

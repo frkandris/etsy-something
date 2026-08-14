@@ -232,6 +232,16 @@ PALETTES = {
               (0.420, 0.680, 0.790, 1),
               (0.650, 0.840, 0.900, 1),   # parti sav: halvany cian
               (0.430, 0.255, 0.110, 1)],  # szárazföld: dió (per-spline felulirva)
+    # nemet juhasz: fekete nyereg, tan arc, krem kiemelesek - a referencia
+    # festett, tobbtonusu feluletet ad el, nem naturt fat
+    "shepherd": [(0.045, 0.038, 0.032, 1),   # legalso, legnagyobb lap: antracit
+                 (0.105, 0.078, 0.055, 1),
+                 (0.205, 0.130, 0.070, 1),
+                 (0.330, 0.195, 0.090, 1),
+                 (0.470, 0.290, 0.120, 1),
+                 (0.610, 0.410, 0.180, 1),
+                 (0.760, 0.580, 0.320, 1),
+                 (0.880, 0.790, 0.620, 1)],  # legfelso, legkisebb: krem
     "terrain": [(0.09, 0.16, 0.20, 1), (0.16, 0.26, 0.20, 1), (0.30, 0.34, 0.20, 1),
                 (0.48, 0.40, 0.24, 1), (0.68, 0.58, 0.42, 1), (0.92, 0.90, 0.86, 1),
                 (0.97, 0.97, 0.96, 1)],
@@ -1031,11 +1041,12 @@ if VIEW == "exploded":
     # a keret kulso merete nagyobb a lapoknal: kozepre igazitva az alja lejjebb
     # logott, es "elcsuszott panelnek" olvasodott (reviewer) - also el flush
     bpy.context.view_layer.update()
-    _shb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS])
-    _frb = world_bbox(FRAME_OBJS)
-    _dzf = min(q.z for q in _shb) - min(q.z for q in _frb)
-    for o in FRAME_OBJS:
-        o.location.z += _dzf
+    if FRAME_OBJS:                     # keret nelkuli terméknél nincs mit igazitani
+        _shb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS])
+        _frb = world_bbox(FRAME_OBJS)
+        _dzf = min(q.z for q in _shb) - min(q.z for q in _frb)
+        for o in FRAME_OBJS:
+            o.location.z += _dzf
     # feher "vakolat" padlo lagy kontakt-arnyekkal - a referencia feher urben
     # all, alig lathato arnyekkal
     bpy.ops.mesh.primitive_plane_add(size=SIZE * 12,
@@ -1264,9 +1275,10 @@ elif VIEW == "wall":
     scene.camera = cam
     print(f"[render] nezet=wall tavolsag={D:.3f} mu={_cw:.3f}x{_ch:.3f}")
 elif VIEW == "plate":
-    # 0.78: a keret a vaszon ~85%-at toltse ki - az 1.0-s szorzoval a kep fele
-    # ures fal es padlo volt (reviewer P1)
-    D = SIZE * MARGIN * LENS / 36.0 * 0.78
+    # 0.78 a KERETES muhez: ott a keret toltse ki a vaszon ~85%-at. Keret
+    # nelkul (kontukoveto relief) a motivum maga a mu, es ezzel kilogott a
+    # vaszonrol - ilyenkor kell a levego.
+    D = SIZE * MARGIN * LENS / 36.0 * (0.78 if FRAME else 1.18)
     # a darab mar a padlon ul, a kozepe nem z=0 - oda celozzunk
     bpy.context.view_layer.update()
     _pc = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)

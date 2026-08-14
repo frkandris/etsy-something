@@ -7,9 +7,21 @@
     "relief": "raised",
     "outline": "contour-following",
     "frame": false,
-    "size_mm": [157, 254],
-    "materials": ["plywood", "cardboard", "paper", "plexiglass"],
-    "machines": ["laser", "cricut", "silhouette"]
+    "size_mm": [
+      157,
+      254
+    ],
+    "materials": [
+      "plywood",
+      "cardboard",
+      "paper",
+      "plexiglass"
+    ],
+    "machines": [
+      "laser",
+      "cricut",
+      "silhouette"
+    ]
   },
   "differences_from_papercut": [
     "A külső vágásél MAGA a sziluett — nincs fedőlap, nincs ablak, nincs keret. A papírvágás-lánc --full-panel kapcsolója pont az ellenkezőjét csinálja.",
@@ -20,12 +32,23 @@
   ],
   "pipeline": {
     "script": "02_trace.py",
-    "args": ["--levels", "8", "--min-part", "60", "--merge-below", "0.005",
-             "--margin", "0", "--no-keyhole", "--connected"],
-    "note": "--full-panel és --recessed SZÁNDÉKOSAN kimarad: azok adnák a keretes, süllyesztett szerkezetet. A --connected marad, mert kiemelkedő reliefnél is egyben kell jönnie minden lapnak a vágóasztalról."
+    "args": [
+      "--levels",
+      "8",
+      "--min-part",
+      "60",
+      "--merge-below",
+      "0.005",
+      "--margin",
+      "0",
+      "--no-keyhole",
+      "--connected"
+    ],
+    "note": "--full-panel es --recessed SZANDEKOSAN kimarad. --drop-field: a forraskep feher hattere nem lap. 9 szint - 1 mezo = 8 reteg, mint a referencia.",
+    "source_note": "A forraskep HATTERE 0-ra allitando (src_relief.png). A mask_at tonus FOLOTT valogat anyagot, ezert a 255-os feher hatter MINDEN szinten anyag lenne - nem egy plusz reteget ad, hanem mind a nyolcat kitolti a vaszon szeleig."
   },
   "render": {
-    "palette": "wood",
+    "palette": "shepherd",
     "frame": false,
     "paper": false,
     "recessed": false,
@@ -34,7 +57,9 @@
     "room": "shelf",
     "canvas": "2000x2000"
   },
-  "views": ["plate", "exploded"],
-  "gallery_note": "Másolható fogás a referenciától: a záróképük infografika nagy '8 LAYER' jelvénnyel és a formátumlistával — a rétegszámot nem csak leírják, hanem bizonyítják. Emellett hét makró-közeli oldalnézet sötét háttéren, ami a fizikai reliefet igazolja.",
-  "blocked_on": "Forráskép. A lánc bemenete egy lapos illusztráció vagy mélységtérkép; német juhászhoz ilyet még nem generáltunk, és a képmodell kulcsa nincs a jelenlegi munkamenetben."
+  "views": [
+    "plate",
+    "exploded"
+  ],
+  "gallery_note": "Másolható fogás a referenciától: a záróképük infografika nagy '8 LAYER' jelvénnyel és a formátumlistával — a rétegszámot nem csak leírják, hanem bizonyítják. Emellett hét makró-közeli oldalnézet sötét háttéren, ami a fizikai reliefet igazolja."
 }

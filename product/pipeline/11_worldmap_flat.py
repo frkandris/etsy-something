@@ -339,6 +339,51 @@ def main():
     dxf.extend(["0", "ENDSEC", "0", "EOF"])
     (out / "world_map.dxf").write_text("\n".join(dxf))
 
+    # CSEMPE-FAJLOK: darabonkent kulon, SAJAT origora tolva. A codex jogosan
+    # jelezte, hogy a 330x280-as korlat eddig csak MERES volt: a csempeket
+    # globalis, 1325 mm-es koordinatakon exportaltuk egyetlen fajlba, tehat kis
+    # lezerágyon meg sem lehetett nyitni. Itt minden csempe sajat fajlt kap,
+    # 0,0-ba tolva, a ra eso score-vonalakkal es cimkekkel egyutt.
+    tdir = out / "tiles"
+    tdir.mkdir(exist_ok=True)
+    n_tiles = 0
+    for cont, i, q, (r, c) in [(a_, b_, c_, d_) for a_, b_, c_, d_, e_ in tiled if e_]:
+        b = q.bounds
+        loc = affinity.translate(q, -b[0], -b[1])
+        w_, h_ = b[2] - b[0], b[3] - b[1]
+        buf2 = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{w_:.2f}mm" '
+                f'height="{h_:.2f}mm" viewBox="0 0 {w_:.3f} {h_:.3f}">']
+        d2 = []
+        for pp in polys(loc):
+            d2.append("M " + " L ".join(f"{x:.3f},{h_ - y:.3f}"
+                                        for x, y in pp.exterior.coords) + " Z")
+            for rr in pp.interiors:
+                d2.append("M " + " L ".join(f"{x:.3f},{h_ - y:.3f}"
+                                            for x, y in rr.coords) + " Z")
+        buf2.append(f'  <path d="{" ".join(d2)}" fill="none" stroke="{CUT}" '
+                    'stroke-width="0.1"/>')
+        # a csempere eso karcolt hatarok, ugyanabba a lokalis rendszerbe tolva
+        for c2, i2, sg in scores:
+            if c2 != cont or i2 != i:
+                continue
+            cut = sg.intersection(q.buffer(0.02))
+            if cut.is_empty:
+                continue
+            cut = affinity.translate(cut, -b[0], -b[1])
+            ls = cut.geoms if hasattr(cut, "geoms") else [cut]
+            dd = ["M " + " L ".join(f"{x:.3f},{h_ - y:.3f}" for x, y in gg.coords)
+                  for gg in ls if gg.geom_type == "LineString"]
+            if dd:
+                buf2.append(f'  <path d="{" ".join(dd)}" fill="none" '
+                            f'stroke="{SCORE}" stroke-width="0.08"/>')
+        buf2.append("</svg>")
+        nm = f"{cont.replace(' ', '_').lower()}_{i}_{r}{c}.svg"
+        (tdir / nm).write_text("\n".join(buf2) + "\n")
+        n_tiles += 1
+    if n_tiles:
+        print(f"[i] csempe-fajlok: {n_tiles} db, mindegyik sajat origon "
+              f"(kis lezerágyra nyithato)")
+
     # ELHELYEZESI SABLON: a darabok kontúrja vékonyan, zóna-számokkal. A
     # referenciatermek ezt kulon kepen adja - nalunk vagható/nyomtatható fájl.
     tpl = svg_open()

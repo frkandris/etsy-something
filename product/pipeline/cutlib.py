@@ -95,10 +95,16 @@ def heal_to_convergence(geom, clip=None, min_web=MIN_WEB, add=0.45, max_iter=4):
     g = geom
     for _ in range(max_iter):
         if necks(g, min_web) == 0:
-            break
+            return g
         g = widen_necks(g, min_web, add)
         if clip is not None:
             g = snap(g).intersection(snap(clip))
+    # A nev konvergenciat iger; ha max_iter utan MEGSEM sikerult, azt ki kell
+    # mondani, nem csendben visszaadni a meg nyakas geometriat (codex).
+    left = necks(g, min_web)
+    if left:
+        print(f"[!] heal_to_convergence: {max_iter} kor utan meg {left} nyak "
+              f"maradt - a hivo dolga eldonteni, mi legyen")
     return g
 
 
@@ -250,7 +256,11 @@ def bridge_components(geom, width=2.5, min_area=0.0, anchor=None,
         if max_span is not None and d > max_span:
             orphans.append(p)
             continue
-        if d > 1e-9:
+        # d == 0 lehet PUSZTA PONT-ERINTKEZES is (sarok a sarokhoz): azt a
+        # unio osszekotottnek mutatja, fizikailag viszont nulla szeles. Ezert
+        # hidat epitunk akkor is, ha a ket darab csak erint (codex).
+        _touch_only = d <= 1e-9 and p.intersection(q).area <= 1e-12
+        if d > 1e-9 or _touch_only:
             a, b = nearest_points(p, q)
             from shapely.geometry import LineString
             # A hid NYULJON BELE mindket darabba. A puszta vegpont-erintes
@@ -304,11 +314,15 @@ def tile_piece(geom, max_w, max_h, min_area=25.0):
 
     Visszaad: [(alkatresz, (sor, oszlop)), ...] balrol-jobbra, fentrol-lefele.
     """
+    if geom is None or geom.is_empty:
+        return []                      # ures bemeneten NaN-t dobott (codex)
     mnx, mny, mxx, mxy = geom.bounds
     nx = max(1, math.ceil((mxx - mnx) / max_w - 1e-9))
     ny = max(1, math.ceil((mxy - mny) / max_h - 1e-9))
     if nx == 1 and ny == 1:
-        return [(geom, (0, 0))]
+        # a korai visszateres megkerulte a min_area szurest, mikozben ugyanez a
+        # fragmentum csempezett geometriabol eltunt volna (codex)
+        return [(geom, (0, 0))] if geom.area >= min_area else []
     from shapely.geometry import box as _box
     step_x, step_y = (mxx - mnx) / nx, (mxy - mny) / ny
     out = []

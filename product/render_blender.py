@@ -1062,9 +1062,15 @@ if VIEW == "exploded":
                 k = nmax + 1.4
             elif o in ENGRAVE_OBJS:
                 k = kx = nmax - 1 + 0.18
-            o.location.x += kx * SIZE * 0.105
-            o.location.y -= kx * SIZE * 0.012
-            o.location.z = k * SIZE * 0.046
+            # 0.105/0.046 mellett a lapok gyakorlatilag egymason
+            # fekudtek - a reviewer 'kartyapaklinak' latta, nem
+            # robbantott nezetnek. 2,7x-es szetvalasztas.
+            # 0.105 = kartyapakli, 0.285 = kilog a kepbol. 0.185 az
+            # a pont, ahol a lapok kulonvalnak, de egy kompoziciot
+            # alkotnak (reviewer-kor merve)
+            o.location.x += kx * SIZE * 0.185
+            o.location.y -= kx * SIZE * 0.022
+            o.location.z = k * SIZE * 0.085
     # a keret kulso merete nagyobb a lapoknal: kozepre igazitva az alja lejjebb
     # logott, es "elcsuszott panelnek" olvasodott (reviewer) - also el flush
     bpy.context.view_layer.update()
@@ -1076,12 +1082,13 @@ if VIEW == "exploded":
             o.location.z += _dzf
     # feher "vakolat" padlo lagy kontakt-arnyekkal - a referencia feher urben
     # all, alig lathato arnyekkal
-    bpy.ops.mesh.primitive_plane_add(size=SIZE * 12,
-                                     location=(SIZE * 0.3, -SIZE, -0.0008))
-    _fl = bpy.context.object
-    _fl.name = "expl_floor"
-    _fl.data.materials.append(wood("expl_floor", (0.955, 0.95, 0.945, 1), 0.92,
-                                   grain=False))
+    if not DARK_BG:          # sotet hatteru terméknél a feher padlo kilog
+        bpy.ops.mesh.primitive_plane_add(size=SIZE * 12,
+                                         location=(SIZE * 0.3, -SIZE, -0.0008))
+        _fl = bpy.context.object
+        _fl.name = "expl_floor"
+        _fl.data.materials.append(wood("expl_floor", (0.955, 0.95, 0.945, 1),
+                                       0.92, grain=False))
     # feher vakolatra kerul, mint a referencian - az atlatszo hatter itt
     # feketenek renderelodik minden sotet nezegoteben
     scene.render.film_transparent = False
@@ -1247,12 +1254,16 @@ if VIEW == "exploded":
     else:
         # a reviewer szerint a suroló szog olvashatatlanna tette a motivumot:
         # ~40 fokos emeles kell, hogy a lapok kepe is lathato legyen
-        D = ext * 2.35
-        loc = (cx - D * 0.10, cy - D * 0.66, cz + D * 0.72)
+        # ~58 fok: innen a legyezo ES a motivum egyszerre olvashato
+        # A magas kameraallasbol a szetnyilt legyezo VETULETE nagyobb,
+        # mint a befoglalo doboz - ezert kellett tobb korben tagitani.
+        # 3.1 + alacsonyabb emeles: a teljes legyezo befer.
+        D = ext * 3.6
+        loc = (cx - D * 0.10, cy - D * 0.64, cz + D * 0.56)
     print(f"[render] exploded({EXPLODE}) fit: ext={ext:.3f} D={D:.3f}")
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
-    cam.data.lens = 48.0 if EXPLODE == 'standing' else LENS
+    cam.data.lens = 48.0 if EXPLODE == 'standing' else 55.0
     _dir = (cx - loc[0], cy - loc[1], cz - loc[2])
     import mathutils as _mu
     cam.rotation_euler = _mu.Vector(_dir).to_track_quat('-Z', 'Y').to_euler()
@@ -1408,7 +1419,12 @@ else:
     ko.location = (-SIZE * 1.1, -SIZE * 1.1, SIZE * 1.5)
     ko.rotation_euler = (math.radians(38), 0, math.radians(-40))
 
-FILL_E = SIZE * SIZE * (26 if VIEW == "lifestyle" else 9 if VIEW == "plate" else 22)
+FILL_E = SIZE * SIZE * (26 if VIEW == "lifestyle"
+                        else 9 if VIEW == "plate" else 22)
+# sotet hatteren a mely arnyekzonak (szem, orr alatti redo) ures
+# fekete lyukka valtak - gyenge alsó derito ad nekik anyagszerkezetet
+if VIEW in ("plate", "macro") and DARK_BG:
+    FILL_E *= 2.4
 fill = bpy.data.lights.new("fill", "AREA"); fill.energy = FILL_E; fill.size = SIZE * 5
 if VIEW == "lifestyle":
     fill.color = (0.99, 0.98, 0.97)
@@ -1417,7 +1433,11 @@ fo.location = (SIZE * 1.6, -SIZE * 0.9, SIZE * 0.9); fo.rotation_euler = (math.r
 
 world = bpy.data.worlds.new("w"); scene.world = world
 world.use_nodes = True
-if VIEW == "exploded":
+if VIEW == "exploded" and DARK_BG:
+    # a szett tobbi kepe sotet hatteren all; a vilagos itt kilogott
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.022, 0.020, 0.019, 1)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.6
+elif VIEW == "exploded":
     # a vilag itt jon letre, MINDEN nezet-blokk utan - a korabban beallitott
     # hatter csendben elveszett. Node nelkul a legegyszerubb es debugolhato.
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.982, 0.980, 0.978, 1)

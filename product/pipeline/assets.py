@@ -19,7 +19,7 @@ so the manifest below is written next to the files.
   python assets.py fetch            # download the default kit
   python assets.py list plant       # search the catalogue
 """
-import argparse, hashlib, json, pathlib, sys, urllib.request
+import argparse, json, pathlib, urllib.request
 
 API = "https://api.polyhaven.com"
 UA = {"User-Agent": "etsy-something-pipeline/1.0 (+layered svg research)"}

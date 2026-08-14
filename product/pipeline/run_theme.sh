@@ -20,8 +20,10 @@ esac
   --min-part 180 --min-feature 5.0 --speckle 0.8 --sliver-ratio 3 --min-area-pct 1.2 --max-parts 18 --round-corners 3.5 --motif-scale 0.95 --merge-below 0.012 --margin 30 --punch 14 \
   --no-keyhole --full-panel --out $D/layers 2>&1 \
   | grep -v -E "Deprecat|px = list" | tail -14
+# A render-beallitasok a termek-profilbol jonnek (product/profiles/papercut.json).
+# Ami itt marad kapcsolokent, az temanként valtozik - a keret-anyag.
 blender -b -P product/render_blender.py -- $D/layers "$PWD/$D/plate.png" \
-  plate well --frame --paper --recessed $FRAMEFLAG 2>&1 | grep -E "mu=|kesz|Error" | tail -2
+  plate --profile papercut $FRAMEFLAG 2>&1 | grep -E "profil|mu=|kesz|Error" | tail -2
 .venv/bin/python product/pipeline/04_composite.py --bg product/pipeline/backdrops/$BG.png \
   --art $D/plate.png --out $D/render_photo.png --cx 0.44 --base 0.94 --height 0.88 \
   --warm 1.02 --square 2>&1 | tail -1

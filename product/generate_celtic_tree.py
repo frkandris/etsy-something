@@ -14,7 +14,6 @@ cannot contain a part that falls out on the cutting bed.
 import math, pathlib, argparse
 from shapely.geometry import Point, LineString, Polygon
 from shapely.ops import unary_union
-from shapely import affinity
 
 R_OUT = 150.0        # outer radius, mm -> 300 mm finished piece
 LAYERS = 6

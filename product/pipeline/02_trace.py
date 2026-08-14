@@ -14,8 +14,11 @@ this step finds it and either thickens it or tells you it is still too thin.
 """
 import json, math, subprocess, tempfile, pathlib, argparse
 from PIL import Image, ImageDraw, ImageFilter
-from shapely.geometry import shape, Polygon, MultiPolygon, Point
+from shapely.geometry import Polygon, Point
 from shapely.ops import unary_union
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent))
+from cutlib import ghost_outline
 from shapely import make_valid, set_precision
 from shapely import affinity
 
@@ -59,7 +62,7 @@ def posterise(img, levels):
             tot[j] += v * n
             cnt[j] += n
         new = [tot[i] / cnt[i] if cnt[i] else cent[i] for i in range(k)]
-        if max(abs(a - b) for a, b in zip(new, cent)) < 0.25:
+        if max(abs(a - b) for a, b in zip(new, cent, strict=True)) < 0.25:
             cent = new
             break
         cent = new
@@ -67,7 +70,7 @@ def posterise(img, levels):
     # the image is unusable - the model draws soft shadows into the wells and
     # they smear the histogram. Drop the empty ones and continue with what is
     # actually there; the level-merge step downstream tidies the rest.
-    cent = [c for c, n in zip(cent, cnt) if n > 0]
+    cent = [c for c, n in zip(cent, cnt, strict=True) if n > 0]
     if len(cent) < 4:
         raise ToneShortfall(len(cent) - 1)
     cent.sort()
@@ -489,6 +492,9 @@ def main():
     ap.add_argument("--min-feature", type=float, default=0.0,
                     help="mm: ennel vekonyabb nyulvanyt a lanc levagja "
                          "(a referencia formanyelve durvabb, mint a MIN_WEB)")
+    ap.add_argument("--ghost", type=float, default=0.0, metavar="MM",
+                    help="ragasztasi sablon: minden reteg konturja ennyi mm-rel "
+                         "BELJEBB gravirozva az alatta levo lapra (ajanlott 0.5)")
     ap.add_argument("--full-panel", action="store_true",
                     help="minden lap teljes negyzet legyen, csak nyilasokkal")
     ap.add_argument("--recessed", action="store_true",
@@ -607,8 +613,19 @@ def main():
                 geoms[k] = clipped
 
     def heal_all():
+        # ISMETELVE, amig el nem fogy. A vilagterkep-lancon mertuk ki, hogy a
+        # klippeles maga gyart uj nyakat, tehat a szelesites utani ujraklippeles
+        # megint nyakat csinalhat - a megfigyelt minta 1 -> 1 -> 0. Egy kor utan
+        # megallni csendes hiba: a riport zold, a lap megis szetesik.
         for k in sorted(geoms):
-            geoms[k] = heal_necks(geoms[k], clip=geoms.get(k - 1))
+            prev = geoms.get(k - 1)
+            for _ in range(4):
+                geoms[k] = heal_necks(geoms[k], clip=prev)
+                if necks(geoms[k]) == 0:
+                    break
+            else:
+                print(f"[!] {k}. reteg: a nyak-gyogyitas 4 kor alatt sem "
+                      f"konvergalt ({necks(geoms[k])} nyak maradt)")
 
     # the clip is what CREATES necks (it cuts pieces at the previous layer's
     # boundary), so the chain must END on a heal, never on a clip
@@ -1029,6 +1046,25 @@ def main():
         e += ["0", "ENDSEC", "0", "EOF"]
         (out / f"layer_{k}_of_{len(rows)}.dxf").write_text("\n".join(e) + "\n")
 
+    # GHOST-OUTLINE ragasztasi sablon (a vilagterkep-lancon vezettuk be):
+    # minden reteg konturja beljebb huzva a MOGOTTE levo lapra gravirozva -
+    # igy maga a lap mondja meg, hova kerul a darab. A beljebb huzas azert
+    # kell, hogy a felragasztott darab eltakarja a vonalat.
+    if a.ghost > 0 and len(rows) > 1:
+        for _i in range(1, len(rows)):
+            k_host, geom_top = rows[_i - 1][0], rows[_i][1]
+            rings = ghost_outline(geom_top, inset=a.ghost)
+            if not rings:
+                continue
+            d = " ".join("M " + " L ".join(f"{x:.3f},{y:.3f}" for x, y in r.coords)
+                         for r in rings)
+            (out / f"ghost_on_layer_{k_host}.svg").write_text(
+                f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" '
+                f'height="{MM}mm" viewBox="0 0 {MM} {MM}">\n'
+                f'  <path d="{d}" fill="none" stroke="#f00" stroke-width="0.1"/>\n'
+                "</svg>\n")
+        print(f"[i] ghost-outline: {len(rows) - 1} lapra, {a.ghost} mm-rel beljebb")
+
     # stacked preview
     tones = ["#6b4f33", "#7b5d3e", "#8b6b49", "#9b7955", "#ab8761", "#bb956d", "#cba379"]
     s = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
@@ -1081,7 +1117,7 @@ def main():
 
     for i, (k, geom, *_x) in enumerate(rows):
         ox, oy = (i % cols) * PW, (i // cols) * (PW + 46)
-        for k2, geom2, *_y in rows[:i]:
+        for _k2, geom2, *_y in rows[:i]:
             draw_geom(guide, geom2, (196, 181, 160), ox, oy)
         draw_geom(guide, geom, (214, 116, 40), ox, oy)
         gd.text((ox + 12, oy + PW + 8), f"{k}. reteg", fill=(60, 50, 40))
@@ -1133,7 +1169,7 @@ def main():
             if n:
                 accents_final[k] = n
         if accents_final:
-            print(f"[i] akcentus-darabok (kulon ragasztando, vegso): "
+            print("[i] akcentus-darabok (kulon ragasztando, vegso): "
                   + ", ".join(f"{k}. reteg: {n}" for k, n in sorted(accents_final.items())))
 
     if a.palette:

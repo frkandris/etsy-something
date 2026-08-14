@@ -1,0 +1,23 @@
+{
+  "name": "papercut",
+  "title": "Süllyesztett papírvágás (macska, tacskó, farkas, …)",
+  "note": "A plate ATLATSZO hattérrel készül: a 04_composite.py az alfa-csatornából számol befoglaló dobozt és kontakt-árnyékot. Tömör háttérrel az egész vásznat ragasztaná a fotóra.",
+  "pipeline": {
+    "script": "02_trace.py",
+    "args": ["--levels", "7", "--min-part", "60", "--merge-below", "0.005",
+             "--margin", "8", "--no-keyhole", "--full-panel", "--connected"]
+  },
+  "render": {
+    "palette": "well",
+    "frame": true,
+    "paper": true,
+    "recessed": true,
+    "studio_bg": false,
+    "mixed_wood": false,
+    "frame_width": 0.085,
+    "explode": "fan",
+    "room": "shelf",
+    "props": "warm"
+  },
+  "views": ["plate", "styled", "exploded"]
+}

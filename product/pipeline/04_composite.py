@@ -13,7 +13,7 @@ The contact shadow is the part that sells it. A cut-out pasted on a photo looks
 pasted; the same cut-out with a soft dark pool under its base looks like it is
 standing on the table.
 """
-import argparse, base64, io, json, math, os, pathlib, sys, urllib.request
+import argparse, base64, json, os, pathlib, sys, urllib.request
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 
 MODEL = "gpt-image-2"

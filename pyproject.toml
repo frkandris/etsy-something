@@ -1,0 +1,28 @@
+[tool.ruff]
+# A pipeline-szkriptek hosszú, magyarázó kommenteket hordoznak - azok a
+# tudás nagy része ebben a projektben, nem a kód. A sorhossz ehhez igazodik.
+line-length = 100
+target-version = "py311"
+exclude = [".venv", "product/iterations", "wiki/assets"]
+
+[tool.ruff.lint]
+# Szűk, de valódi hibákat fogó készlet. A stílus-szabályok szándékosan
+# kimaradnak: ez nem egy csapatprojekt, a cél a NÉMA hibák elkapása.
+select = [
+    "E9",    # szintaxis- és futásképtelenségi hibák
+    "F",     # pyflakes: nem definiált név, nem használt import/változó
+    "B",     # bugbear: valódi hibaminták (pl. mutable default, elveszett return)
+    "UP",    # elavult Python-idiómák
+]
+ignore = [
+    "E501",  # sorhossz: a magyarázó kommenteket nem törjük
+    "B008",  # függvényhívás argumentum-alapértelmezésben (argparse-nál gyakori)
+    "UP031", # %-formázás: működik, és a hex-színkiírásoknál olvashatóbb
+    "B904",  # raise ... from: a ToneShortfall szándékosan elfedi az okot
+    "B007",  # kihasználatlan ciklusváltozó tuple-kicsomagolásnál
+]
+
+[tool.ruff.lint.per-file-ignores]
+# A Blender-szkript a `bpy` modult csak futásidőben kapja meg, és a
+# felső szintű kódot nem lehet függvénybe zárni a bpy-operátorok miatt.
+"product/render_blender.py" = ["E402", "F821"]

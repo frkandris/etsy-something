@@ -24,9 +24,14 @@ Kimenet: rétegenként SVG és DXF, gravírozási réteg az országhatárokkal, 
 papíros lánccal azonos formátumú vágásbiztonsági riport.
 """
 import argparse, json, math, pathlib, urllib.request, sys
-from shapely.geometry import shape, Polygon, MultiPolygon, box
+from shapely.geometry import shape, MultiPolygon, box
 from shapely.ops import unary_union
 from shapely import affinity, make_valid, set_precision
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+# A kozos vagas-geometria: amit itt megmertunk, azt a tobbi lanc keszen kapja.
+from cutlib import (polys, widest_inscribed, necks, widen_necks, drop_specks,
+                    text_paths)
 
 NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
 CACHE = pathlib.Path(__file__).resolve().parent / "geodata"
@@ -89,77 +94,9 @@ def project(geom, lat_min, lat_max):
     return transform(tx, g)
 
 
-def polys(geom):
-    """Csak a POLIGONOK. A make_valid és a difference GeometryCollectiont is adhat,
-    amiben vonalak és pontok is vannak — azok nem vágandó anyagok."""
-    if geom is None or geom.is_empty:
-        return []
-    if geom.geom_type == "Polygon":
-        return [geom]
-    if geom.geom_type in ("MultiPolygon", "GeometryCollection"):
-        out = []
-        for g in geom.geoms:
-            out += polys(g)
-        return out
-    return []
 
 
-def drop_specks(geom, min_area):
-    """Sziget, ami kisebb a küszöbnél, kiesik a lapból — nem vágjuk ki.
-    Lyukra ugyanez: egy 1 mm²-es tavat nem érdemes kivágni."""
-    parts = polys(geom)
-    keep = []
-    dropped = 0
-    for p in parts:
-        if p.area < min_area:
-            dropped += 1
-            continue
-        holes = [r for r in p.interiors if Polygon(r).area >= min_area]
-        keep.append(Polygon(p.exterior, holes))
-    return (unary_union(keep) if keep else None), dropped
 
-
-def widest_inscribed(p):
-    lo, hi = 0.0, 12.0
-    for _ in range(16):
-        mid = (lo + hi) / 2
-        if p.buffer(-mid / 2).is_empty:
-            hi = mid
-        else:
-            lo = mid
-    return lo
-
-
-def widen_necks(geom, add=0.45):
-    """Lokalis kiszelesites CSAK a nyak-szakaszon (Epilog-ajanlas: offset ~0,5 mm
-    es unio - de mi nem az egesz format hizlaljuk, csak a nyak-zonat, igy a
-    kontur karaktere marad). A nyak-zona: a darab minusz a kover reszek."""
-    out = []
-    for p in polys(geom):
-        er = p.buffer(-MIN_WEB / 2)
-        frags = [f for f in polys(er) if f.area >= 5.0]
-        if len(frags) <= 1:
-            out.append(p)
-            continue
-        fat = unary_union([f.buffer(MIN_WEB / 2 + 0.05) for f in frags])
-        neck_zone = p.difference(fat)
-        widened = p.union(neck_zone.buffer(add)).buffer(0)
-        out.append(widened)
-    return unary_union(out)
-
-
-def necks(geom):
-    """Vékony nyak: ahol MIN_WEB/2-vel erodálva a darab több érdemi részre esik."""
-    n = 0
-    for p in polys(geom):
-        er = p.buffer(-MIN_WEB / 2)
-        if er.is_empty:
-            continue
-        frags = [f for f in (er.geoms if er.geom_type == "MultiPolygon" else [er])
-                 if f.area >= 20.0]
-        if len(frags) > 1:
-            n += len(frags) - 1
-    return n
 
 
 def to_svg(geom, w, h, path, stroke_only=False):
@@ -305,7 +242,6 @@ def main():
             borders_deg.append(g.boundary)
         linework = unary_union([land_deg.boundary] + borders_deg)
         faces = list(polygonize(linework))
-        min_island_deg = a.min_island / (( (a.width - 2*a.margin) / 360.0 ) ** 2)  # mm2 -> deg2 kozelites
         pieces = []
         for q in faces:
             if q.intersection(land_deg).area < q.area * 0.5:
@@ -465,28 +401,6 @@ def main():
         to_svg(lines, a.width, H, out / "engrave_borders.svg", stroke_only=True)
         to_dxf(lines, H, out / "engrave_borders.dxf")
         print(f"[i] gravírozási réteg: országhatárok ({lines.length:.0f} mm vonalhossz)")
-
-    def text_paths(name, x, y, hgt, rot=0.0):
-        """Szoveg -> zart konturok (mm), kozepre igazitva, opcionalis forgatassal."""
-        from matplotlib.textpath import TextPath
-        from matplotlib.font_manager import FontProperties
-        tp = TextPath((0, 0), name, size=hgt,
-                      prop=FontProperties(family="DejaVu Sans", weight="bold"))
-        polysets = tp.to_polygons()
-        if not polysets:
-            return []
-        xs = [pt[0] for poly in polysets for pt in poly]
-        w = max(xs) - min(xs) if xs else 0
-        cr, sr = math.cos(math.radians(rot)), math.sin(math.radians(rot))
-        out = []
-        for poly in polysets:
-            pts = []
-            for px, py in poly:
-                dx = px - min(xs) - w / 2
-                dy = py - hgt / 2
-                pts.append((x + dx * cr - dy * sr, y + dx * sr + dy * cr))
-            out.append(pts)
-        return out
 
     if a.countries and labels:
         # SVG szoveg-elemek: a LightBurn es a Glowforge is olvassa; a DXF-be

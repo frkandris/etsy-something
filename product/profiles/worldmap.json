@@ -1,0 +1,26 @@
+{
+  "name": "worldmap",
+  "title": "Réteges világtérkép (Natural Earth batimetria)",
+  "note": "A mélység mért, nem becsült. Referencia: VyvaStudioDigital listing.",
+  "pipeline": {
+    "script": "10_worldmap.py",
+    "args": ["--width", "400", "--thicken", "0.9", "--borders", "--countries",
+             "--y-stretch", "1.21"]
+  },
+  "render": {
+    "palette": "bathy",
+    "frame": true,
+    "paper": true,
+    "recessed": true,
+    "wood_frame": true,
+    "dark_frame": true,
+    "engrave": true,
+    "studio_bg": true,
+    "mixed_wood": true,
+    "frame_width": 0.052,
+    "explode": "standing",
+    "room": "sideboard",
+    "canvas": "2000x1360"
+  },
+  "views": ["plate", "styled", "exploded"]
+}

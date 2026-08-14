@@ -176,7 +176,7 @@ def nesting_depth(img, colours=8, min_pct=0.20):
     adj = collections.defaultdict(set)
     for A, B in ((lab[:, :-1], lab[:, 1:]), (lab[:-1, :], lab[1:, :])):
         d = A != B
-        for x, y in zip(A[d].ravel(), B[d].ravel()):
+        for x, y in zip(A[d].ravel(), B[d].ravel(), strict=True):
             if x in keep and y in keep:
                 adj[x].add(y); adj[y].add(x)
 

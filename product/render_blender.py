@@ -16,12 +16,55 @@ is what makes the thumbnail different (wiki/findings/keyword-demand-sweep.md).
 import bpy, sys, math, pathlib
 
 argv = sys.argv[sys.argv.index("--") + 1:]
+# --- TERMEK-PROFIL ---------------------------------------------------------
+# Ezek az ertekek korabban a vilagterkep szamaival voltak BEDROTOZVA, es
+# csendben elvittek a papirvagas-lancot (a plate atlatszosaga a kompozit
+# alfaja!). Tobb termektipusnal a kapcsolo-halmaz kezelhetetlen, ezert a
+# forras egy JSON-profil: product/profiles/<nev>.json. A parancssori kapcsolo
+# tovabbra is felulir - egy gyors probahoz nem kell fajlt szerkeszteni.
+import json as _json
+PROFILE = {}
+for _i, _a in enumerate(argv):
+    if _a == "--profile" and _i + 1 < len(argv):
+        _pv = argv[_i + 1]
+        _pp = pathlib.Path(_pv)
+        if not _pp.exists():
+            _pp = (pathlib.Path(__file__).resolve().parent / "profiles"
+                   / f"{_pv}.json")
+        if _pp.exists():
+            PROFILE = _json.loads(_pp.read_text()).get("render", {})
+            print(f"[render] profil: {_pp.name}")
+        else:
+            print(f"[render] FIGYELEM: nincs ilyen profil: {_pv}")
+
+
+def _pf(key, default, flag=None, cast=None):
+    """Profil-ertek, amit a parancssor felulirhat."""
+    val = PROFILE.get(key, default)
+    if flag:
+        if flag in argv:                       # kapcsolo -> True
+            val = True
+        for _j, _b in enumerate(argv):         # "--flag ertek" alak
+            if _b == flag and _j + 1 < len(argv) and not argv[_j + 1].startswith("--"):
+                val = argv[_j + 1]
+    return cast(val) if (cast and val is not None) else val
+
+
+STUDIO_BG = _pf("studio_bg", False, "--studio-bg")    # plate: tomor hatter+padlo.
+                                      # Nelkule atlatszo, mert a 04_composite
+                                      # az alfabol szamol bbox-ot es arnyekot.
+MIXED_WOOD = _pf("mixed_wood", False, "--mixed-wood")  # valtakozo fatonusok
+FRAME_W = _pf("frame_width", 0.085, "--frame-width", float)
+EXPLODE = _pf("explode", "fan", "--explode")           # fan | standing
+ROOM = _pf("room", "shelf", "--room")                  # shelf | sideboard
+CANVAS = _pf("canvas", None, "--canvas")               # "SZExMAG"
+
 # Every flag must be read BEFORE argv is filtered. Reading one afterwards
 # silently yields False - that is why --white-top and --recessed did nothing.
-GRAIN = "--grain" in argv
-SCENE_HDRI = ""
-PROP_SET = "warm"
-PALETTE_FILE = ""
+GRAIN = PROFILE.get("grain", False) or "--grain" in argv
+SCENE_HDRI = PROFILE.get("scene", "")
+PROP_SET = PROFILE.get("props", "warm")
+PALETTE_FILE = PROFILE.get("palette_file", "")
 SCENE_ZOOM = 0.82   # matched to the references, where the frame fills ~85% of
                     # the picture. Wider than that and it reads as an interior
                     # photo the frame happens to appear in.
@@ -34,33 +77,36 @@ for _i, _a in enumerate(argv):
         PROP_SET = argv[_i + 1]
     if _a == "--palette-file" and _i + 1 < len(argv):
         PALETTE_FILE = argv[_i + 1]
-DARK_FRAME = "--dark-frame" in argv
-ENGRAVE = "--engrave" in argv
+DARK_FRAME = PROFILE.get("dark_frame", False) or "--dark-frame" in argv
+ENGRAVE = PROFILE.get("engrave", False) or "--engrave" in argv
 # --orbit N renders N frames on a short camera arc, for a listing video
 ORBIT = 0
 for i, a in enumerate(argv):
     if a == "--orbit":
         ORBIT = int(argv[i + 1])
-FRAME = "--frame" in argv
+FRAME = PROFILE.get("frame", False) or "--frame" in argv
 ACCENT_ON = "--accent" in argv
-PAPER = "--paper" in argv
-RECESSED = "--recessed" in argv
+PAPER = PROFILE.get("paper", False) or "--paper" in argv
+RECESSED = PROFILE.get("recessed", False) or "--recessed" in argv
 WHITE_TOP = "--white-top" in argv
-WOODFRAME = "--wood-frame" in argv
+WOODFRAME = PROFILE.get("wood_frame", False) or "--wood-frame" in argv
 DOTS = "--dots" in argv
 skip = set()
 for i, a in enumerate(argv):
-    if a in ("--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
+    if a in ("--profile", "--grain", "--orbit", "--frame", "--accent", "--paper", "--white-top",
              "--dots", "--wood-frame", "--recessed", "--scene", "--scene-zoom",
-             "--props", "--palette-file", "--dark-frame", "--engrave"):
+             "--props", "--palette-file", "--dark-frame", "--engrave",
+             "--studio-bg", "--mixed-wood", "--frame-width", "--explode",
+             "--room", "--canvas"):
         skip.add(i)
-        if a in ("--orbit", "--scene", "--scene-zoom", "--props", "--palette-file"):
+        if a in ("--profile", "--orbit", "--scene", "--scene-zoom", "--props", "--palette-file",
+                 "--frame-width", "--explode", "--room", "--canvas"):
             skip.add(i + 1)
 argv = [a for i, a in enumerate(argv) if i not in skip]
 SRC = pathlib.Path(argv[0])
 OUT = argv[1]
 VIEW = argv[2] if len(argv) > 2 else "hero"
-PALETTE = argv[3] if len(argv) > 3 else "wood"
+PALETTE = argv[3] if len(argv) > 3 else PROFILE.get("palette", "wood")
 ELEV = float(argv[4]) if len(argv) > 4 else (80.0 if VIEW == "hero" else 34.0)
 # a dead-on 0 deg yaw reads as a scan; the winning listings tilt 8-15 deg
 AZIM = 10.0 if VIEW == "hero" else 24.0
@@ -97,12 +143,13 @@ for _k, _v in (("taa_render_samples", 96), ("use_gtao", True),
         pass
 scene.render.resolution_x = 2000
 scene.render.resolution_y = 2000
-if VIEW in ("styled", "exploded"):
-    # a felhasznalo referencia-kepei fekvo formatumuak (~1,47:1)
-    scene.render.resolution_y = 1360
-# plate: kordbban atlatszo volt (kompozit-cel), de sotet nezegetoben feketenek
-# renderelodott, es a reviewer render-szagunak jelolte - studio-hatter lett
-scene.render.film_transparent = False
+if CANVAS:
+    _cw, _ch = CANVAS.lower().split("x")
+    scene.render.resolution_x, scene.render.resolution_y = int(_cw), int(_ch)
+# A plate ALAPBOL atlatszo: a 04_composite.py az alfa-csatornabol szamolja a
+# mu befoglalo dobozat es a kontakt-arnyekot, tomor hatterrel az egesz vasznat
+# ragasztana a fotora. A --studio-bg a vilagterkep onallo termekkepehez van.
+scene.render.film_transparent = (VIEW == "plate" and not STUDIO_BG)
 scene.view_settings.look = "AgX - Base Contrast"
 scene.view_settings.exposure = -0.05
 if VIEW == "plate":
@@ -459,7 +506,7 @@ if ACCENT_ON:
                 n += 1
     print(f"[render] akcentus {n} spline-on")
 
-if PALETTE == "bathy" and FRONT:
+if MIXED_WOOD and FRONT:
     # A referencia orszagdarabjai TOBBFELE fabol vannak (vilagos tolgy, arany-
     # tolgy, dio) - az egyszinu tan "lapos palettat" kapott a reviewertol.
     # Per-spline determinisztikus tonus-valasztas a centroid hash-ebol.
@@ -633,7 +680,7 @@ if FRAME:
     _ab = world_bbox(objs)
     ART = max(max(q.x for q in _ab) - min(q.x for q in _ab),
               max(q.y for q in _ab) - min(q.y for q in _ab))
-    fw = ART * 0.052
+    fw = ART * FRAME_W
     # a recessed sheet sits right up against the rabbet; a deep empty well in
     # front of it reads as a floating tile
     if RECESSED:
@@ -775,7 +822,6 @@ if VIEW == "styled":
     # and the HDRI background rotates with the view. A flat backdrop plate
     # cannot do either - it stayed nailed down while the frame turned, which
     # is what gave the video away.
-    import os
     AST = pathlib.Path(__file__).resolve().parent / "pipeline" / "assets"
 
     def bring(name, loc, rot_z=0.0, scale=1.0):
@@ -813,66 +859,85 @@ if VIEW == "styled":
     for o in objs + FRAME_OBJS:
         o.location.z -= _zmin
 
-    OAK = (0.590, 0.450, 0.295, 1)
-    # komod-lap lathato elullso ellel (a referencian latszik az asztal ele)
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.16, -SIZE * 0.021))
-    tb = bpy.context.object
-    tb.scale = (SIZE * 5.0, SIZE * 1.05, SIZE * 0.042)
-    tb.data.materials.append(wood("tabletop", OAK, 0.55, grain=True))
-    # szekrenytest a lap alatt, ket ajtofronttal (kozepen res)
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.14, -SIZE * 0.62))
-    _body = bpy.context.object
-    _body.scale = (SIZE * 4.9, SIZE * 1.0, SIZE * 1.15)
-    _body.data.materials.append(wood("cabinet", (0.470, 0.350, 0.225, 1),
-                                     0.62, grain=True))
-    for _dz in (0.155, 0.395):
+    if ROOM == "sideboard":
+        OAK = (0.590, 0.450, 0.295, 1)
+        # komod-lap lathato elullso ellel (a referencian latszik az asztal ele)
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.16, -SIZE * 0.021))
+        tb = bpy.context.object
+        tb.scale = (SIZE * 5.0, SIZE * 1.05, SIZE * 0.042)
+        tb.data.materials.append(wood("tabletop", OAK, 0.55, grain=True))
+        # szekrenytest a lap alatt, ket ajtofronttal (kozepen res)
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -SIZE * 0.14, -SIZE * 0.62))
+        _body = bpy.context.object
+        _body.scale = (SIZE * 4.9, SIZE * 1.0, SIZE * 1.15)
+        _body.data.materials.append(wood("cabinet", (0.470, 0.350, 0.225, 1),
+                                         0.62, grain=True))
+        for _dz in (0.155, 0.395):
+            bpy.ops.mesh.primitive_cube_add(size=1,
+                                            location=(0, -SIZE * 0.655, -SIZE * (0.042 + _dz)))
+            _dw = bpy.context.object
+            _dw.scale = (SIZE * 2.3, SIZE * 0.02, SIZE * 0.20)
+            _dw.data.materials.append(wood("drawer", tuple(c * 0.97 for c in OAK[:3]) + (1,),
+                                           0.55, grain=True))
+            bpy.ops.mesh.primitive_cylinder_add(radius=SIZE * 0.009, depth=SIZE * 0.11,
+                                                location=(0, -SIZE * 0.672,
+                                                          -SIZE * (0.042 + _dz)),
+                                                rotation=(0, math.radians(90), 0))
+            _hd = bpy.context.object
+            _hd.data.materials.append(wood("handle", (0.16, 0.12, 0.09, 1), 0.4,
+                                           grain=False))
+
+        # sima melegfeher fal kozvetlenul a keret mogott
+        bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0, SIZE * 0.30, SIZE * 1.2))
+        _wall = bpy.context.object
+        _wall.rotation_euler = (math.radians(90), 0, 0)
+        _wall.scale = (SIZE * 12, SIZE * 7, 1.0)
+        _wall.data.materials.append(wood("wall", (0.860, 0.775, 0.625, 1), 0.92, grain=False))
+
+        # balra vesszokosar az asztalon, jobbra ket feher facettalt vaza -
+        # a vazak procedurálisak: alacsony oldalszamu, flat-shaded kup-henger
+        AST = pathlib.Path(__file__).resolve().parent / "pipeline" / "assets"
+
+        def bring(name, loc, rot_z=0.0, scale=1.0):
+            bf = AST / "models" / name / f"{name}.blend"
+            if not bf.exists():
+                print(f"[render] hianyzo eszkoz: {name}")
+                return []
+            before = set(bpy.data.objects)
+            bpy.ops.wm.append(filepath=str(bf) + "/Collection/" + name,
+                              directory=str(bf) + "/Collection/", filename=name)
+            new = [o for o in bpy.data.objects if o not in before]
+            for o in new:
+                if o.parent:
+                    continue
+                o.location = (loc[0] * SIZE, loc[1] * SIZE, loc[2] * SIZE)
+                o.rotation_euler.z += math.radians(rot_z)
+                o.scale = tuple(c * scale for c in o.scale)
+            return new
+
+        bring("wicker_basket_01", (-0.78, -0.38, 0.0), rot_z=20, scale=0.46)
+
+        # jobbra kesz modell a szamolt edenyek helyett (felhasznaloi keres)
+        bring("antique_ceramic_vase_01", (0.78, -0.34, 0.0), rot_z=-15, scale=0.62)
+    else:
+        # A papirvagas-termekek eredeti jelenete: fali polc, meleg fal, ket
+        # kellek hatul es ket elol (a melysegi szoras adja a parallaxist).
         bpy.ops.mesh.primitive_cube_add(size=1,
-                                        location=(0, -SIZE * 0.655, -SIZE * (0.042 + _dz)))
-        _dw = bpy.context.object
-        _dw.scale = (SIZE * 2.3, SIZE * 0.02, SIZE * 0.20)
-        _dw.data.materials.append(wood("drawer", tuple(c * 0.97 for c in OAK[:3]) + (1,),
-                                       0.55, grain=True))
-        bpy.ops.mesh.primitive_cylinder_add(radius=SIZE * 0.009, depth=SIZE * 0.11,
-                                            location=(0, -SIZE * 0.672,
-                                                      -SIZE * (0.042 + _dz)),
-                                            rotation=(0, math.radians(90), 0))
-        _hd = bpy.context.object
-        _hd.data.materials.append(wood("handle", (0.16, 0.12, 0.09, 1), 0.4,
-                                       grain=False))
-
-    # sima melegfeher fal kozvetlenul a keret mogott
-    bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0, SIZE * 0.30, SIZE * 1.2))
-    _wall = bpy.context.object
-    _wall.rotation_euler = (math.radians(90), 0, 0)
-    _wall.scale = (SIZE * 12, SIZE * 7, 1.0)
-    _wall.data.materials.append(wood("wall", (0.860, 0.775, 0.625, 1), 0.92, grain=False))
-
-    # balra vesszokosar az asztalon, jobbra ket feher facettalt vaza -
-    # a vazak procedurálisak: alacsony oldalszamu, flat-shaded kup-henger
-    import os
-    AST = pathlib.Path(__file__).resolve().parent / "pipeline" / "assets"
-
-    def bring(name, loc, rot_z=0.0, scale=1.0):
-        bf = AST / "models" / name / f"{name}.blend"
-        if not bf.exists():
-            print(f"[render] hianyzo eszkoz: {name}")
-            return []
-        before = set(bpy.data.objects)
-        bpy.ops.wm.append(filepath=str(bf) + "/Collection/" + name,
-                          directory=str(bf) + "/Collection/", filename=name)
-        new = [o for o in bpy.data.objects if o not in before]
-        for o in new:
-            if o.parent:
-                continue
-            o.location = (loc[0] * SIZE, loc[1] * SIZE, loc[2] * SIZE)
-            o.rotation_euler.z += math.radians(rot_z)
-            o.scale = tuple(c * scale for c in o.scale)
-        return new
-
-    bring("wicker_basket_01", (-0.78, -0.38, 0.0), rot_z=20, scale=0.46)
-
-    # jobbra kesz modell a szamolt edenyek helyett (felhasznaloi keres)
-    bring("antique_ceramic_vase_01", (0.78, -0.34, 0.0), rot_z=-15, scale=0.62)
+                                        location=(0, -SIZE * 1.6, -SIZE * 0.03))
+        tb = bpy.context.object
+        tb.scale = (SIZE * 9, SIZE * 9, SIZE * 0.06)
+        tb.data.materials.append(wood("tabletop", (0.245, 0.163, 0.100, 1), 0.62,
+                                      grain=True))
+        bpy.ops.mesh.primitive_plane_add(size=1.0,
+                                         location=(0, SIZE * 2.6, SIZE * 1.5))
+        _wall = bpy.context.object
+        _wall.rotation_euler = (math.radians(90), 0, 0)
+        _wall.scale = (SIZE * 14, SIZE * 9, 1.0)
+        _wall.data.materials.append(wood("wall", (0.86, 0.80, 0.71, 1), 0.92,
+                                         grain=False))
+        bring("Shelf_01", (0.15, 2.35, 1.15), rot_z=0, scale=1.15)
+        for _n, _l, _rz, _sc in PROP_SETS.get(PROP_SET, PROP_SETS["warm"]):
+            bring(_n, _l, rot_z=_rz, scale=_sc)
 
 
 if VIEW == "exploded":
@@ -921,27 +986,37 @@ if VIEW == "exploded":
         for _poly in _m.polygons:
             if abs(_poly.normal.z) < 0.5:
                 _poly.material_index = _ei
-    # ALLITOTT lapok melysegi sorban (a felhasznalo 21-es referencia-kepe):
-    # minden lap fuggolegesen all, a hatso (grafit hatlap) balra-hatul, minden
-    # kovetkezo elorebb (a kamera fele) es kicsit jobbra. A regi vizszintes
-    # legyezot a felhasznalo lecserelte erre a kompozicora.
-    STEP_X = SIZE * 0.035
-    STEP_Y = SIZE * 0.155
-    LIFT = SIZE * AY / 2 + SIZE * 0.01
-    for o in objs + FRAME_OBJS:
-        k = o.location.z / max(1e-9, THICK + GAP)  # hanyadik lap
-        if o in FRAME_OBJS:
-            # a keret a vizlapok ele, de a terkep-reteg MOGE: a referencian a
-            # szarazfold-darabok ralognak a keretlecre
-            k = nmax + 0.4
-        elif o in ENGRAVE_OBJS:
-            k = nmax + 1.35
-        elif o.location.z / max(1e-9, THICK + GAP) > nmax - 1.5:
-            # a szarazfold-lap a legelso elem, a keret elott
-            k = nmax + 1.2
-        o.rotation_euler = (math.radians(90), 0, 0)
-        ox, oy, oz = o.location.x, o.location.y, o.location.z
-        o.location = (ox + k * STEP_X, -oz - k * STEP_Y, oy + LIFT)
+    # KET ROBBANTASI STILUS. A "standing" a vilagterkep referenciaja (allo
+    # lapok melysegi sorban); a "fan" a papirvagas-termekek eredeti,
+    # reviewer-jovahagyott legyezoje. Alapertelmezes a fan.
+    if EXPLODE == "standing":
+        STEP_X = SIZE * 0.035
+        STEP_Y = SIZE * 0.155
+        LIFT = SIZE * AY / 2 + SIZE * 0.01
+        for o in objs + FRAME_OBJS:
+            k = o.location.z / max(1e-9, THICK + GAP)
+            if o in FRAME_OBJS:
+                k = nmax + 0.4
+            elif o in ENGRAVE_OBJS:
+                k = nmax + 1.35
+            elif o.location.z / max(1e-9, THICK + GAP) > nmax - 1.5:
+                k = nmax + 1.2
+            o.rotation_euler = (math.radians(90), 0, 0)
+            ox, oy, oz = o.location.x, o.location.y, o.location.z
+            o.location = (ox + k * STEP_X, -oz - k * STEP_Y, oy + LIFT)
+    else:
+        for o in objs + FRAME_OBJS:
+            k = kx = o.location.z / max(1e-9, THICK + GAP)   # hanyadik lap
+            if o in FRAME_OBJS:
+                # a keret ugyanazon a tengelyen, a legyezo vegen - kulon uszo
+                # keret "leszakadt elemkent" olvasodott (reviewer)
+                kx = nmax - 1
+                k = nmax + 1.4
+            elif o in ENGRAVE_OBJS:
+                k = kx = nmax - 1 + 0.18
+            o.location.x += kx * SIZE * 0.105
+            o.location.y -= kx * SIZE * 0.012
+            o.location.z = k * SIZE * 0.046
     # a keret kulso merete nagyobb a lapoknal: kozepre igazitva az alja lejjebb
     # logott, es "elcsuszott panelnek" olvasodott (reviewer) - also el flush
     bpy.context.view_layer.update()
@@ -972,15 +1047,18 @@ if VIEW == "plate":
         ox, oy, oz = o.location.x, o.location.y, o.location.z
         o.location = (ox, -oz, oy)
     # ultetes a padlora + vilagos padlolap: a darab alljon valahol, ne
-    # lebegjen fekete urben (reviewer P3)
+    # lebegjen fekete urben (reviewer P3). Csak onallo termekkepnel - a
+    # kompozit-lancnak atlatszo hatter kell.
     bpy.context.view_layer.update()
     _pb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)
     _pzmin = min(q.z for q in _pb)
     for o in objs + FRAME_OBJS:
         o.location.z -= _pzmin
-    bpy.ops.mesh.primitive_plane_add(size=SIZE * 8, location=(0, -SIZE * 0.5, -0.0004))
-    bpy.context.object.data.materials.append(
-        wood("studio_floor", (0.90, 0.885, 0.862, 1), 0.85, grain=False))
+    if STUDIO_BG:
+        bpy.ops.mesh.primitive_plane_add(size=SIZE * 8,
+                                         location=(0, -SIZE * 0.5, -0.0004))
+        bpy.context.object.data.materials.append(
+            wood("studio_floor", (0.90, 0.885, 0.862, 1), 0.85, grain=False))
 
 if VIEW == "lifestyle":
     # A warm styled shelf with out-of-focus props. The winning listings put the
@@ -1084,13 +1162,16 @@ if VIEW == "exploded":
     # allo lapok, 3/4-es nezet balrol-elolrol, enyhen felulrol - a 21-es
     # referencia-kep kameraja. 55 mm: merheto perspektiva-konvergencia,
     # ahogy a referencian, a 85 mm-es tavkep tul lapos volt ehhez.
-    D = ext * 3.7
-    print(f"[render] exploded fit: ext={ext:.3f} D={D:.3f} c=({cx:.2f},{cy:.2f},{cz:.2f})")
-    # atlos nezet balrol, mint a referencian - de az egesz stack a vasznon
-    loc = (cx - D * 0.30, cy - D * 0.80, cz + D * 0.11)
+    if EXPLODE == "standing":
+        D = ext * 3.7
+        loc = (cx - D * 0.30, cy - D * 0.80, cz + D * 0.11)   # atlos, balrol
+    else:
+        D = ext * 2.2
+        loc = (cx - D * 0.08, cy - D * 0.78, cz + D * 0.60)   # felulrol, legyezore
+    print(f"[render] exploded({EXPLODE}) fit: ext={ext:.3f} D={D:.3f}")
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
-    cam.data.lens = 48.0
+    cam.data.lens = 48.0 if EXPLODE == 'standing' else LENS
     _dir = (cx - loc[0], cy - loc[1], cz - loc[2])
     import mathutils as _mu
     cam.rotation_euler = _mu.Vector(_dir).to_track_quat('-Z', 'Y').to_euler()
@@ -1108,17 +1189,20 @@ elif VIEW == "styled":
     _fcz = (min(q.z for q in _fb) + max(q.z for q in _fb)) / 2
     # a referencia arany: a keret a kepszelesseg ~56%-a, korulotte lelegzo fal
     # es komod - a korabbi 74%-os kitoltes tul szoros volt ehhez a kephez
-    LENS = 60.0
-    D = max(_fW * LENS / 36.0 / 0.54, _fH * LENS / 24.0 / 0.44) * SCENE_ZOOM
-    # a cel a keretkozep ala tolodik: a termek feljebb ul a kepben, alatta
-    # LATSZIK a komod teste (a felhasznalo kerese: ne csak asztallap legyen)
-    TGT = _fcz - _fH * 0.28
-    camz = _fcz + _fH * 0.30
-    # ~20 fokos 3/4-es szog + enyhe letekintes: a frontalis kamera lapitotta
-    # a retegek melyseget (reviewer); a referencia-foto igy keszult
-    _lx = -D * 0.36
-    # kozel vizszintes kamera: igy a komod ELULSO frontja latszik
-    camz = _fcz + _fH * 0.05
+    if ROOM == "sideboard":
+        # a referencia-foto aranyai: a keret a kepszelesseg ~54%-a, ~20 fokos
+        # 3/4-es szog, kozel vizszintes kamera (igy latszik a komod frontja)
+        LENS = 60.0
+        D = max(_fW * LENS / 36.0 / 0.54, _fH * LENS / 24.0 / 0.44) * SCENE_ZOOM
+        TGT = _fcz - _fH * 0.28
+        _lx = -D * 0.36
+        camz = _fcz + _fH * 0.05
+    else:
+        # a papirvagas-termekek eredeti, szorosabb polc-beallitasa
+        D = max(_fW * LENS / 36.0 / 0.74, _fH * LENS / 24.0 / 0.62) * SCENE_ZOOM
+        TGT = _fcz
+        _lx = 0.0
+        camz = _fcz + _fH * 0.28
     bpy.ops.object.camera_add(location=(_lx, -D, camz))
     import mathutils as _mu3
     _cam = bpy.context.object
@@ -1226,7 +1310,7 @@ if SCENE_HDRI:
 if VIEW == "lifestyle":
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.78, 0.76, 0.72, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.55
-elif VIEW == "plate":
+elif VIEW == "plate" and STUDIO_BG:
     # vilagos studio-hatter: a darab alljon fenyben, ne fekete urben
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.930, 0.895, 0.835, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 1.15
@@ -1253,7 +1337,6 @@ if ORBIT:
             setattr(es, attr, val)
     # a short left-right arc reads as "turning it in your hand" and shows the
     # layer edges - a static hero cannot show depth, which is the whole product
-    import os
     base = OUT[:-4] if OUT.endswith(".png") else OUT
     scene.cycles.samples = 48
     scene.render.resolution_x = scene.render.resolution_y = 1100

@@ -339,10 +339,10 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
             "- Pure black (#000000) is the area cut away entirely, outside the "
             "circular piece.\n", "")
         prompt = prompt.replace(
-            "- Use EXACTLY {levels} flat shades of grey plus pure black background. "
-            "Nothing else.".format(levels=levels),
-            "- Use EXACTLY {levels} flat shades of grey. No pure black anywhere "
-            "except the deepest recess.".format(levels=levels))
+            f"- Use EXACTLY {levels} flat shades of grey plus pure black background. "
+            "Nothing else.",
+            f"- Use EXACTLY {levels} flat shades of grey. No pure black anywhere "
+            "except the deepest recess.")
         prompt = prompt.replace(
             "- Darker grey = further back, lighter grey = closer to the viewer. "
             "White is the frontmost element.",

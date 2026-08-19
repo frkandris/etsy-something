@@ -136,6 +136,12 @@ def text_paths(name, x, y, hgt, rot=0.0, family="DejaVu Sans", weight="bold"):
     """
     from matplotlib.textpath import TextPath
     from matplotlib.font_manager import FontProperties
+    # Ures feliraton a matplotlib TextPath AttributeError-t dob a melyeben
+    # ('list' object has no attribute 'flags'), nem ures utvonalat ad. Az
+    # svg_text `if not subs: return None` ore ezert ELERHETETLEN volt - a
+    # cimke nelkuli darab a hivo oldalan robbant volna, nem csendben kimaradt.
+    if not name:
+        return []
     tp = TextPath((0, 0), name, size=hgt,
                   prop=FontProperties(family=family, weight=weight))
     polysets = tp.to_polygons()

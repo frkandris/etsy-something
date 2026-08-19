@@ -2,7 +2,7 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
-2026-08-19 — Tesztkeszlet es `./check.sh` bevezetve a vagas-geometriara (ruff + 19 pytest, 0,2 mp). Az indok: 2026-08-14-en HAROM egymast koveto javitasi kor mindegyike bevezetett egy uj hibat, es mindet kulso biralo (codex) talalta meg, nem a sajat ellenorzesem. Minden teszt egy VALODI hibabol szuletett. A nem trivialis resz az igazolas: mutacioval (a javitas visszavonasa) merve a 19-bol KETTO hasztalan volt - a probageometriam nem hozta letre a hibat, ezert a hibas kodon is zold maradt. Ujrairt fixture utan mind a hat mutacio elbukik (workflows/self-testing-code)
+2026-08-19 — Tesztkeszlet (30 teszt), `./check.sh` es `tests/mutation_check.py` bevezetve a vagas-geometriara. Az indok: 2026-08-14-en HAROM egymast koveto javitasi kor mindegyike bevezetett egy uj hibat, es mindet kulso biralo (codex) talalta meg. A lenyeg nem a tesztek szama, hanem hogy IGAZOLVA vannak: a mutacio (a javitas visszavonasa) most 13/13-on bukik. Odaig harom sajat hibat kellett javitani - ket haszontalan teszt (a fixture nem hozta letre a hibat), ket tul laza allitas, es maga a MEROESZKOZ ketszer hazudott 'minden rendben' iranyba (pytest-kimenetre illesztett szoveg + __pycache__ miatt a mutalatlan kod futott). Mellektermek: a text_paths ures feliraton osszeomlott, az svg_text `return None` ore ELERHETETLEN volt (workflows/self-testing-code)
 
 2026-08-14 — Nemet juhasz reviewer-iv: plate 3.3 -> 3.7, macro 3.2 -> 4.2, exploded 2.5 -> 3.5. Mind a harom blokkolo (lebego krem-sziget, elszakadt toredek, orveny-legyezo) EGY gyokerokre vezetett vissza, es a javitas a FORRASKEPBEN volt, nem a lancban - a prompt megerositese utan az akcentus-szigetek szama 20 -> 7 (pitfalls/2026-08-14-a-hiba-a-forrasban-volt)
 

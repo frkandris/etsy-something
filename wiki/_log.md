@@ -2,6 +2,8 @@
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
 
+2026-08-19 — Tesztkeszlet es `./check.sh` bevezetve a vagas-geometriara (ruff + 19 pytest, 0,2 mp). Az indok: 2026-08-14-en HAROM egymast koveto javitasi kor mindegyike bevezetett egy uj hibat, es mindet kulso biralo (codex) talalta meg, nem a sajat ellenorzesem. Minden teszt egy VALODI hibabol szuletett. A nem trivialis resz az igazolas: mutacioval (a javitas visszavonasa) merve a 19-bol KETTO hasztalan volt - a probageometriam nem hozta letre a hibat, ezert a hibas kodon is zold maradt. Ujrairt fixture utan mind a hat mutacio elbukik (workflows/self-testing-code)
+
 2026-08-14 — Nemet juhasz reviewer-iv: plate 3.3 -> 3.7, macro 3.2 -> 4.2, exploded 2.5 -> 3.5. Mind a harom blokkolo (lebego krem-sziget, elszakadt toredek, orveny-legyezo) EGY gyokerokre vezetett vissza, es a javitas a FORRASKEPBEN volt, nem a lancban - a prompt megerositese utan az akcentus-szigetek szama 20 -> 7 (pitfalls/2026-08-14-a-hiba-a-forrasban-volt)
 
 2026-08-14 — Otodik termek megepitve: kiemelkedo reliefes nemet juhasz (0052), 7-8 reteg, 0 nyak, 12 mm-es legvekonyabb pont. Uj --relief prompt-mod a generatorban: a kulso el MAGA a sziluett, a zonahatarok az ANATOMIAT kovetik (ful/homlok/szemgodor/orrnyereg/pofaszakall), es a vagasi megkotesek mar a KEPBE keszulnek. A kritikus felismeres kodolvasasbol jott, nem kepnezegetesbol: a mask_at tonus FOLOTT valogat anyagot, ezert a forraskep 255-os feher hattere MINDEN szinten anyag - nem egy plusz reteget adott, hanem mind a nyolcat kitoltotte a vaszon szeleig (innen a krem lekerekitett negyzet a kutya mogott). A javitas a FORRASBAN van: hatter 0-ra. A --drop-field kapcsolo ettol meg hasznos mas forrasokhoz (profiles/relief-portrait)

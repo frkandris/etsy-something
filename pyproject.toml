@@ -26,3 +26,10 @@ ignore = [
 # A Blender-szkript a `bpy` modult csak futásidőben kapja meg, és a
 # felső szintű kódot nem lehet függvénybe zárni a bpy-operátorok miatt.
 "product/render_blender.py" = ["E402", "F821"]
+
+[tool.pytest.ini_options]
+# Fowler, SelfTestingCode: a tesztkészletet EGYETLEN paranccsal kell tudni
+# futtatni, és gyorsnak kell lennie, különben nem fut le elég gyakran.
+# A `cutlib` a `product/pipeline/`-ban él, nem csomagként - onnan importáljuk.
+testpaths = ["tests"]
+addopts = "-q --strict-markers"

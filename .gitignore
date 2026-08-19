@@ -8,3 +8,5 @@ product/pipeline/work/
 product/pipeline/assets/
 product/iterations/0041-cat-choices/v*/layers/
 product/pipeline/geodata/
+.pytest_cache/
+.ruff_cache/

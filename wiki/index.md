@@ -19,6 +19,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[workflows/worldmap-pipeline]] — **világtérkép-lánc**: mért mélység, generátor nélkül
 - [[workflows/product-profiles]] — termék-profilok (JSON) és a közös vágás-geometria; miért lett profil-adat, ami korábban konstans volt
 - [[workflows/recessed-papercut-pipeline]] — **a süllyesztett papírvágás-lánc** (a tényleges termékszerkezet)
+- [[workflows/self-testing-code]] — `./check.sh`: a vágás-geometria regressziós tesztjei, mutációval igazolva
 
 ## Eredmények — `findings/`
 
@@ -86,6 +87,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[workflows/norse-celtic-catalogue-plan]] — ~~katalógusterv~~ **visszavonva**, dokumentációként
 - [[workflows/production-pipeline]] — AI-támogatott layered fájlgyártás
 - [[workflows/sheet-updates]] — hogyan írunk a Sheetbe
+- [[workflows/self-testing-code]] — **öntesztelő kód**: miért van tesztkészlet, és miért nem bizonyíték a zöld teszt
 
 ## Szótár és kérdések
 

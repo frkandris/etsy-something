@@ -10,6 +10,8 @@ description: Belépési pont; innen indul minden.
 Piackutatás egy Etsy digitális termék niche-ről. Kezdd itt: **[[overview]]** — a teljes kép egy
 oldalon.
 
+Engineering eljárás: [[workflows/engineering-quality]] — ellenőrzések, izolált mutáció és független review.
+
 A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: **[[_log]]**.
 
 ## Referencia
@@ -23,6 +25,8 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 ## Eredmények — `findings/`
 
+- [[findings/2026-09-05-reference-iteration]] — auditjavítások és három új, vizuálisan összehasonlított termékváltozat
+- [[findings/2026-09-05-project-audit]] — helyi projektállapot, ellenőrzések és reprodukált technikai hibák
 - [[findings/layered-niche-size-and-structure]] — mekkora és mennyire zsúfolt a piac
 - [[findings/pricing-and-discounting]] — **a legerősebb jelzés**: ár és tartós kedvezmény
 - [[findings/catalogue-size-and-throughput]] — hány listing kell, milyen tempóval
@@ -64,6 +68,8 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[methods/keyword-tools-comparison]] — öt kulcsszóeszköz mérés alapján
 
 ## Mérési csapdák — `pitfalls/`
+
+- [[pitfalls/2026-09-05-recessed-layer-registration]] — a jó depth mapet elrontó rétegillesztés és globális simítás
 
 - [[pitfalls/2026-08-12-rossz-populacio-harmadszor]] — a hibás populáció, harmadszor
 - [[pitfalls/2026-08-11-a-szuro-torolte-a-felso-lapokat]] — a szűrő a felső lapokat és a nyílásokat is törölte

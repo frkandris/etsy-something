@@ -1,0 +1,55 @@
+forras: depth_map.png  1254x1254px
+tonusszintek: 0, 42, 85, 127, 170, 212, 255
+[i] teljes panel kikenyszeritve (4,553 mm2 kerult minden lapra)
+[i] minta a biztonsagos zonara illesztve (1.000x, eltolas -21/-2 mm)
+[i] 14 mm-es erintetlen margosav minden lapon
+objektum: 300 mm (a hatlap befoglaloja, nem a vaszon)
+
+ reteg  darab  lyuk  terulet mm2   leggyengebb  vekony%  nyak  statusz
+     1      1    10       87,861        12.00mm    0.00%     0  OK
+     2      1    17       83,878        12.00mm    0.00%     0  OK
+     3      1    17       75,775        12.00mm    0.00%     0  OK
+     4      1    16       71,860        12.00mm    0.02%     0  OK
+     5      1    11       67,932        12.00mm    0.02%     0  OK
+     6      1     6       62,346        12.00mm    0.02%     0  OK
+[i] paletta: 6 lap a forras 7 tonusabol
+
+kiírva: /Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v2/.output.staging-2moqgioe/layers
+/Users/p.tothandras/Code/etsy-something/product/render_blender.py:210: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m.use_nodes = True
+/Users/p.tothandras/Code/etsy-something/product/render_blender.py:1479: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world.use_nodes = True
+00:03.247  render           | Saved: '/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v2/.output.staging-2moqgioe/plate.png'
+[render] profil: profile.json
+[render] paletta a rajzbol: #7f4e2f  #c47d44  #deaa67  #f2ce99  #f9edd6  #fff4ec
+[render] 6 reteg
+[render] anyagok: ['wood_0', 'wood_1', 'wood_2', 'wood_3', 'wood_4', 'wood_5']
+[render] darab merete: 0.3000 egyseg
+[render] keret: vilagos tolgy
+[render] mu=0.3000 keret-nyilas=0.2982 kitoltes=101%
+[render] nezet=plate (atlatszo) tavolsag=0.977
+[render] nezet=plate emelkedes=34 tavolsag=0.977
+[render] kesz: /Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v2/.output.staging-2moqgioe/plate.png
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 01:35:57)
+
+Blender quit
+/Users/p.tothandras/Code/etsy-something/product/render_blender.py:210: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m.use_nodes = True
+/Users/p.tothandras/Code/etsy-something/product/render_blender.py:1479: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world.use_nodes = True
+00:05.861  render           | Saved: '/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v2/.output.staging-2moqgioe/styled.png'
+[render] profil: profile.json
+[render] paletta a rajzbol: #7f4e2f  #c47d44  #deaa67  #f2ce99  #f9edd6  #fff4ec
+[render] 6 reteg
+[render] anyagok: ['wood_0', 'wood_1', 'wood_2', 'wood_3', 'wood_4', 'wood_5']
+[render] darab merete: 0.3000 egyseg
+[render] keret: vilagos tolgy
+[render] mu=0.3000 keret-nyilas=0.2982 kitoltes=101%
+[render] styled ules: zmin=-0.1668
+[render] nezet=styled tavolsag=1.720
+[render] nezet=styled emelkedes=34 tavolsag=1.720
+[render] kesz: /Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v2/.output.staging-2moqgioe/styled.png
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 01:35:57)
+
+Blender quit
+Complete: product/catalog/recessed-papercut/runs/2026-09-05-v2/output

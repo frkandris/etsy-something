@@ -1,6 +1,16 @@
+2026-09-16 — A végső célzott Claude-review APPROVE, üres findings lista; 97 sikeres helyi teszt és 13/13 észlelt mutáció bizonyítéka a reviews/2026-09-16 alatt ([[workflows/engineering-quality]]).
+2026-09-16 — A célzott review utáni kiegészítés megszünteti a shell-felderítés elnyelt hibakódját; a köztes 96 helyett 97 teszt sikeres. Külön piros kontroll igazolja a find-hiba észlelését ([[workflows/engineering-quality]]).
+2026-09-16 — Fowler/Google engineering útmutatók újraellenőrizve: descriptor-alapú exportzár, automatikus shellfelderítés, célzott üresgeometria-hiba és csempézési szerződés. 96 helyi teszt és 13/13 mutáció sikeres; a régi kódon 11 új regressziós eset bukik ([[workflows/engineering-quality]]).
+2026-09-10 — A 1543 termékes layered katalógusminta címeiben 336 Cricut-, 215 papír/karton- és 201 shadow/light-box-említés; átfedő címjelzések, nem géptesztek vagy piaci arányok ([[findings/2026-09-10-colored-layered-title-signals]]).
+2026-09-05 — Fowler/Google gyakorlatok alkalmazva: viselkedési és export-regressziók, izolált mutációk, bemeneti paletta-snapshotok, nem blokkoló konkurenciazár; 80 teszt sikeres, Claude round 2 APPROVE, 11 első körös finding lezárva ([[workflows/engineering-quality]]; reviews/README.md).
+2026-09-05 — A recessed-papercut változatlan depth mapjéből v2 készült: közös rétegtranszformáció és csak keretszéli javítás, ép szem/fül, hat egydarabos panel. A zöld geometriai v1 önmagában nem védte a képhűséget ([[pitfalls/2026-09-05-recessed-layer-registration]]).
 # Változásnapló
 
 Append-only, legújabb elöl. Soronként egy önmagában érthető bejegyzés.
+
+2026-09-05 — Auditjavítások: méretbiztos csempézés, szigorú térképexport, helyreállítható kimenetcsere, egységes profilrunner, dependency lock és CI; 46 helyi teszt, 13/13 észlelt mutáció. Három új termékfutás és referencia/előtte/utána galéria, forrástermék szerinti katalógus; a Vyva-térkép újragenerálása nem zárult le (findings/2026-09-05-reference-iteration).
+
+2026-09-05 — Helyi projektaudit: Ruff és 30 teszt sikeres, 13/13 beépített mutáció észlelve; a meglévő karos tesztgeometrián mégis 750 mm széles csempe keletkezik 330 mm-es korlát mellett. Dokumentálva a térképexportok hiányzó hibakapuja, a run_theme.sh pipefail-hiánya és a dokumentáció eltérései; implementációs javítás nem történt (findings/2026-09-05-project-audit).
 
 2026-08-19 — Tesztkeszlet (30 teszt), `./check.sh` es `tests/mutation_check.py` bevezetve a vagas-geometriara. Az indok: 2026-08-14-en HAROM egymast koveto javitasi kor mindegyike bevezetett egy uj hibat, es mindet kulso biralo (codex) talalta meg. A lenyeg nem a tesztek szama, hanem hogy IGAZOLVA vannak: a mutacio (a javitas visszavonasa) most 13/13-on bukik. Odaig harom sajat hibat kellett javitani - ket haszontalan teszt (a fixture nem hozta letre a hibat), ket tul laza allitas, es maga a MEROESZKOZ ketszer hazudott 'minden rendben' iranyba (pytest-kimenetre illesztett szoveg + __pycache__ miatt a mutalatlan kod futott). Mellektermek: a text_paths ures feliraton osszeomlott, az svg_text `return None` ore ELERHETETLEN volt (workflows/self-testing-code)
 

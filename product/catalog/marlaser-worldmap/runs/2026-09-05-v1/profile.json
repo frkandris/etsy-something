@@ -1,0 +1,64 @@
+{
+  "name": "worldmap-flat",
+  "title": "Egyr\u00e9teg\u0171 vil\u00e1gt\u00e9rk\u00e9p, kontinensenk\u00e9nt k\u00fcl\u00f6n darab",
+  "note": "NEM r\u00e9teges \u00e9s NEM \u00f6sszef\u00fcgg\u0151: minden kontinens (\u00e9s nagyobb sziget) k\u00fcl\u00f6n darab, a k\u00f6zt\u00fck l\u00e9v\u0151 tenger maga a fal. Nincs keret, nincs h\u00e1tlap. Referencia: MarLaserCut listing 1516752782.",
+  "structure": {
+    "layers": 1,
+    "connected": false,
+    "sea": "wall",
+    "line_types": {
+      "cut": "kontinens- \u00e9s szigetkont\u00far (#ff0000)",
+      "score": "orsz\u00e1ghat\u00e1r a darabon bel\u00fcl (#0000ff) \u2014 NEM v\u00e1gjuk \u00e1t, mert sz\u00e9tesne",
+      "engrave": "feliratok (#808080)"
+    }
+  },
+  "pipeline": {
+    "script": "11_worldmap_flat.py",
+    "args": [
+      "--width",
+      "1325",
+      "--max-piece",
+      "330x280",
+      "--min-island",
+      "40",
+      "--hard-floor",
+      "12",
+      "--label-h",
+      "4.0",
+      "--lat=-80,80",
+      "--heal-iterations",
+      "12"
+    ]
+  },
+  "render": {
+    "palette": "birch",
+    "frame": false,
+    "paper": false,
+    "recessed": false,
+    "studio_bg": false,
+    "frame_width": 0.085,
+    "explode": "fan",
+    "room": "shelf",
+    "canvas": "2000x1120",
+    "mixed_wood": false,
+    "engrave": true,
+    "grain": true,
+    "grain_contrast": 0.035,
+    "engrave_color": [
+      0.014,
+      0.006,
+      0.002,
+      1
+    ],
+    "key_color": [
+      1,
+      0.96,
+      0.9
+    ],
+    "wall_transform": "Standard",
+    "wall_exposure": -0.75
+  },
+  "views": [
+    "wall"
+  ]
+}

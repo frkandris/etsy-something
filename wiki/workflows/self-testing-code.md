@@ -112,3 +112,11 @@ Források: [Fowler, SelfTestingCode](https://martinfowler.com/bliki/SelfTestingC
 érvényes és bukjon el a kód romlásakor.
 
 Kapcsolódik: [[workflows/product-profiles]], [[findings/arxiv-layering-research]].
+
+## 2026-09-05: elkülönített mutációs futtatás
+
+A fenti 30 tesztes eredmény történeti mérés. A keret immár egy ideiglenes munkakönyvtárba másolt `cutlib.py`-t változtat, alapteszttel ellenőrzi a kiindulást, és csak a pytest 1-es visszatérését számítja észlelt mutációnak. Az élő forrás módosítása és a közös `/tmp`-backup megszűnt. A teljes pipeline ellenőrzése külön futási és exporttesztekkel bővült; eljárás: [[workflows/engineering-quality]].
+
+## 2026-09-05 — a korábbi lefedettségi állítások korrekciója
+
+A fenti 0,2 másodperces futásidő és a „02_trace/profilbetöltés fedetlen” állítás a korábbi, 30 tesztes állapotra vonatkozik. Az új teljes készlet 80 tesztje 2,35 másodperc alatt sikeres: a `test_trace_geometry.py` és `test_trace_export.py` a trace geometriáját és valódi SVG/DXF-exportját, a `test_product_runner.py` a profilbetöltést és a futtatás hibahatárait is ellenőrzi. A [check napló](../../reviews/check.log) és [Claude APPROVE bírálat](../../reviews/claude-round-2-findings.json) rögzíti a vizsgált állapotot. Nem állítunk teljes ág- vagy geometriai lefedettséget.

@@ -1,0 +1,209 @@
+{
+  "verdict": "APPROVE",
+  "resolutions": [
+    {
+      "id": "F1",
+      "status": "resolved",
+      "evidence": "check.sh:20-22 fájlonként hívja a `bash -n`-t (`for script in check.sh product/pipeline/run_theme.sh; do bash -n \"$script\"; done`), és a `set -euo pipefail` miatt az első hibás fájl megállítja a futást. tests/test_shell_entrypoints.py:13-25 paraméterezett teszt szándékosan hibás MÁSODIK shellfájllal (`if [[ -n x ]; then`) igazolja, hogy a `returncode != 0` pontosan a `broken` esetben áll fenn, és a `== rendben ==` sor elmarad. A CI (.github/workflows/check.yml:13) ugyanezt a check.sh-t futtatja."
+    },
+    {
+      "id": "F2",
+      "status": "resolved",
+      "evidence": "product/pipeline/run_theme.sh:5-17: `THEME SOURCE PROFILE [LEVELS]`, arity-ellenőrzés (2-es kilépési kód), THEME regex-validáció, explicit `--profile $3 --src $2`; nincs többé `raw_*.png` glob és nincs hardcode-olt `--profile papercut`. tests/test_shell_entrypoints.py:28-47 szóközös forrásnévvel is igazolja az argumentumátadást és az `--out` útvonalat. A funkcióvesztés dokumentált: README.md:66-73 (a hardcode háttér/keret és a 04_composite kikerült, `render_photo.png` nem készül) és wiki/workflows/production-pipeline.md:20."
+    },
+    {
+      "id": "F3",
+      "status": "resolved",
+      "evidence": "product/pipeline/exportlib.py:31-36: a zár a `tempfile.gettempdir()/etsy-export-locks-<uid>` alatt, sha256-alapú néven él, nem a payload mellett. A commitolt katalógusban Glob-bal egyetlen `*.lockfile` sincs (product/catalog/**), sem `output.lockfile`. tests/test_exports.py:77 kifejezetten állítja, hogy a célkönyvtár szülőjében CSAK a publikált könyvtár marad."
+    },
+    {
+      "id": "F4",
+      "status": "resolved",
+      "evidence": "Mindhárom manifest gépi eredménynek konzisztens a jelenlegi run_product.py-vel: a `command` az `output/inputs/source/...`-ra mutat (magicvector .../manifest.json:85, recessed v2 .../manifest.json:82), létezik az `inputs/` pillanatkép (product/catalog/**/output/inputs/source/*.png), a `render_note` kulcs eltűnt, a `views` megegyezik a profil `views`-ával ÉS a ténylegesen jelen lévő PNG-kkel (magicvector: plate+macro; recessed v2: plate+styled; marlaser: wall). Új mezők: `input_sha256`, `render_commands`. A cat v2 futás teljes naplója reviews/cat-v2-render.log (staging útvonalak, Blender 5.2.1, `Complete: ...`)."
+    },
+    {
+      "id": "F5",
+      "status": "resolved",
+      "evidence": "run_product.py:59-75 `palette_inputs` a `--palette`, `--palette=` és `render.palette_file` fájlokat is összegyűjti és létezésüket ellenőrzi; 105-113 bemásolja őket az `inputs/palettes/` alá, hash-eli (`input_sha256`), és a receptet/profilt a MÁSOLATRA írja át; 197-198 kiterjeszti rájuk az `--out must not contain` ellenőrzést. tests/test_product_runner.py:12-35 mind a négy esetre (source/profile/palette/render_palette), 130-158 pedig az eredeti paletta futás közbeni átírására és utólagos törlésére is. Ellenőriztem, hogy a három támogatott szkript argparse-ában a `--palette`-en kívül nincs további fájl-bemenet (10_worldmap.py:144-173, 11_worldmap_flat.py:63-84)."
+    },
+    {
+      "id": "F6",
+      "status": "resolved",
+      "evidence": "02_trace.py:21 `from cutlib import ghost_outline, widest_inscribed, necks, polys as parts_of`; a fájlban nincs többé helyi `widest_inscribed`/`necks`/`parts_of` definíció (a megmaradt lokális függvények: `frailest`, `thin_limbs`, `thin_area`, `heal_necks`). A `necks` alapértelmezett `frag_area=20.0` (cutlib.py:59) egyezik a 02_trace `MIN_FRAG`-jével, a `widest_inscribed` hi=12.0 alapértéke pedig a riportban látszik (cat v2 report weakest_mm 12.0). Vegyes/nested GeometryCollection regresszió: tests/test_trace_geometry.py:16-20. Így a mutációs készlet (13/13, reviews/mutations.log) mostantól ténylegesen mindkét láncot fedi."
+    },
+    {
+      "id": "F7",
+      "status": "resolved",
+      "evidence": "product/profiles/worldmap.json:4,38 `validation_status: experimental` + magyarázó note; run_product.py:187-188 futás előtt figyelmeztet. A product/profiles/worldmap-flat.json:17-31 `args` bájtra megegyezik a validált product/catalog/marlaser-worldmap/runs/2026-09-05-v1/profile.json:17-31 receptjével (benne `--lat=-80,80` és `--heal-iterations 12`). README.md:52 és :64 megkülönbözteti a ténylegesen futással igazolt családokat (magicvector-shepherd, recessed-papercut, marlaser-worldmap) a kiindulási receptektől."
+    },
+    {
+      "id": "F8",
+      "status": "resolved",
+      "evidence": "10_worldmap.py:478 és 11_worldmap_flat.py:497 a `with output_directory(...)` blokkon KÍVÜL, `final_out`-tal ír. (02_trace.py:1195 eleve így volt.)"
+    },
+    {
+      "id": "F9",
+      "status": "resolved",
+      "evidence": "exportlib.py:38-40 `fcntl.LOCK_EX | fcntl.LOCK_NB`, `BlockingIOError` esetén célzott üzenettel (`Another export is running for <cél>`). tests/test_exports.py:63-77 VALÓDI gyermekfolyamattal (subprocess, timeout=5) igazolja a kizárást, a hibaüzenetet és azt, hogy a szülő tranzakciója sértetlenül publikál."
+    },
+    {
+      "id": "F10",
+      "status": "resolved",
+      "evidence": "10_worldmap.py:215-219 és 11_worldmap_flat.py:358-359 (`tdir.mkdir(exist_ok=True)`) — a friss stagingen futó `old.unlink()` / `_f.unlink()` takarító ágak és a hozzájuk tartozó, immár hamis kommentek eltűntek."
+    },
+    {
+      "id": "F11",
+      "status": "resolved",
+      "evidence": "run_product.py:30-35: `latest_run` → `product['profile']` (profiles/<név>.json) → célzott `Catalog family <név> has no runnable recipe` hiba. tests/test_product_runner.py:161-165 mindkét ágra (vyva-worldmap → 10_worldmap.py; early-concepts → 'no runnable recipe')."
+    },
+    {
+      "id": "EXTRA-1 (lapos térkép: teljesen vékony sziget)",
+      "status": "resolved",
+      "evidence": "11_worldmap_flat.py:468-473: a kapu a nyakszám és a méretkorlát mellett a legkisebb beírt kört is méri (`weakest`), és `all_ok` csak `weakest >= a.min_web` mellett igaz; a `weakest_mm` be is kerül a riportba. A rés valós volt: cutlib.tile_piece:355-360 az nx==1/ny==1 ágon NEM alkalmazza a `min_web`-es befoglaló-ellenőrzést, egy 100x1,25 mm-es sziget pedig erózióval eltűnik, tehát nulla nyakat ad. tests/test_flat_map_export.py:16-30 valódi generátorfutással (fetch monkeypatch) igazolja, hogy a hibás export megáll (`Hibás vágásgeometria`), a régi kimenet megmarad és report.json sem keletkezik. A 91 darabos valós térkép újravalidálása: reviews/map-revalidation.json (27 fájl, 0 eltérés, weakest 2,904 mm) és a commitolt marlaser report.json:2-3."
+    },
+    {
+      "id": "EXTRA-2 (süllyesztett macska: nyílás-regisztráció és nem lokális morfológiai roncsolás)",
+      "status": "resolved",
+      "evidence": "02_trace.py:424-448 `fit_panel_openings` MINDEN lap nyílását a teljes panelből számítja és ugyanazt az eltolást+skálázást alkalmazza rájuk; a beágyazás matematikailag megmarad (azonos affin transzformáció monoton). 02_trace.py:673-676: a keretvarrat zárása csak `outside.buffer(MIN_WEB)` környezetében ad anyagot; 707-726: a margósáv után nincs globális zárás, csak komponens-szűrés. Tesztek: tests/test_trace_geometry.py:23-47 (a legalsó lap nyílása is mozog; `fitted[2].difference(fitted[1]).area < 0.01`, tehát nincs mélységváltozás) és tests/test_trace_export.py:28-29,45-53 (keskeny dekoratív nyílás túléli a végponti SVG-ig). A red-test bizonyíték: reviews/decorative-slot-red-test.log (a javítás előtt `[(299.96, 300.0), (98.82, 98.82)]`-vel bukik). Termékbizonyíték: cat v2 report.json (6 réteg, mind 1 darab, 0 nyak, 0,02%) vs v1 (11 darab, 5 akcentus); a v1 és v2 plate.png vizuális összevetése szerint a v1-en a szem darabokra esett és a fül elvált, a v2-n a mandulaszem, pupilla, fül és a nyakszalag folytonos."
+    },
+    {
+      "id": "N1-N10",
+      "status": "resolved",
+      "evidence": "N1: 02_trace.py:1189 `require_valid(report, a.draft)`, nincs kézi all_ok/draft/release_ready-állítás és nincs duplikált kulcs. N2: 02_trace.py:1177 `palette_src`. N3: 11_worldmap_flat.py:459-460 korai, beszédes `ValueError` üres `tiled`-re a `max()` előtt. N4: tests/mutation_check.py:149-153 külön 'KERET-HIBA' ág a 0/1-től eltérő pytest-kódokra, és a visszatérési érték is figyelembe veszi. N5: exportlib-importok a fájl tetején (10_worldmap.py:28, 11_worldmap_flat.py:32). N6: reviews/check.log szerint 80 teszt 2,35 s — nem kellett `slow` marker. N7: relief-portrait.json:47 note már nem hivatkozik nem létező `--drop-field`-re. N8: manifest `render_commands` (run_product.py:164). N9: run_product.py:50-52 prefix-alapú tiltás (a gyermekeknél amúgy is `allow_abbrev=False`). N10: wiki/workflows/production-pipeline.md:11-20 új belépési pont szakasz + wiki/workflows/engineering-quality.md."
+    }
+  ],
+  "findings": [
+    {
+      "id": "G1",
+      "priority": "P3",
+      "file": "product/pipeline/exportlib.py",
+      "line": 31,
+      "trigger": "`lock_dir.mkdir(mode=0o700, exist_ok=True)` a megosztott, sticky-bites `/tmp`-ben hoz létre kiszámítható nevű könyvtárat (`etsy-export-locks-<uid>`), és `exist_ok=True` mellett nem ellenőrzi, hogy a már létező bejegyzés valóban a saját tulajdonú könyvtár-e. Többfelhasználós gépen egy másik lokális felhasználó előre létrehozhatja a könyvtárat (a `mode` ilyenkor nem érvényesül), vagy elhelyezhet benne egy `<sha256>.lock` nevű symlinket; a 36. sor `open(\"a\")` követi a linket.",
+      "impact": "Csak lokális, többfelhasználós gépen releváns: az export vagy váratlan PermissionError-ral áll meg, vagy egy idegen által megválasztott, a futtató által írható fájlba fűz hozzá. A termék kimenetét nem hamisítja meg, és a jelenlegi egyfelhasználós macOS-környezetben nem áll fenn — ezért nem blokkoló.",
+      "recommended_fix": "A `mkdir` után ellenőrizd a `lock_dir.lstat()` `st_uid`-jét és `S_ISDIR`-jét (eltérés esetén hiba), és a zárat `os.open(..., os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)`-val nyisd meg."
+    },
+    {
+      "id": "G2",
+      "priority": "P3",
+      "file": "product/pipeline/cutlib.py",
+      "line": 355,
+      "trigger": "A `tile_piece` nx==1 és ny==1 ágán a szűrés csak `q.area >= min_area`; a csempézett ágon (381. sor) ott van a `min(szélesség, magasság) >= min_web` feltétel is. Egy 100 x 1,25 mm-es sziget (terület 125 mm² > 40) így vágható darabként jön vissza. Pontosan ez az a bemenet, amit a tests/test_flat_map_export.py fixture-je használ.",
+      "impact": "A `test_tile_produces_no_uncuttable_slivers` állítása („a csempézés nem gyárthat vághatatlan szilánkot\") csak a többcellás ágra igaz; a függvény szerződése ágonként eltér, és ezt sem a docstring, sem a teszt nem mondja ki. Következmény jelenleg nincs, mert a lapos térkép új `weakest` kapuja (11_worldmap_flat.py:470-473) elfogja az esetet — de a védelem egy másik modulban van, mint az ígéret.",
+      "recommended_fix": "Vagy alkalmazd ugyanazt a `min_web`-es befoglaló-ellenőrzést az egycellás ágon is (beolvasztási lehetőség híján beszédes hibával), vagy mondd ki a docstringben, hogy az egycellás ág szándékosan csak terület szerint szűr, és a hívó felel a vastagságért — plusz egy teszteset erre az ágra."
+    }
+  ],
+  "nonblocking_nits": [
+    {
+      "id": "M1",
+      "file": "product/pipeline/exportlib.py",
+      "line": 33,
+      "note": "A zárófájlok soha nem törlődnek, így célkönyvtáranként egy 0 bájtos fájl gyűlik a temp könyvtárban. A kommentben rögzített indok (az inode-nak élnie kell, amíg versenyzők tarthatják) helytálló; érdemes lehet egy „régi zárak takarítása\" megjegyzést vagy a temp-mappa OS-szintű takarítására hivatkozást hozzátenni."
+    },
+    {
+      "id": "M2",
+      "file": "product/pipeline/11_worldmap_flat.py",
+      "line": 470,
+      "note": "A `widest_inscribed` felezése alulról közelít (a visszaadott `lo` legfeljebb hi/2^16 ≈ 0,0002 mm-rel kisebb a valósnál). Egy pontosan `min_web` vastag darab tehát elbukik a kapun, miközben a riport `weakest_mm`-je 3 tizedesre kerekítve pont `min_web`-et mutat. Biztonságos irányba téved, de az üzenet félrevezető lehet; egy apró epszilon vagy több tizedes a riportban egyértelműsítené."
+    },
+    {
+      "id": "M3",
+      "file": "product/pipeline/02_trace.py",
+      "line": 265,
+      "note": "`frailest()` üres/elfogyott rétegen `min() arg is an empty sequence`-szel áll meg — ugyanaz a hibaosztály, amit N3-nál a lapos térképen célzott ellenőrzésre cseréltél. Egy beszédes korai ellenőrzés itt is olcsó lenne."
+    },
+    {
+      "id": "M4",
+      "file": "product/pipeline/02_trace.py",
+      "line": 441,
+      "note": "`fit_panel_openings` akkor is középre tolja a nyílásokat (dx/dy), ha `fit == 1.0`, vagyis a minta már elférne a biztonságos zónán belül. A cat v2 futáson ez 21 mm-es kompozíciós elmozdulást jelentett (reviews/cat-v2-render.log:4). Szándékos és naplózott, de a docstring csak illesztésről beszél, a kényszerű középre igazításról nem."
+    },
+    {
+      "id": "M5",
+      "file": "product/pipeline/02_trace.py",
+      "line": 719,
+      "note": "`inner_zone = outer.buffer(-a.margin)` a rétegciklusON BELÜL számolódik újra, pedig ciklusinvariáns. Ugyanitt: ha egy réteg nem érne el a margósávig, a `keep` szűrő magát a sávot dobná el (`p.area > outer.area * 0.5` egy 14 mm-es sávra 300 mm-es panelen nem teljesül). A jelenlegi receptekben elérhetetlen, mert a `fit_panel_openings` minden lapot panel-méretűvé tesz, de a feltétel nem magyarázza el, miért biztonságos."
+    },
+    {
+      "id": "M6",
+      "file": "check.sh",
+      "line": 20,
+      "note": "A shell-lista fixen két fájl. Egy később hozzáadott `.sh` némán kimaradna az ellenőrzésből; `git ls-files '*.sh'` vagy `find . -name '*.sh' -not -path './.venv/*'` robusztusabb lenne."
+    },
+    {
+      "id": "M7",
+      "file": "wiki/workflows/self-testing-code.md",
+      "line": 101,
+      "note": "A „Populáció-megjegyzés\" még azt állítja, hogy a `02_trace.py` és a profilbetöltés fedetlen, a 30. sor pedig 0,2 mp-es check.sh-t ír. A 116-118. sorok korrekciós szakasza jelzi, hogy a 30 tesztes állapot történeti, de ezt a két konkrét mondatot nem javítja ki — a mai állapot 80 teszt / 2,35 s, és mindkét terület fedett (tests/test_trace_geometry.py, test_trace_export.py, test_product_runner.py)."
+    },
+    {
+      "id": "M8",
+      "file": "reviews/claude-round-2.json",
+      "line": 1,
+      "note": "A fájl létezik, de üres. Ha helyőrzőnek szánt, rendben; ha véletlenül maradt be, érdemes törölni, hogy ne látszódjon félkész review-eredménynek."
+    }
+  ],
+  "reviewed_files": [
+    "reviews/claude-round-1-findings.json",
+    "reviews/round-1-resolutions.md",
+    "reviews/round-1-source-hashes.json",
+    "reviews/check.log",
+    "reviews/mutations.log",
+    "reviews/cat-v2-render.log",
+    "reviews/clean-env-check.log",
+    "reviews/decorative-slot-red-test.log",
+    "reviews/map-revalidation.json",
+    "reviews/claude-round-2.json",
+    "check.sh",
+    ".github/workflows/check.yml",
+    ".gitignore",
+    "pyproject.toml",
+    "requirements.lock",
+    "README.md",
+    "product/pipeline/run_product.py",
+    "product/pipeline/exportlib.py",
+    "product/pipeline/cutlib.py",
+    "product/pipeline/02_trace.py",
+    "product/pipeline/10_worldmap.py",
+    "product/pipeline/11_worldmap_flat.py",
+    "product/pipeline/run_theme.sh",
+    "product/render_blender.py (csak a --profile / --palette-file argumentumkezelés)",
+    "tests/test_cutlib.py",
+    "tests/test_exports.py",
+    "tests/test_product_runner.py",
+    "tests/test_trace_export.py",
+    "tests/test_trace_geometry.py",
+    "tests/test_flat_map_export.py",
+    "tests/test_shell_entrypoints.py",
+    "tests/mutation_check.py",
+    "product/profiles/papercut.json",
+    "product/profiles/relief-portrait.json",
+    "product/profiles/worldmap.json",
+    "product/profiles/worldmap-flat.json",
+    "product/catalog/recessed-papercut/product.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v2/profile.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v2/README.md",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v2/output/manifest.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v2/output/layers/report.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v2/output/plate.png (vizuális)",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers/report.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/output/plate.png (vizuális)",
+    "product/catalog/magicvector-shepherd/runs/2026-09-05-v1/output/manifest.json",
+    "product/catalog/marlaser-worldmap/runs/2026-09-05-v1/profile.json",
+    "product/catalog/marlaser-worldmap/runs/2026-09-05-v1/output/layers/report.json",
+    "product/catalog/vyva-worldmap/product.json",
+    "wiki/pitfalls/2026-09-05-recessed-layer-registration.md",
+    "wiki/findings/2026-09-05-reference-iteration.md",
+    "wiki/workflows/engineering-quality.md",
+    "wiki/workflows/production-pipeline.md",
+    "wiki/workflows/self-testing-code.md",
+    "wiki/_log.md"
+  ],
+  "limitations": [
+    "Csak olvasó eszközeim voltak (Read/Glob/Grep). Sem a ./check.sh-t, sem a pytestet, sem a tests/mutation_check.py-t nem futtattam. A '80 teszt / 2,35 s', a '13/13 mutáció' és a red-test bukása a commitolt naplókból (reviews/check.log, mutations.log, decorative-slot-red-test.log, clean-env-check.log) származó állítás; a tesztek LOGIKÁJÁT végigolvastam és konzisztensnek találtam az implementációval, de a futást nem reprodukáltam.",
+    "SHA-256-ot nem tudok számolni, ezért a reviews/round-1-source-hashes.json és round-2-source-hashes.json bejegyzéseit nem tudtam a jelenlegi fájlokhoz illeszteni; a változásokat tartalmi olvasással azonosítottam. Ugyanígy a manifestek `source_sha256` / `input_sha256` értékeit sem ellenőriztem.",
+    "Nem futott Blender, potrace, GEOS-nehéz térképgenerálás és Natural Earth letöltés. A 91 darabos térkép újravalidálását (reviews/map-revalidation.json) és a cat v2 renderelést a naplók alapján fogadtam el.",
+    "A cat v1 és v2 plate.png összevetése statikus képvizsgálat egy renderelt PNG-n: a szem/pupilla/fül folytonosságát megerősíti, de nem helyettesíti a fizikai tesztvágást, a színhűség értékelését vagy az SVG/DXF gépi importját.",
+    "A megbízás szerint nem auditáltam újra a nem érintett kutatási anyagokat, a product/iterations/ történeti kimeneteket, a geolib.py / styles.py / assets.py / 00-05 számozott szkripteket, sem a piackutatási következtetéseket. A render_blender.py-ból csak a runner-szerződéshez tartozó argumentumkezelést néztem.",
+    "A `reviews/round-2-source-hashes.json` és a `reviews/claude-round-1.json` tartalmát nem használtam bizonyítékként; a `claude-round-2.json` a felülvizsgálat idején üres volt."
+  ]
+}

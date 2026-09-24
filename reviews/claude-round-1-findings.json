@@ -1,0 +1,225 @@
+{
+  "verdict": "REQUEST_CHANGES",
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P1",
+      "file": "check.sh",
+      "line": 20,
+      "trigger": "`bash -n check.sh product/pipeline/run_theme.sh`: a bash a `[options] [file [arguments]]` alak szerint CSAK az első fájlt olvassa be, a másodikat pozicionális paraméterként ($1) adja át. Írj szándékos szintaxishibát a run_theme.sh-ba (pl. `if [[ -n x ]; then`) — a `./check.sh` így is zöld marad.",
+      "impact": "Az ebben a körben hozzáadott 'shell syntax' lépés a run_theme.sh-ra nézve no-op. A CI (.github/workflows/check.yml:13) ugyanezt futtatja, tehát a shell-vezérlő továbbra is ellenőrizetlen — pont az a fájl, amelyet ebben a körben teljesen átírtak.",
+      "recommended_fix": "Fájlonként külön hívás: `for f in check.sh product/pipeline/run_theme.sh; do bash -n \"$f\"; done` (vagy `shellcheck`, ha elérhető)."
+    },
+    {
+      "id": "F2",
+      "priority": "P1",
+      "file": "product/pipeline/run_theme.sh",
+      "line": 8,
+      "trigger": "`sources=(\"$D\"/raw_*.png)` + `(( ${#sources[@]} != 1 ))`. A repóban egyetlen téma van, a `product/themes/german-shepherd/`, és abban NÉGY `raw_*.png` található (raw_german-shepherd_0/1/2.png, raw_gsd2_0.png). Így a `./product/pipeline/run_theme.sh german-shepherd` mindig az 1-es kilépési kóddal áll meg.",
+      "impact": "A megtartott belépési pont a jelenlegi repótartalommal nem futtatható. Ezen felül a régi változat két képessége szó nélkül eltűnt: a témánkénti háttér/keret választás (BG + FRAMEFLAG case) és a `04_composite.py` lépés, tehát `render_photo.png` már nem készül; a kommentben rögzített indok ('a sorozat sablonszerűnek látszik egy közös szürke kereten') a hardcode-olt `--profile papercut` miatt visszatér. A wiki (findings/2026-09-05-reference-iteration.md:24) csak a pipefail-t említi, a funkcióvesztést nem.",
+      "recommended_fix": "Vagy töröld a szkriptet és a README-ben nevezd meg a `run_product.py`-t egyetlen belépési pontnak, vagy adj neki explicit forrásválasztást (`run_theme.sh THEME SRC [LEVELS]`), és rögzítsd külön sorban, hogy a kompozit lépés kikerült a láncból."
+    },
+    {
+      "id": "F3",
+      "priority": "P2",
+      "file": "product/pipeline/exportlib.py",
+      "line": 30,
+      "trigger": "A zárolófájl a célkönyvtár MELLÉ jön létre (`destination.with_name(name + '.lockfile')`) és soha nem törlődik. Mivel a runner a gyermeknek `--out <staging>/layers`-t ad, a gyermek zárolófájlja a staging könyvtáron BELÜL keletkezik, és a publikálás azt is kiteszi. Bizonyíték a commitolt futásokban: product/catalog/magicvector-shepherd/runs/2026-09-05-v1/output/layers.lockfile, .../recessed-papercut/.../output/layers.lockfile, .../marlaser-worldmap/.../output/layers.lockfile, plusz minden futás mellett egy `output.lockfile`.",
+      "impact": "A 'csak teljes termékkönyvtárat publikálunk' ígéret ellenére futásidejű állapot kerül a kiadott csomagba; a kimenet nem pontosan a generált fájlok halmaza, és minden futás egy soha nem takarított fájlt hagy a szülőkönyvtárban. Gitre nézve ártalmatlan (a .gitignore kiszűri), a vevőnek átadott mappára nézve nem.",
+      "recommended_fix": "A zárat vidd a payloadon kívülre: pl. `Path(tempfile.gettempdir()) / ('etsy-export-' + hashlib.sha256(str(destination).encode()).hexdigest() + '.lock')`. Így a fájl sem a kimenetbe, sem a projekt fájai közé nem kerül."
+    },
+    {
+      "id": "F4",
+      "priority": "P2",
+      "file": "product/catalog/magicvector-shepherd/runs/2026-09-05-v1/output/manifest.json",
+      "line": 58,
+      "trigger": "A manifest `command` mezője `--src .../runs/2026-09-05-v1/source.png`-ot rögzít, és a futás kimenetében nincs `inputs/` könyvtár (Glob: az output alatt csak layers/, plate.png, macro.png, manifest.json, profile.json, layers.lockfile van). A jelenlegi run_product.py:75-83 viszont a forrást `out/inputs/<név>`-be másolja és ONNAN adja tovább, tehát a rögzített parancsnak `.../output/inputs/source.png`-ra kellene végződnie. Ugyanez a recessed-papercut manifestjében; ott ráadásul a profil `views` háromelemű, a manifest kettőt rögzít, és mindkét manifest tartalmaz egy `render_note` kulcsot, amit a runner sehol nem ír ki (marlaser-worldmap/.../manifest.json:91).",
+      "impact": "A commitolt provenance-artefaktumok nem a jelenlegi kóddal készültek és utólag kézzel szerkesztettek. Így egyetlen mentett futás sem igazolja a README-ben (README.md:52) és a wikiben állított bemenet-megőrzést, és az olvasó nem tudja megkülönböztetni a gép által generált és a kézzel írt mezőket. A render-ág egyetlen végponti bizonyítéka is hiányzik.",
+      "recommended_fix": "Futtasd újra a három katalógus-futást a mostani `run_product.py`-vel (a `--views` eltérést a profilban rendezve), vagy — ha az újrarenderelés drága — vedd ki a `command` mezőt ezekből a manifestekből, és a futás README-jében mondd ki, hogy kézzel összeállított pillanatkép."
+    },
+    {
+      "id": "F5",
+      "priority": "P2",
+      "file": "product/pipeline/run_product.py",
+      "line": 82,
+      "trigger": "Csak a `--src` kerül pillanatképként a kimenetbe és hash-elésre. A recept egyéb fájl-bemenetei nem: a recessed-papercut profil `pipeline.args`-a `--palette product/catalog/recessed-papercut/runs/2026-09-05-v1/palette_full.json`-t tartalmaz (profile.json:22). Írd át a palette_full.json-t és futtass újra ugyanazzal a profillal — a manifest `source_sha256`-ja változatlan, a kimenet (palette.json, backing_palette.json, és így a render színei) más lesz.",
+      "impact": "A recept 'ugyanaz', a termék más: a futás nem reprodukálható a mentett pillanatképből. Ugyanez a rés a bemenetvédelemben is: a `--out`-ba eső bemenetet a runner csak a `--src`-re és a profilra nézve utasítja el (run_product.py:135), a recept által hivatkozott palettafájlra nem — az a könyvtárcserével elveszne.",
+      "recommended_fix": "A `pipeline.args` minden létező fájlra mutató elemét is másold be az `inputs/` alá (vagy legalább hash-eld a manifestbe), és terjeszd ki rájuk a `--out must not contain the source` ellenőrzést."
+    },
+    {
+      "id": "F6",
+      "priority": "P2",
+      "file": "product/pipeline/02_trace.py",
+      "line": 269,
+      "trigger": "A `widest_inscribed` (269-278), `necks` (287-300), `parts_of` (260-261) és `heal_necks` a cutlib.py azonos nevű függvényeinek másolatai. Ebben a körben a valódi javítás (`set_precision(p, 0)` + korai visszatérés a hi/2-nél mélyebb ponton; cutlib.py:42-70) CSAK a cutlib példányába került be; a 02_trace példánya bitre a javítás előtti kód. A `parts_of` ráadásul nem is ekvivalens: GeometryCollection-re magát a kollekciót adja vissza, amin a hívók `.exterior`-t olvasnak, míg a cutlib `polys()` rekurzívan szűr.",
+      "impact": "A két lánc ugyanazt a vágásbiztonsági kérdést két, immár eltérő implementációval méri; a mutációs készlet (tests/mutation_check.py) csak a cutlib példányát fedi, tehát a 02_trace kritikus mérőfüggvényeinek elromlását egyetlen teszt sem jelzi. A divergencia mérhető: cutlib mostantól pontosan 12.0-t ad vissza a vastag darabra, a 02_trace ~11.9998-at.",
+      "recommended_fix": "A 02_trace importálja a cutlib `widest_inscribed`/`necks`/`polys` függvényeit (a `necks` `frag_area` alapértéke 20.0, ami megegyezik a 02_trace `MIN_FRAG`-jével), és töröld a helyi másolatokat; a `parts_of` helyére `polys` kerüljön."
+    },
+    {
+      "id": "F7",
+      "priority": "P2",
+      "file": "README.md",
+      "line": 61,
+      "trigger": "„A generikus profilnevek továbbra is működnek.\" A `product/profiles/worldmap.json` recept legutóbbi rögzített eredménye `all_ok: false` (product/iterations/0050-worldmap/report.json:18), és a wiki szerint az újragenerálást megszakították (findings/2026-09-05-reference-iteration.md:44). A most bevezetett `require_valid` (10_worldmap.py:482) ezt az állapotot kivétellé alakítja. A `product/profiles/worldmap-flat.json` pedig eltér az egyetlen validált recepttől: nincs benne `--lat=-80,80` és `--heal-iterations 12`, amit a katalógusprofil (marlaser-worldmap/.../profile.json:28-30) használ — a wiki szerint 4 kör 1 nyakat hagyott, és az új kapu emiatt állította meg az exportot.",
+      "impact": "A README-ben dokumentált, támogatottként bemutatott generikus profilok közül a réteges térkép bizonyítottan a hibakapuba fut, a lapos térképé pedig más recept, mint amit valaha validáltunk. A felhasználó több perces GEOS-futás után kap kivételt.",
+      "recommended_fix": "Emeld be a validált recepteket a generikus profilokba (vagy állítsd a `--heal-iterations` alapértékét 12-re), és a README-ben jelöld meg, mely profil van tényleges futással igazolva; a nem validált `worldmap` profilnál mondd ki ezt."
+    },
+    {
+      "id": "F8",
+      "priority": "P3",
+      "file": "product/pipeline/10_worldmap.py",
+      "line": 484,
+      "trigger": "`print(f\"\\nkiírva: {out}\")` a `with output_directory(...) as out:` blokkON BELÜL fut, tehát a staging könyvtárat írja ki (`.../.<név>.staging-ab12cd`), ami a blokk végén már nem létezik. Ugyanez: 11_worldmap_flat.py:493. A 02_trace.py:1219 helyesen a `final_out`-ot írja ki.",
+      "impact": "A két térképlánc a sikeres futás végén nem létező útvonalat jelent a felhasználónak; másolás/ellenőrzés ezen az úton nem lehetséges.",
+      "recommended_fix": "A záró `print` kerüljön a `with` blokkon kívülre, és `final_out`-ot írjon."
+    },
+    {
+      "id": "F9",
+      "priority": "P3",
+      "file": "product/pipeline/exportlib.py",
+      "line": 31,
+      "trigger": "`fcntl.flock(lock, fcntl.LOCK_EX)` blokkoló, üzenet és időkorlát nélkül; a zár a teljes számítás idejére áll, ami a térképláncoknál magában foglalja a Natural Earth hálózati letöltést és a percekig tartó GEOS-műveleteket (11_worldmap_flat.py:90 a `with` kezdete, a fetch a 93. sorban). Két párhuzamos futásnál a második néma, kimenet nélküli várakozásba megy.",
+      "impact": "A zárolást a wiki és a README kifejezetten védelmi tulajdonságként hirdeti, de a felhasználó egy lefagyottnak látszó folyamatot kap; a tesztkészletben (tests/test_exports.py) egyetlen eset sem gyakorolja a zárat.",
+      "recommended_fix": "`LOCK_EX | LOCK_NB`, `BlockingIOError` esetén beszédes hibaüzenet (vagy legalább egy 'várakozás a zárra: <útvonal>' üzenet blokkolás előtt), és egy teszt, amely két folyamattal/szállal igazolja a kizárást."
+    },
+    {
+      "id": "F10",
+      "priority": "P3",
+      "file": "product/pipeline/10_worldmap.py",
+      "line": 216,
+      "trigger": "A `for old in (list(out.glob(\"layer_*.svg\")) + ...): old.unlink()` blokk most egy garantáltan üres, frissen létrehozott staging könyvtáron fut; ugyanígy halott a 11_worldmap_flat.py:392 `if tdir.exists(): ... _f.unlink()` ága. A hozzájuk tartozó kommentek olyan hibát írnak le ('egy korábbi, más --levels futás fájljai bennmaradnak', 'régi sorszámozott fájlok maradnának'), ami a könyvtárcsere óta nem fordulhat elő.",
+      "impact": "Az olvasó azt hiheti, hogy a célkönyvtár újrahasznált, és ezekre a takarításokra szükség van — ez pontosan az ellenkezője a most bevezetett szerződésnek.",
+      "recommended_fix": "Töröld a két takarító ágat, és a kommentek lényegét (miért nem lehet kevert kimenet) told át egy sorba az `output_directory` hívás mellé."
+    },
+    {
+      "id": "F11",
+      "priority": "P3",
+      "file": "product/pipeline/run_product.py",
+      "line": 25,
+      "trigger": "`load_profile` a katalóguscsalád `product.json`-jából csak a `latest_run` kulcsot nézi. A `product/catalog/vyva-worldmap/product.json` nem tartalmaz `latest_run`-t, viszont deklarál `\"profile\": \"worldmap\"`-ot, amit a kód figyelmen kívül hagy. `--profile vyva-worldmap` így a `product/profiles/vyva-worldmap.json`-ra esik vissza, és nyers `FileNotFoundError` szövegű `ap.error`-t ad.",
+      "impact": "Létező katalóguscsaládra hivatkozva félrevezető hibaüzenet jön ('nincs ilyen fájl a profiles/ alatt'), és a product.json `profile` mezője holt adat.",
+      "recommended_fix": "Ha a család létezik, de nincs `latest_run`, essen vissza a `product['profile']`-ra, és ha az sincs, adjon célzott üzenetet ('a <család> katalógusban nincs futtatható recept')."
+    }
+  ],
+  "nonblocking_nits": [
+    {
+      "id": "N1",
+      "file": "product/pipeline/02_trace.py",
+      "line": 1188,
+      "note": "A riport `all_ok`/`draft`/`release_ready` mezőit kézzel állítja be (1214-1218), miközben pontosan erre való az `exportlib.require_valid`. A `\"draft\": a.draft` kétszer szerepel (1186 és 1216). Egységesítsd `require_valid(report, a.draft)`-re, hogy a kiadhatóság definíciója egy helyen legyen."
+    },
+    {
+      "id": "N2",
+      "file": "product/pipeline/02_trace.py",
+      "line": 1209,
+      "note": "A palettaágban `src = json.loads(...)` felülírja a forráskép `pathlib.Path` objektumát (522). Jelenleg ártalmatlan, mert utána nincs használva, de egy későbbi sor csendben rossz típust kapna. Nevezd `palette_src`-nek."
+    },
+    {
+      "id": "N3",
+      "file": "product/pipeline/11_worldmap_flat.py",
+      "line": 462,
+      "note": "`biggest = max(tiled, ...)` üres `tiled` esetén 'max() arg is an empty sequence'-szel áll meg, még mielőtt az `all_ok`-ban lévő `bool(tiled)` feltétel bármit jelenthetne. Egy korai, beszédes ellenőrzés egyértelműbb lenne."
+    },
+    {
+      "id": "N4",
+      "file": "tests/mutation_check.py",
+      "line": 148,
+      "note": "A `.returncode == 1` szigorítás jó irányú (csak a valódi tesztbukást fogadja el észlelésnek), de ha egy mutáció importhibát okoz vagy a teszt neve elmozdul, a pytest más kódot ad, és a keret 'TÚLÉLŐ: a fixture nem hozza létre a hibát' üzenetet ír — ami ilyenkor téves diagnózis. Érdemes a 2/4/5 kilépési kódot külön 'KERET-HIBA' ágon jelenteni."
+    },
+    {
+      "id": "N5",
+      "file": "product/pipeline/10_worldmap.py",
+      "line": 138,
+      "note": "`from exportlib import output_directory, require_valid` a fájl közepén, függvénydefiníciók után (ugyanígy 11_worldmap_flat.py:57). A ruff nem szól (E402 nincs a `select`-ben), de a többi import a fájl tetején van; tedd oda ezt is."
+    },
+    {
+      "id": "N6",
+      "file": "tests/test_trace_export.py",
+      "line": 17,
+      "note": "Ez a teszt két paraméterrel végigfuttatja a teljes 02_trace láncot (k-means + potrace + healing). A pyproject.toml:31-33 kommentje kifejezetten a gyors, egyparancsos készletet tűzi ki célul (az audit 0,52 s-ot mért). Mérd meg a futásidőt, és ha érdemben megnőtt, regisztrálj egy `slow` markert (a `--strict-markers` miatt a `[tool.pytest.ini_options] markers` bejegyzés is kell), hogy a gyors kör külön futtatható maradjon."
+    },
+    {
+      "id": "N7",
+      "file": "product/profiles/relief-portrait.json",
+      "line": 47,
+      "note": "A `pipeline.note` `--drop-field`-et és '9 szint - 1 mező = 8 réteg' számítást ír le, de az `args` sem `--drop-field`-et nem tartalmaz, sem 9 szintet (`--levels 8`). A megjegyzés és a recept ellentmond egymásnak; ez a profil a README fő példája."
+    },
+    {
+      "id": "N8",
+      "file": "product/pipeline/run_product.py",
+      "line": 99,
+      "note": "A manifest a generátor parancsát rögzíti, a Blender-hívásokat (nézetenkénti parancssor, `--palette-file`) nem. Mivel a render színei éppen a `--palette-file` ágtól függenek (94-95), érdemes a render-parancsokat is a manifestbe tenni."
+    },
+    {
+      "id": "N9",
+      "file": "product/pipeline/run_product.py",
+      "line": 37,
+      "note": "A recept-tiltólista pontos egyezést néz, az argparse viszont elfogad egyértelmű rövidítéseket (`--ou`, `--dr`). A `--out`/`--src` esetén a runner később fűzött kapcsolója nyer, a `--dr`-rel becsempészett draft mód pedig a `validate_report` riport-egyeztetésén bukik el — tehát nincs kijátszható rés, de a hibaüzenet félrevezető lenne. Egy `if any(arg.startswith('--') and any(k.startswith(arg.split('=',1)[0]) for k in FORBIDDEN))` ellenőrzés olcsón egyértelműsítené."
+    },
+    {
+      "id": "N10",
+      "file": "wiki/workflows/production-pipeline.md",
+      "line": 13,
+      "note": "A workflow-oldal még a `product/iterations/000x` szerkezetet és a régi lépéssorrendet írja le; az új egyetlen belépési pont (`run_product.py`, profil-recept, katalógus `runs/`) sehol nincs workflow-ként dokumentálva, pedig a wiki/CLAUDE.md szerint 'egy ismételhető eljárás kialakul → workflows/'."
+    }
+  ],
+  "reviewed_files": [
+    "/tmp/etsy-review-diff.patch",
+    "CLAUDE.md",
+    "wiki/CLAUDE.md",
+    "product/pipeline/run_product.py",
+    "product/pipeline/exportlib.py",
+    "product/pipeline/cutlib.py",
+    "product/pipeline/02_trace.py",
+    "product/pipeline/10_worldmap.py",
+    "product/pipeline/11_worldmap_flat.py",
+    "product/pipeline/run_theme.sh",
+    "product/render_blender.py",
+    "tests/test_cutlib.py",
+    "tests/test_exports.py",
+    "tests/test_product_runner.py",
+    "tests/test_trace_export.py",
+    "tests/mutation_check.py",
+    "pyproject.toml",
+    "check.sh",
+    ".github/workflows/check.yml",
+    ".gitignore",
+    "requirements.lock",
+    "requirements-ml.txt",
+    "README.md",
+    "product/profiles/papercut.json",
+    "product/profiles/relief-portrait.json",
+    "product/profiles/worldmap.json",
+    "product/profiles/worldmap-flat.json",
+    "product/catalog/README.md",
+    "product/catalog/magicvector-shepherd/product.json",
+    "product/catalog/magicvector-shepherd/runs/2026-09-05-v1/profile.json",
+    "product/catalog/magicvector-shepherd/runs/2026-09-05-v1/output/manifest.json",
+    "product/catalog/magicvector-shepherd/runs/2026-09-05-v1/output/layers/report.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/profile.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/output/manifest.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers/report.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/palette_full.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers/palette.json",
+    "product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers/backing_palette.json",
+    "product/catalog/marlaser-worldmap/runs/2026-09-05-v1/profile.json",
+    "product/catalog/marlaser-worldmap/runs/2026-09-05-v1/output/manifest.json",
+    "product/catalog/marlaser-worldmap/runs/2026-09-05-v1/output/layers/report.json",
+    "product/catalog/vyva-worldmap/product.json",
+    "product/catalog/early-concepts/product.json",
+    "product/iterations/0050-worldmap/report.json (csak all_ok)",
+    "wiki/findings/2026-09-05-project-audit.md",
+    "wiki/findings/2026-09-05-reference-iteration.md",
+    "wiki/workflows/production-pipeline.md",
+    "wiki/_log.md",
+    "wiki/index.md",
+    "reviews/round-1-source-hashes.json"
+  ],
+  "limitations": [
+    "Csak olvasó eszközeim voltak (Read/Glob/Grep); sem a ./check.sh-t, sem a pytestet, sem a tests/mutation_check.py-t nem tudtam lefuttatni. A '46 teszt', a '13/13 mutáció' és a tesztfutási idő állításait nem igazoltam, csak a tesztek logikáját olvastam végig (a tile_piece és widest_inscribed eseteket kézzel végigszámolva — azok az implementációval konzisztensek).",
+    "Blender-render, potrace és a Natural Earth letöltés nem futott; a render_blender.py változásait (plate/macro kamera, backing_palette linearizálás, profilból jövő értékek) statikusan néztem, a vizuális eredményt nem.",
+    "A generált képek, SVG/DXF kimenetek és a történeti product/iterations tartalom a megbízás szerint kimaradt a felülvizsgálatból; a katalógus JSON/riport-pillanatképeket csak kompatibilitásra néztem.",
+    "Piackutatási és gyártási (fizikai tesztvágás) kérdéseket nem értékeltem.",
+    "A geolib.py, styles.py, assets.py és a 00–05 számozott szkriptek nem változtak és nem szerepeltek a hatókörben; csak a most módosított API-k hívási helyeit ellenőriztem bennük."
+  ]
+}

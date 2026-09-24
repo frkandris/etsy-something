@@ -1,0 +1,53 @@
+{
+  "name": "papercut",
+  "title": "Süllyesztett papírvágás (macska, tacskó, farkas, …)",
+  "note": "A plate ATLATSZO hattérrel készül: a 04_composite.py az alfa-csatornából számol befoglaló dobozt és kontakt-árnyékot. Tömör háttérrel az egész vásznat ragasztaná a fotóra.",
+  "pipeline": {
+    "script": "02_trace.py",
+    "args": [
+      "--levels",
+      "6",
+      "--min-part",
+      "40",
+      "--min-area-pct",
+      "0.02",
+      "--merge-below",
+      "0.001",
+      "--margin",
+      "14",
+      "--no-keyhole",
+      "--full-panel",
+      "--connected",
+      "--palette",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/inputs/palettes/14.json"
+    ]
+  },
+  "render": {
+    "palette": "well",
+    "frame": true,
+    "paper": true,
+    "recessed": true,
+    "studio_bg": true,
+    "mixed_wood": false,
+    "frame_width": 0.06,
+    "explode": "fan",
+    "room": "shelf",
+    "props": "warm",
+    "wood_frame": true,
+    "plate_yaw": 8,
+    "plate_elevation": 2,
+    "exposure": -1.35,
+    "canvas": "1400x1400",
+    "key_color": [
+      1,
+      0.94,
+      0.84
+    ],
+    "scene_zoom": 0.9,
+    "grain_contrast": 0.08
+  },
+  "views": [
+    "plate",
+    "styled"
+  ]
+}

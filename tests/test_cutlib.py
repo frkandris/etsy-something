@@ -27,6 +27,17 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "product" /
 import cutlib  # noqa: E402
 
 
+def test_precision_grid_does_not_hide_a_narrow_neck():
+    piece = unary_union([box(0, 0, 20, 20), box(30, 0, 50, 20), box(19, 9.5, 31, 10.5)])
+    assert cutlib.necks(cutlib.snap(piece)) == cutlib.necks(piece) == 1
+
+
+def test_inscribed_width_respects_holes_and_cap():
+    assert cutlib.widest_inscribed(box(0, 0, 100, 100)) == 12
+    ring = box(0, 0, 100, 100).difference(box(2, 2, 98, 98))
+    assert 2 < cutlib.widest_inscribed(cutlib.snap(ring)) < 3
+
+
 # --------------------------------------------------------------- bridge_components
 
 def test_bridge_joins_separate_pieces():
@@ -129,7 +140,7 @@ def test_tile_preserves_area():
     az ázsiai darabból. A küszöb a BEMENETRE vonatkozik, nem a vágás
     melléktermékeire.
     """
-    g = _arm_piece()
+    g = _mergeable_piece()
     tiles = cutlib.tile_piece(g, 330, 280, min_area=200)
     total = sum(t.area for t, _ in tiles)
     assert total == pytest.approx(g.area, abs=0.5)
@@ -141,7 +152,7 @@ def test_tile_produces_no_uncuttable_slivers():
     Mérve: a puszta megőrzés 3,09 × 0,74 mm-es önálló csempét adott —
     vékonyabbat a 2 mm-es minimális webnél. A helyes válasz a beolvasztás.
     """
-    for t, _ in cutlib.tile_piece(_arm_piece(), 330, 280, min_area=40):
+    for t, _ in cutlib.tile_piece(_mergeable_piece(), 330, 280, min_area=40):
         w = t.bounds[2] - t.bounds[0]
         h = t.bounds[3] - t.bounds[1]
         assert min(w, h) >= cutlib.MIN_WEB, f"{w:.2f} x {h:.2f} mm csempe"
@@ -323,3 +334,42 @@ def test_graticule_stays_inside_the_panel():
     panel = box(0, 0, 400, 200)
     web = cutlib.graticule(panel, step_mm=40, width=1.2)
     assert web.difference(panel).area == pytest.approx(0.0, abs=1e-6)
+
+
+def _mergeable_piece():
+    return unary_union([box(0, 0, 300, 100), box(300, 49.5, 326, 50.5),
+                        box(600, 0, 650, 100)])
+
+
+def test_tile_merge_respects_size_and_preserves_material():
+    g = _mergeable_piece()
+    ts = [p for p, _ in cutlib.tile_piece(g, 330, 280, min_area=40)]
+    assert unary_union(ts).symmetric_difference(g).area < 1e-6
+    for p in ts:
+        assert p.geom_type == "Polygon"
+        b = p.bounds
+        assert 2 <= b[2] - b[0] <= 330 + 1e-6
+        assert 2 <= b[3] - b[1] <= 280 + 1e-6
+
+
+def test_tile_rejects_impossible_arm_instead_of_750mm_tile():
+    with pytest.raises(ValueError, match="Nem csempézhető"):
+        cutlib.tile_piece(_arm_piece(), 330, 280, min_area=40)
+
+
+@pytest.mark.parametrize("w,h", [(0, 280), (330, -1), (float("nan"), 280)])
+def test_tile_rejects_invalid_bed(w, h):
+    with pytest.raises(ValueError):
+        cutlib.tile_piece(box(0, 0, 20, 20), w, h)
+
+
+def test_single_cell_preserves_thin_input_for_the_callers_release_gate():
+    # Tiling is not a cuttability certificate; the flat-map integration test
+    # verifies that its release gate rejects this entirely thin geometry.
+    thin = box(0, 0, 100, 1.25)
+    tiles = cutlib.tile_piece(thin, 330, 280, min_area=40, min_web=2)
+    assert len(tiles) == 1
+    piece, cell = tiles[0]
+    assert cell == (0, 0)
+    assert piece.equals(thin)
+    assert cutlib.widest_inscribed(piece) < 2

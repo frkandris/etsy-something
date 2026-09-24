@@ -1,0 +1,54 @@
+{
+  "name": "shepherd-reference-v1",
+  "pipeline": {
+    "script": "02_trace.py",
+    "args": [
+      "--levels",
+      "8",
+      "--background-cutoff",
+      "32",
+      "--min-part",
+      "40",
+      "--min-area-pct",
+      "0.05",
+      "--merge-below",
+      "0.001",
+      "--thicken",
+      "0.95",
+      "--speckle",
+      "0.3",
+      "--min-feature",
+      "1.5",
+      "--solid-back",
+      "--no-keyhole"
+    ]
+  },
+  "render": {
+    "palette": "shepherd",
+    "grain": true,
+    "grain_contrast": 0.05,
+    "dark_bg": true,
+    "studio_bg": true,
+    "frame": false,
+    "plate_yaw": -12,
+    "plate_elevation": 3,
+    "canvas": "1400x1400",
+    "exposure": -0.75,
+    "key_color": [
+      1,
+      0.94,
+      0.85
+    ],
+    "macro_target": [
+      0.34,
+      0.5,
+      0.72,
+      -0.4,
+      0.15
+    ]
+  },
+  "views": [
+    "plate",
+    "macro"
+  ]
+}

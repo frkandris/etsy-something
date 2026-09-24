@@ -41,6 +41,11 @@ def snap(geom, grid=SNAP):
 
 def widest_inscribed(p, hi=12.0, iters=16):
     """A darabba írható legszélesebb kör átmérője (mm), felezéssel."""
+    # Coordinates stay unchanged; fixed-precision GEOS buffering can spend
+    # minutes noding detailed coastlines for this read-only measurement.
+    p = set_precision(p, 0)
+    if not p.is_empty and p.representative_point().distance(p.boundary) >= hi / 2:
+        return hi
     lo = 0.0
     for _ in range(iters):
         mid = (lo + hi) / 2
@@ -56,7 +61,7 @@ def necks(geom, min_web=MIN_WEB, frag_area=20.0):
     esik. A visszaadott szám a szétesések darabszáma, nem a darabok száma."""
     n = 0
     for p in polys(geom):
-        er = p.buffer(-min_web / 2)
+        er = set_precision(p, 0).buffer(-min_web / 2)
         if er.is_empty:
             continue
         frags = [f for f in polys(er) if f.area >= frag_area]
@@ -330,7 +335,7 @@ def graticule(panel, step_mm, width=1.2, origin=(0.0, 0.0)):
     return web.intersection(panel).buffer(0)
 
 
-def tile_piece(geom, max_w, max_h, min_area=25.0):
+def tile_piece(geom, max_w, max_h, min_area=25.0, min_web=MIN_WEB):
     """A lezerágynál nagyobb darabot szamozott zonakra vagja.
 
     A referenciatermek 1325 mm szeles, a legnagyobb egyedi darabja 330x280 mm -
@@ -338,8 +343,15 @@ def tile_piece(geom, max_w, max_h, min_area=25.0):
     megy, mert az illeszkedes igy a legkonnyebb: a vevo egyenes el menten tolja
     ossze a darabokat.
 
+    If the input already fits, preserve every component above min_area;
+    this branch does not validate material width. When splitting, min_web
+    rejects newly created narrow bounding boxes. Neither branch certifies
+    cuttability: callers must check inscribed width and necks before release.
+
     Visszaad: [(alkatresz, (sor, oszlop)), ...] balrol-jobbra, fentrol-lefele.
     """
+    if any(not math.isfinite(v) or v <= 0 for v in (max_w, max_h, min_web)):
+        raise ValueError("A gép mérete és a minimális anyagszélesség pozitív legyen")
     if geom is None or geom.is_empty:
         return []                      # ures bemeneten NaN-t dobott (codex)
     mnx, mny, mxx, mxy = geom.bounds
@@ -371,18 +383,32 @@ def tile_piece(geom, max_w, max_h, min_area=25.0):
     usable, tiny = [], []
     for q, rc in out:
         b = q.bounds
-        if q.area >= min_area and min(b[2] - b[0], b[3] - b[1]) >= MIN_WEB:
+        if q.area >= min_area and min(b[2] - b[0], b[3] - b[1]) >= min_web:
             usable.append([q, rc])
         else:
             tiny.append(q)
-    if not usable:
-        return out
-    for q in tiny:
-        best, blen = None, -1.0
-        for i, (u, _rc) in enumerate(usable):
-            shared = q.buffer(0.02).intersection(u).area
-            if shared > blen:
-                best, blen = i, shared
-        if best is not None:
-            usable[best][0] = unary_union([usable[best][0], q]).buffer(0)
+    # A fragmentum csak valós szomszédhoz, a gépméreten BELÜL olvadhat.
+    # Ha a feltételek egyszerre nem tarthatók, a forrást kell javítani.
+    while tiny:
+        progressed = False
+        for q in list(tiny):
+            candidates = []
+            for i, (u, _rc) in enumerate(usable):
+                shared = q.boundary.intersection(u.boundary).length
+                if shared <= 1e-7:
+                    continue
+                merged = unary_union([u, q]).buffer(0)
+                b = merged.bounds
+                if (merged.geom_type == "Polygon" and
+                        b[2] - b[0] <= max_w + 1e-6 and
+                        b[3] - b[1] <= max_h + 1e-6):
+                    candidates.append((shared, i, merged))
+            if candidates:
+                _, best, merged = max(candidates, key=lambda x: x[0])
+                usable[best][0] = merged
+                tiny.remove(q)
+                progressed = True
+        if not progressed:
+            raise ValueError(f"Nem csempézhető biztonságosan: {len(tiny)} szilánk "
+                             f"nem egyesíthető a {max_w:g}×{max_h:g} mm-es korláton belül")
     return [(u, rc) for u, rc in usable]

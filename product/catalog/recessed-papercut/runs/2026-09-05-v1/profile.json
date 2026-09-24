@@ -1,0 +1,53 @@
+{
+  "name": "papercut",
+  "title": "S\u00fcllyesztett pap\u00edrv\u00e1g\u00e1s (macska, tacsk\u00f3, farkas, \u2026)",
+  "note": "A plate ATLATSZO hatt\u00e9rrel k\u00e9sz\u00fcl: a 04_composite.py az alfa-csatorn\u00e1b\u00f3l sz\u00e1mol befoglal\u00f3 dobozt \u00e9s kontakt-\u00e1rny\u00e9kot. T\u00f6m\u00f6r h\u00e1tt\u00e9rrel az eg\u00e9sz v\u00e1sznat ragasztan\u00e1 a fot\u00f3ra.",
+  "pipeline": {
+    "script": "02_trace.py",
+    "args": [
+      "--levels",
+      "6",
+      "--min-part",
+      "40",
+      "--min-area-pct",
+      "0.02",
+      "--merge-below",
+      "0.001",
+      "--margin",
+      "14",
+      "--no-keyhole",
+      "--full-panel",
+      "--connected",
+      "--palette",
+      "product/catalog/recessed-papercut/runs/2026-09-05-v1/palette_full.json"
+    ]
+  },
+  "render": {
+    "palette": "well",
+    "frame": true,
+    "paper": true,
+    "recessed": true,
+    "studio_bg": true,
+    "mixed_wood": false,
+    "frame_width": 0.06,
+    "explode": "fan",
+    "room": "shelf",
+    "props": "warm",
+    "wood_frame": true,
+    "plate_yaw": 8,
+    "plate_elevation": 2,
+    "exposure": -1.35,
+    "canvas": "1400x1400",
+    "key_color": [
+      1,
+      0.94,
+      0.84
+    ],
+    "scene_zoom": 0.9,
+    "grain_contrast": 0.08
+  },
+  "views": [
+    "plate",
+    "styled"
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "profile": {
+    "name": "papercut",
+    "title": "Süllyesztett papírvágás (macska, tacskó, farkas, …)",
+    "note": "A plate ATLATSZO hattérrel készül: a 04_composite.py az alfa-csatornából számol befoglaló dobozt és kontakt-árnyékot. Tömör háttérrel az egész vásznat ragasztaná a fotóra.",
+    "pipeline": {
+      "script": "02_trace.py",
+      "args": [
+        "--levels",
+        "6",
+        "--min-part",
+        "40",
+        "--min-area-pct",
+        "0.02",
+        "--merge-below",
+        "0.001",
+        "--margin",
+        "14",
+        "--no-keyhole",
+        "--full-panel",
+        "--connected",
+        "--palette",
+        "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/inputs/palettes/14.json"
+      ]
+    },
+    "render": {
+      "palette": "well",
+      "frame": true,
+      "paper": true,
+      "recessed": true,
+      "studio_bg": true,
+      "mixed_wood": false,
+      "frame_width": 0.06,
+      "explode": "fan",
+      "room": "shelf",
+      "props": "warm",
+      "wood_frame": true,
+      "plate_yaw": 8,
+      "plate_elevation": 2,
+      "exposure": -1.35,
+      "canvas": "1400x1400",
+      "key_color": [
+        1,
+        0.94,
+        0.84
+      ],
+      "scene_zoom": 0.9,
+      "grain_contrast": 0.08
+    },
+    "views": [
+      "plate",
+      "styled"
+    ]
+  },
+  "source": "product/catalog/recessed-papercut/runs/2026-09-05-v1/depth_map.png",
+  "source_sha256": "35e0991e2e337c6de412d3d523cc85de642174ac6d53698572cf0c95defa081a",
+  "input_sha256": {
+    "inputs/palettes/14.json": "3f463174c46045ded5cdcd20b3b13e11f3d9869772e052c98ea233f00663f933",
+    "inputs/source/depth_map.png": "35e0991e2e337c6de412d3d523cc85de642174ac6d53698572cf0c95defa081a"
+  },
+  "command": [
+    "/Users/p.tothandras/Code/etsy-something/.venv/bin/python",
+    "/Users/p.tothandras/Code/etsy-something/product/pipeline/02_trace.py",
+    "--levels",
+    "6",
+    "--min-part",
+    "40",
+    "--min-area-pct",
+    "0.02",
+    "--merge-below",
+    "0.001",
+    "--margin",
+    "14",
+    "--no-keyhole",
+    "--full-panel",
+    "--connected",
+    "--palette",
+    "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/inputs/palettes/14.json",
+    "--out",
+    "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers",
+    "--src",
+    "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/inputs/source/depth_map.png"
+  ],
+  "render_commands": [
+    [
+      "blender",
+      "-b",
+      "--python-exit-code",
+      "1",
+      "-P",
+      "/Users/p.tothandras/Code/etsy-something/product/render_blender.py",
+      "--",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/plate.png",
+      "plate",
+      "--profile",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/profile.json",
+      "--palette-file",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers/palette.json"
+    ],
+    [
+      "blender",
+      "-b",
+      "--python-exit-code",
+      "1",
+      "-P",
+      "/Users/p.tothandras/Code/etsy-something/product/render_blender.py",
+      "--",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/styled.png",
+      "styled",
+      "--profile",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/profile.json",
+      "--palette-file",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/recessed-papercut/runs/2026-09-05-v1/output/layers/palette.json"
+    ]
+  ],
+  "views": [
+    "plate",
+    "styled"
+  ],
+  "release_ready": true
+}

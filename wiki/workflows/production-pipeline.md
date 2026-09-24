@@ -8,6 +8,18 @@ generated:
   at: 2026-08-07T20:00:00Z
 ---
 
+## Aktuális belépési pont — 2026-09-05
+
+A támogatott futtató a `product/pipeline/run_product.py`: a profil vezérli a geometriát és a Blender-nézeteket. A `product/catalog/<forrástermék>/runs/<futás>/` a forrást, a receptet és a kimenetet tartja együtt; a `history/` a régi számozott iterációkra mutat. A további régi lépéssor történeti referencia.
+
+```sh
+.venv/bin/python product/pipeline/run_product.py --profile marlaser-worldmap \
+  --out product/builds/worldmap
+```
+
+Állatportrénál `--src` is kell. A `run_theme.sh THEME SOURCE PROFILE [LEVELS]` csak explicit wrapper. A korábbi `04_composite.py` / `render_photo.png` lépést és témánkénti háttérválasztást nem futtatja; helyettük a profil Blender-nézetei készülnek. A `worldmap`/`vyva-worldmap` kísérleti, lezárt validált futás nélkül. Ellenőrzési és review-eljárás: [[workflows/engineering-quality]].
+
+
 # Termelési folyamat
 
 > **Státusz: élesben fut** (2026-08-08-tól). Implementáció: `product/pipeline/00_generate.py`
@@ -68,7 +80,9 @@ körbeforgó videó. A [[shops/colorlayerart]] képei pontosan így néznek ki.
 ## 6. Listing
 
 Cím: gépkompatibilitás felsorolva (`laser`, `CNC`, `Cricut`, `Glowforge`), formátumok, **rétegszám**.
-Árazás: **$9–28, akció nélkül** — [[findings/pricing-and-discounting]].
+Árazás: a korábbi **$9–28, akció nélkül** ajánlás visszavonva. A deduplikált
+minta nem igazol általános ár- vagy akcióstratégiát; a saját terméken mérendő.
+Lásd [[findings/pricing-and-discounting]] és [[overview]].
 20 design után a családra egy bundle listing (a bundle a mezőny mindössze 4%-a, medián $8,80 vs
 $4,80 — kihasználatlan rés).
 

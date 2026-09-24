@@ -1,0 +1,108 @@
+{
+  "profile": {
+    "name": "worldmap-flat",
+    "title": "Egyrétegű világtérkép, kontinensenként külön darab",
+    "note": "NEM réteges és NEM összefüggő: minden kontinens (és nagyobb sziget) külön darab, a köztük lévő tenger maga a fal. Nincs keret, nincs hátlap. Referencia: MarLaserCut listing 1516752782.",
+    "structure": {
+      "layers": 1,
+      "connected": false,
+      "sea": "wall",
+      "line_types": {
+        "cut": "kontinens- és szigetkontúr (#ff0000)",
+        "score": "országhatár a darabon belül (#0000ff) — NEM vágjuk át, mert szétesne",
+        "engrave": "feliratok (#808080)"
+      }
+    },
+    "pipeline": {
+      "script": "11_worldmap_flat.py",
+      "args": [
+        "--width",
+        "1325",
+        "--max-piece",
+        "330x280",
+        "--min-island",
+        "40",
+        "--hard-floor",
+        "12",
+        "--label-h",
+        "4.0",
+        "--lat=-80,80",
+        "--heal-iterations",
+        "12"
+      ]
+    },
+    "render": {
+      "palette": "birch",
+      "frame": false,
+      "paper": false,
+      "recessed": false,
+      "studio_bg": false,
+      "frame_width": 0.085,
+      "explode": "fan",
+      "room": "shelf",
+      "canvas": "2000x1120",
+      "mixed_wood": false,
+      "engrave": true,
+      "grain": true,
+      "grain_contrast": 0.035,
+      "engrave_color": [
+        0.014,
+        0.006,
+        0.002,
+        1
+      ],
+      "key_color": [
+        1,
+        0.96,
+        0.9
+      ],
+      "wall_transform": "Standard",
+      "wall_exposure": -0.75
+    },
+    "views": [
+      "wall"
+    ]
+  },
+  "source": null,
+  "source_sha256": null,
+  "input_sha256": {},
+  "command": [
+    "/Users/p.tothandras/Code/etsy-something/.venv/bin/python",
+    "/Users/p.tothandras/Code/etsy-something/product/pipeline/11_worldmap_flat.py",
+    "--width",
+    "1325",
+    "--max-piece",
+    "330x280",
+    "--min-island",
+    "40",
+    "--hard-floor",
+    "12",
+    "--label-h",
+    "4.0",
+    "--lat=-80,80",
+    "--heal-iterations",
+    "12",
+    "--out",
+    "/Users/p.tothandras/Code/etsy-something/product/catalog/marlaser-worldmap/runs/2026-09-05-v1/output/layers"
+  ],
+  "render_commands": [
+    [
+      "blender",
+      "-b",
+      "--python-exit-code",
+      "1",
+      "-P",
+      "/Users/p.tothandras/Code/etsy-something/product/render_blender.py",
+      "--",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/marlaser-worldmap/runs/2026-09-05-v1/output/layers",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/marlaser-worldmap/runs/2026-09-05-v1/output/wall.png",
+      "wall",
+      "--profile",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/marlaser-worldmap/runs/2026-09-05-v1/output/profile.json"
+    ]
+  ],
+  "views": [
+    "wall"
+  ],
+  "release_ready": true
+}

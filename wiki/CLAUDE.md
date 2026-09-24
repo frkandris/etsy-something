@@ -15,10 +15,10 @@ LLM Wiki mintáját követi (kereszthivatkozott Markdown mappák, séma-fájl, a
 fogalmi oldalon [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
 frontmatterrel.
 
-Az általános mintától eltér, mert ebben a projektben **nincs kód, nincs git, nincs build tooling**. A
-szokásos `apps/`, `features/`, `integrations/`, `tech-debt/` kategóriák nem értelmezhetők, ezért
-kimaradtak. A `bugs/` helyett [[pitfalls/_index|pitfalls]] van — kutatásban a visszatérő hiba egy
-*mérési* hiba, és ezek a postmortemek a legértékesebb tartalom itt.
+A projekt kutatási tudásbázis mellett Python termék-pipeline-t, Git-verziókövetést
+és automatikus ellenőrzéseket is tartalmaz. A kutatási következtetések a
+`findings/`, a reprodukálható technikai eljárások a `workflows/`, a visszatérő
+hibák és korrekciók a `pitfalls/` mappába kerülnek.
 
 ## A három réteg
 

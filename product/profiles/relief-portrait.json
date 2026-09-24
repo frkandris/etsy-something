@@ -44,7 +44,7 @@
       "--no-keyhole",
       "--connected"
     ],
-    "note": "--full-panel es --recessed SZANDEKOSAN kimarad. --drop-field: a forraskep feher hattere nem lap. 9 szint - 1 mezo = 8 reteg, mint a referencia.",
+    "note": "8 kért tónusklaszter; a fekete háttér nem fizikai réteg, ezért tipikusan 7 lap marad. A tényleges rétegszámot mindig a riportból kell olvasni.",
     "source_note": "A forraskep HATTERE 0-ra allitando (src_relief.png). A mask_at tonus FOLOTT valogat anyagot, ezert a 255-os feher hatter MINDEN szinten anyag lenne - nem egy plusz reteget ad, hanem mind a nyolcat kitolti a vaszon szeleig."
   },
   "render": {

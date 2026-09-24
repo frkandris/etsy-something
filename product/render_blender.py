@@ -35,7 +35,7 @@ for _i, _a in enumerate(argv):
             PROFILE = _json.loads(_pp.read_text()).get("render", {})
             print(f"[render] profil: {_pp.name}")
         else:
-            print(f"[render] FIGYELEM: nincs ilyen profil: {_pv}")
+            raise ValueError(f"Nincs ilyen profil: {_pv}")
 
 
 def _pf(key, default, flag=None, cast=None):
@@ -88,7 +88,7 @@ GRAIN = PROFILE.get("grain", False) or "--grain" in argv
 SCENE_HDRI = PROFILE.get("scene", "")
 PROP_SET = PROFILE.get("props", "warm")
 PALETTE_FILE = PROFILE.get("palette_file", "")
-SCENE_ZOOM = 0.82   # matched to the references, where the frame fills ~85% of
+SCENE_ZOOM = float(PROFILE.get("scene_zoom", 0.82))   # matched to the references, where the frame fills ~85% of
                     # the picture. Wider than that and it reads as an interior
                     # photo the frame happens to appear in.
 for _i, _a in enumerate(argv):
@@ -151,7 +151,7 @@ AZIM = 10.0 if VIEW == "hero" else 24.0
 # 3.2 mm threw a step shadow so deep that every recess read near-black, and
 # the piece looked nothing like the light, airy illustration it came from.
 # 2.2 mm still gives each cut edge its own shadow without burying the colour.
-THICK = 0.0022 if PAPER else 0.003
+THICK = float(PROFILE.get("thickness_mm", 2.2 if PAPER else 3.0)) / 1000
 GAP = 0.0002
 
 # ------------------------------------------------------------------ scene
@@ -190,7 +190,11 @@ if VIEW == "plate":
     # can grade it against the photo.
     scene.view_settings.view_transform = "Standard"
     scene.view_settings.look = "None"
-    scene.view_settings.exposure = -0.75
+    scene.view_settings.exposure = float(PROFILE.get("exposure", -0.75))
+if VIEW == "wall" and PROFILE.get("wall_transform"):
+    scene.view_settings.view_transform = PROFILE["wall_transform"]
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = float(PROFILE.get("wall_exposure", -0.75))
 if "lifestyle" in sys.argv:
     # AgX rolls saturated colour off toward pastel. The reference is flat
     # printed spot colour, so use the untouched Standard transform instead.
@@ -221,8 +225,9 @@ def wood(name, base, rough=0.45, grain=None):
         map_.inputs["Scale"].default_value = (1.0, 7.0, 1.0)   # stretch the grain
         coord = nt.nodes.new("ShaderNodeTexCoord")
         ramp = nt.nodes.new("ShaderNodeValToRGB")
-        dark = tuple(c * 0.82 for c in base[:3]) + (1,)
-        lite = tuple(min(1.0, c * 1.06) for c in base[:3]) + (1,)
+        contrast = float(PROFILE.get("grain_contrast", 0.18))
+        dark = tuple(c * (1 - contrast) for c in base[:3]) + (1,)
+        lite = tuple(min(1.0, c * (1 + contrast / 3)) for c in base[:3]) + (1,)
         ramp.color_ramp.elements[0].color = dark
         ramp.color_ramp.elements[1].color = lite
         nt.links.new(coord.outputs["Object"], map_.inputs["Vector"])
@@ -235,6 +240,7 @@ def wood(name, base, rough=0.45, grain=None):
 # back layer first. The competitor survey (wiki/findings/competitor-listing-images.md):
 # high-volume sellers use bold colour layers and a DARK back field for contrast.
 PALETTES = {
+    "birch": [(0.64, 0.46, 0.29, 1)],
     "wood":  [(0.29, 0.19, 0.10, 1), (0.34, 0.23, 0.12, 1), (0.39, 0.27, 0.15, 1),
               (0.44, 0.31, 0.18, 1), (0.50, 0.36, 0.21, 1), (0.57, 0.42, 0.25, 1)],
     "doxie": [(0.055, 0.045, 0.042, 1), (0.28, 0.14, 0.06, 1), (0.48, 0.26, 0.10, 1),
@@ -419,7 +425,7 @@ else:
 # truncated. Ramp palettes are a RANGE, and must always span end to end - taking
 # the first n entries left the white end of "well" unused at 5 layers, so the
 # top sheet came out cream instead of white.
-SPOT = {"splatter", "catrainbow"}
+SPOT = {"splatter", "catrainbow", "shepherd"}
 
 
 def ramp(pal, n):
@@ -439,6 +445,8 @@ def ramp(pal, n):
 # natural sort - lexicographic puts layer_10 before layer_2
 svgs = sorted(SRC.glob("layer_*_of_*.svg"),
               key=lambda p: int(p.stem.split("_")[1]))
+if not svgs:
+    raise ValueError(f"Nincsenek réteg SVG-k: {SRC}")
 TONES = ramp(BASE, len(svgs))
 print(f"[render] {len(svgs)} reteg")
 APPLIED = []
@@ -721,7 +729,12 @@ elif FRAME:
         (min(_xs) + max(_xs)) / 2, (min(_ys) + max(_ys)) / 2, -THICK * 1.2))
     _bk = bpy.context.object
     _bk.scale = (max(_xs) - min(_xs), max(_ys) - min(_ys), 1.0)
-    _bk.data.materials.append(wood("backing", PALETTES[PALETTE][0], 0.85, grain=False))
+    _back_color = PALETTES[PALETTE][0]
+    if (SRC / "backing_palette.json").is_file():
+        _rgb = _json.loads((SRC / "backing_palette.json").read_text())
+        _back_color = tuple((v / 255 / 12.92 if v / 255 <= 0.04045 else
+                            ((v / 255 + 0.055) / 1.055) ** 2.4) for v in _rgb) + (1,)
+    _bk.data.materials.append(wood("backing", _back_color, 0.85, grain=False))
     FRAME_OBJS.append(_bk)
 
 if FRAME:
@@ -826,7 +839,7 @@ if ENGRAVE and VIEW != "shelf" and (SRC / "engrave_labels.svg").exists():
     _zt = max(o.location.z for o in objs) + THICK * 1.05
     # sotetebb es vastagabb, mint az elso valtozat: a 0.16-os barna + 0.15 mm-es
     # extrude a plate tavolsagabol olvashatatlan volt (reviewer P1)
-    _em = wood("engrave", (0.085, 0.042, 0.020, 1), 0.75, grain=False)
+    _em = wood("engrave", tuple(PROFILE.get("engrave_color", [0.085, 0.042, 0.020, 1])), 0.75, grain=False)
     for o in _eng:
         # A retegek origojat az origin_set attette a sajat bbox-kozepukre, ezert
         # az objs[0].location masolasa a cimkeket a terben szorta szet. A helyes
@@ -1333,7 +1346,7 @@ elif VIEW == "macro":
     _mb = world_bbox([o for o in objs if o not in ENGRAVE_OBJS])
     _mw = max(q.x for q in _mb) - min(q.x for q in _mb)
     _mh = max(q.z for q in _mb) - min(q.z for q in _mb)
-    _tx, _ty, _dm, _yaw, _elev = MACRO_SHOTS.get(MACRO_SHOT, MACRO_SHOTS["eye"])
+    _tx, _ty, _dm, _yaw, _elev = PROFILE.get("macro_target", MACRO_SHOTS.get(MACRO_SHOT, MACRO_SHOTS["eye"]))
     _mx0, _mz0 = min(q.x for q in _mb), min(q.z for q in _mb)
     _my = (min(q.y for q in _mb) + max(q.y for q in _mb)) / 2
     # A ZONA kozeppontja a celpont, es ez kerul a kep kozepere. Az elso
@@ -1349,8 +1362,8 @@ elif VIEW == "macro":
     cam = bpy.context.object
     cam.data.lens = LENS
     cam.data.dof.use_dof = True
-    cam.data.dof.focus_distance = D
-    cam.data.dof.aperture_fstop = 9.0   # 3.5 az egesz kepet elmosta
+    cam.data.dof.focus_distance = _mu4.Vector((_cx4 - loc[0], _my - loc[1], _mcz - loc[2])).length
+    cam.data.dof.aperture_fstop = 16.0
     cam.rotation_euler = _mu4.Vector(
         (_cx4 - loc[0], _my - loc[1], _mcz - loc[2])).to_track_quat('-Z', 'Y').to_euler()
     scene.camera = cam
@@ -1383,7 +1396,13 @@ elif VIEW == "plate":
     bpy.context.view_layer.update()
     _pc = world_bbox([o for o in objs if o not in ENGRAVE_OBJS] + FRAME_OBJS)
     _pcz = (min(q.z for q in _pc) + max(q.z for q in _pc)) / 2
-    bpy.ops.object.camera_add(location=(0, -D, _pcz), rotation=(math.radians(90), 0, 0))
+    _yaw = math.radians(float(PROFILE.get("plate_yaw", 0)))
+    _elev = math.radians(float(PROFILE.get("plate_elevation", 0)))
+    _loc = (D * math.sin(_yaw), -D * math.cos(_yaw), _pcz + D * math.sin(_elev))
+    bpy.ops.object.camera_add(location=_loc)
+    import mathutils as _plate_mu
+    bpy.context.object.rotation_euler = _plate_mu.Vector(
+        (-_loc[0], -_loc[1], _pcz - _loc[2])).to_track_quat('-Z', 'Y').to_euler()
     cam = bpy.context.object
     cam.data.lens = LENS
     scene.camera = cam
@@ -1428,7 +1447,7 @@ key = bpy.data.lights.new("key", "AREA"); key.energy = KEY_E
 key.size = SIZE * (0.35 if VIEW in ("plate", "wall", "macro")
                    else 2.0 if VIEW in ("styled",) else 1.5)
 if VIEW in ("lifestyle", "plate", "styled", "wall"):
-    key.color = (1.0, 0.80, 0.60)          # ~2850K, a referencia meleg estifeny-tonusa
+    key.color = tuple(PROFILE.get("key_color", [1.0, 0.80, 0.60]))          # ~2850K, a referencia meleg estifeny-tonusa
 ko = bpy.data.objects.new("key", key); scene.collection.objects.link(ko)
 if VIEW == "wall":
     # SULYOS oldalfeny: a referencia legjobb kepen kemeny, atlos arnyek fut a

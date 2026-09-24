@@ -1,0 +1,473 @@
+......FFFFFF....F.F.F....FF                                              [100%]
+=================================== FAILURES ===================================
+___ test_unsafe_lock_paths_are_rejected_before_generation[directory_symlink] ___
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x108b650f0>
+unsafe = 'directory_symlink'
+
+    @pytest.mark.parametrize('unsafe', ['directory_symlink', 'public_directory', 'file_symlink', 'hardlink', 'fifo', 'public_file'])
+    def test_unsafe_lock_paths_are_rejected_before_generation(tmp_path, monkeypatch, unsafe):
+        import hashlib
+        import os
+        import exportlib
+    
+        monkeypatch.setattr(exportlib.tempfile, 'gettempdir', lambda: str(tmp_path))
+        lock_dir = tmp_path / f'etsy-export-locks-{os.getuid()}'
+        destination = tmp_path / 'product'
+        destination.mkdir()
+        (destination / 'old.svg').write_text('previous output')
+        victim = tmp_path / 'unrelated'
+        victim.write_text('unchanged')
+        if unsafe == 'directory_symlink':
+            other = tmp_path / 'other'
+            other.mkdir(mode=0o700)
+            lock_dir.symlink_to(other, target_is_directory=True)
+        else:
+            lock_dir.mkdir(mode=0o700)
+            lock_name = hashlib.sha256(str(destination.resolve()).encode()).hexdigest() + '.lock'
+            lock = lock_dir / lock_name
+            if unsafe == 'public_directory':
+                lock_dir.chmod(0o777)
+            elif unsafe == 'file_symlink':
+                lock.symlink_to(victim)
+            elif unsafe == 'hardlink':
+                os.link(victim, lock)
+            elif unsafe == 'public_file':
+                lock.write_text('')
+                lock.chmod(0o666)
+            else:
+                os.mkfifo(lock, mode=0o600)
+        # A broken implementation may block opening a FIFO. Bound the real process
+        # so that this regression fails instead of hanging the test suite.
+        import subprocess
+        code = ('import tempfile\n'
+                f'tempfile.tempdir = {str(tmp_path)!r}\n'
+                'from exportlib import output_directory\n'
+                f'with output_directory({str(destination)!r}):\n'
+                '    raise SystemExit(42)\n')
+        result = subprocess.run([sys.executable, '-c', code],
+                                cwd=pathlib.Path(__file__).resolve().parents[1] / 'product/pipeline',
+                                capture_output=True, text=True, timeout=5)
+>       assert result.returncode == 1, result.stderr
+E       AssertionError: 
+E       assert 42 == 1
+E        +  where 42 = CompletedProcess(args=['/Users/p.tothandras/Code/etsy-something/.venv/bin/python', '-c', "import tempfile\ntempfile.te...ytest-58/test_unsafe_lock_paths_are_rej0/product'):\n    raise SystemExit(42)\n"], returncode=42, stdout='', stderr='').returncode
+
+tests/test_exports.py:123: AssertionError
+___ test_unsafe_lock_paths_are_rejected_before_generation[public_directory] ____
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x108b648a0>
+unsafe = 'public_directory'
+
+    @pytest.mark.parametrize('unsafe', ['directory_symlink', 'public_directory', 'file_symlink', 'hardlink', 'fifo', 'public_file'])
+    def test_unsafe_lock_paths_are_rejected_before_generation(tmp_path, monkeypatch, unsafe):
+        import hashlib
+        import os
+        import exportlib
+    
+        monkeypatch.setattr(exportlib.tempfile, 'gettempdir', lambda: str(tmp_path))
+        lock_dir = tmp_path / f'etsy-export-locks-{os.getuid()}'
+        destination = tmp_path / 'product'
+        destination.mkdir()
+        (destination / 'old.svg').write_text('previous output')
+        victim = tmp_path / 'unrelated'
+        victim.write_text('unchanged')
+        if unsafe == 'directory_symlink':
+            other = tmp_path / 'other'
+            other.mkdir(mode=0o700)
+            lock_dir.symlink_to(other, target_is_directory=True)
+        else:
+            lock_dir.mkdir(mode=0o700)
+            lock_name = hashlib.sha256(str(destination.resolve()).encode()).hexdigest() + '.lock'
+            lock = lock_dir / lock_name
+            if unsafe == 'public_directory':
+                lock_dir.chmod(0o777)
+            elif unsafe == 'file_symlink':
+                lock.symlink_to(victim)
+            elif unsafe == 'hardlink':
+                os.link(victim, lock)
+            elif unsafe == 'public_file':
+                lock.write_text('')
+                lock.chmod(0o666)
+            else:
+                os.mkfifo(lock, mode=0o600)
+        # A broken implementation may block opening a FIFO. Bound the real process
+        # so that this regression fails instead of hanging the test suite.
+        import subprocess
+        code = ('import tempfile\n'
+                f'tempfile.tempdir = {str(tmp_path)!r}\n'
+                'from exportlib import output_directory\n'
+                f'with output_directory({str(destination)!r}):\n'
+                '    raise SystemExit(42)\n')
+        result = subprocess.run([sys.executable, '-c', code],
+                                cwd=pathlib.Path(__file__).resolve().parents[1] / 'product/pipeline',
+                                capture_output=True, text=True, timeout=5)
+>       assert result.returncode == 1, result.stderr
+E       AssertionError: 
+E       assert 42 == 1
+E        +  where 42 = CompletedProcess(args=['/Users/p.tothandras/Code/etsy-something/.venv/bin/python', '-c', "import tempfile\ntempfile.te...ytest-58/test_unsafe_lock_paths_are_rej1/product'):\n    raise SystemExit(42)\n"], returncode=42, stdout='', stderr='').returncode
+
+tests/test_exports.py:123: AssertionError
+_____ test_unsafe_lock_paths_are_rejected_before_generation[file_symlink] ______
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x108143770>
+unsafe = 'file_symlink'
+
+    @pytest.mark.parametrize('unsafe', ['directory_symlink', 'public_directory', 'file_symlink', 'hardlink', 'fifo', 'public_file'])
+    def test_unsafe_lock_paths_are_rejected_before_generation(tmp_path, monkeypatch, unsafe):
+        import hashlib
+        import os
+        import exportlib
+    
+        monkeypatch.setattr(exportlib.tempfile, 'gettempdir', lambda: str(tmp_path))
+        lock_dir = tmp_path / f'etsy-export-locks-{os.getuid()}'
+        destination = tmp_path / 'product'
+        destination.mkdir()
+        (destination / 'old.svg').write_text('previous output')
+        victim = tmp_path / 'unrelated'
+        victim.write_text('unchanged')
+        if unsafe == 'directory_symlink':
+            other = tmp_path / 'other'
+            other.mkdir(mode=0o700)
+            lock_dir.symlink_to(other, target_is_directory=True)
+        else:
+            lock_dir.mkdir(mode=0o700)
+            lock_name = hashlib.sha256(str(destination.resolve()).encode()).hexdigest() + '.lock'
+            lock = lock_dir / lock_name
+            if unsafe == 'public_directory':
+                lock_dir.chmod(0o777)
+            elif unsafe == 'file_symlink':
+                lock.symlink_to(victim)
+            elif unsafe == 'hardlink':
+                os.link(victim, lock)
+            elif unsafe == 'public_file':
+                lock.write_text('')
+                lock.chmod(0o666)
+            else:
+                os.mkfifo(lock, mode=0o600)
+        # A broken implementation may block opening a FIFO. Bound the real process
+        # so that this regression fails instead of hanging the test suite.
+        import subprocess
+        code = ('import tempfile\n'
+                f'tempfile.tempdir = {str(tmp_path)!r}\n'
+                'from exportlib import output_directory\n'
+                f'with output_directory({str(destination)!r}):\n'
+                '    raise SystemExit(42)\n')
+        result = subprocess.run([sys.executable, '-c', code],
+                                cwd=pathlib.Path(__file__).resolve().parents[1] / 'product/pipeline',
+                                capture_output=True, text=True, timeout=5)
+>       assert result.returncode == 1, result.stderr
+E       AssertionError: 
+E       assert 42 == 1
+E        +  where 42 = CompletedProcess(args=['/Users/p.tothandras/Code/etsy-something/.venv/bin/python', '-c', "import tempfile\ntempfile.te...ytest-58/test_unsafe_lock_paths_are_rej2/product'):\n    raise SystemExit(42)\n"], returncode=42, stdout='', stderr='').returncode
+
+tests/test_exports.py:123: AssertionError
+_______ test_unsafe_lock_paths_are_rejected_before_generation[hardlink] ________
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1080ea360>
+unsafe = 'hardlink'
+
+    @pytest.mark.parametrize('unsafe', ['directory_symlink', 'public_directory', 'file_symlink', 'hardlink', 'fifo', 'public_file'])
+    def test_unsafe_lock_paths_are_rejected_before_generation(tmp_path, monkeypatch, unsafe):
+        import hashlib
+        import os
+        import exportlib
+    
+        monkeypatch.setattr(exportlib.tempfile, 'gettempdir', lambda: str(tmp_path))
+        lock_dir = tmp_path / f'etsy-export-locks-{os.getuid()}'
+        destination = tmp_path / 'product'
+        destination.mkdir()
+        (destination / 'old.svg').write_text('previous output')
+        victim = tmp_path / 'unrelated'
+        victim.write_text('unchanged')
+        if unsafe == 'directory_symlink':
+            other = tmp_path / 'other'
+            other.mkdir(mode=0o700)
+            lock_dir.symlink_to(other, target_is_directory=True)
+        else:
+            lock_dir.mkdir(mode=0o700)
+            lock_name = hashlib.sha256(str(destination.resolve()).encode()).hexdigest() + '.lock'
+            lock = lock_dir / lock_name
+            if unsafe == 'public_directory':
+                lock_dir.chmod(0o777)
+            elif unsafe == 'file_symlink':
+                lock.symlink_to(victim)
+            elif unsafe == 'hardlink':
+                os.link(victim, lock)
+            elif unsafe == 'public_file':
+                lock.write_text('')
+                lock.chmod(0o666)
+            else:
+                os.mkfifo(lock, mode=0o600)
+        # A broken implementation may block opening a FIFO. Bound the real process
+        # so that this regression fails instead of hanging the test suite.
+        import subprocess
+        code = ('import tempfile\n'
+                f'tempfile.tempdir = {str(tmp_path)!r}\n'
+                'from exportlib import output_directory\n'
+                f'with output_directory({str(destination)!r}):\n'
+                '    raise SystemExit(42)\n')
+        result = subprocess.run([sys.executable, '-c', code],
+                                cwd=pathlib.Path(__file__).resolve().parents[1] / 'product/pipeline',
+                                capture_output=True, text=True, timeout=5)
+>       assert result.returncode == 1, result.stderr
+E       AssertionError: 
+E       assert 42 == 1
+E        +  where 42 = CompletedProcess(args=['/Users/p.tothandras/Code/etsy-something/.venv/bin/python', '-c', "import tempfile\ntempfile.te...ytest-58/test_unsafe_lock_paths_are_rej3/product'):\n    raise SystemExit(42)\n"], returncode=42, stdout='', stderr='').returncode
+
+tests/test_exports.py:123: AssertionError
+_________ test_unsafe_lock_paths_are_rejected_before_generation[fifo] __________
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1080eaad0>
+unsafe = 'fifo'
+
+    @pytest.mark.parametrize('unsafe', ['directory_symlink', 'public_directory', 'file_symlink', 'hardlink', 'fifo', 'public_file'])
+    def test_unsafe_lock_paths_are_rejected_before_generation(tmp_path, monkeypatch, unsafe):
+        import hashlib
+        import os
+        import exportlib
+    
+        monkeypatch.setattr(exportlib.tempfile, 'gettempdir', lambda: str(tmp_path))
+        lock_dir = tmp_path / f'etsy-export-locks-{os.getuid()}'
+        destination = tmp_path / 'product'
+        destination.mkdir()
+        (destination / 'old.svg').write_text('previous output')
+        victim = tmp_path / 'unrelated'
+        victim.write_text('unchanged')
+        if unsafe == 'directory_symlink':
+            other = tmp_path / 'other'
+            other.mkdir(mode=0o700)
+            lock_dir.symlink_to(other, target_is_directory=True)
+        else:
+            lock_dir.mkdir(mode=0o700)
+            lock_name = hashlib.sha256(str(destination.resolve()).encode()).hexdigest() + '.lock'
+            lock = lock_dir / lock_name
+            if unsafe == 'public_directory':
+                lock_dir.chmod(0o777)
+            elif unsafe == 'file_symlink':
+                lock.symlink_to(victim)
+            elif unsafe == 'hardlink':
+                os.link(victim, lock)
+            elif unsafe == 'public_file':
+                lock.write_text('')
+                lock.chmod(0o666)
+            else:
+                os.mkfifo(lock, mode=0o600)
+        # A broken implementation may block opening a FIFO. Bound the real process
+        # so that this regression fails instead of hanging the test suite.
+        import subprocess
+        code = ('import tempfile\n'
+                f'tempfile.tempdir = {str(tmp_path)!r}\n'
+                'from exportlib import output_directory\n'
+                f'with output_directory({str(destination)!r}):\n'
+                '    raise SystemExit(42)\n')
+>       result = subprocess.run([sys.executable, '-c', code],
+                                cwd=pathlib.Path(__file__).resolve().parents[1] / 'product/pipeline',
+                                capture_output=True, text=True, timeout=5)
+
+tests/test_exports.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py:557: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py:1221: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py:2154: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['/Users/p.tothandras/Code/etsy-something/.venv...>
+endtime = 525158.155819708, orig_timeout = 5, stdout_seq = [], stderr_seq = []
+skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['/Users/p.tothandras/Code/etsy-something/.venv/bin/python', '-c', "import tempfile\ntempfile.tempdir = '/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej4'\nfrom exportlib import output_directory\nwith output_directory('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej4/product'):\n    raise SystemExit(42)\n"]' timed out after 5 seconds
+
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py:1268: TimeoutExpired
+______ test_unsafe_lock_paths_are_rejected_before_generation[public_file] ______
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_unsafe_lock_paths_are_rej5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x108b7ac50>
+unsafe = 'public_file'
+
+    @pytest.mark.parametrize('unsafe', ['directory_symlink', 'public_directory', 'file_symlink', 'hardlink', 'fifo', 'public_file'])
+    def test_unsafe_lock_paths_are_rejected_before_generation(tmp_path, monkeypatch, unsafe):
+        import hashlib
+        import os
+        import exportlib
+    
+        monkeypatch.setattr(exportlib.tempfile, 'gettempdir', lambda: str(tmp_path))
+        lock_dir = tmp_path / f'etsy-export-locks-{os.getuid()}'
+        destination = tmp_path / 'product'
+        destination.mkdir()
+        (destination / 'old.svg').write_text('previous output')
+        victim = tmp_path / 'unrelated'
+        victim.write_text('unchanged')
+        if unsafe == 'directory_symlink':
+            other = tmp_path / 'other'
+            other.mkdir(mode=0o700)
+            lock_dir.symlink_to(other, target_is_directory=True)
+        else:
+            lock_dir.mkdir(mode=0o700)
+            lock_name = hashlib.sha256(str(destination.resolve()).encode()).hexdigest() + '.lock'
+            lock = lock_dir / lock_name
+            if unsafe == 'public_directory':
+                lock_dir.chmod(0o777)
+            elif unsafe == 'file_symlink':
+                lock.symlink_to(victim)
+            elif unsafe == 'hardlink':
+                os.link(victim, lock)
+            elif unsafe == 'public_file':
+                lock.write_text('')
+                lock.chmod(0o666)
+            else:
+                os.mkfifo(lock, mode=0o600)
+        # A broken implementation may block opening a FIFO. Bound the real process
+        # so that this regression fails instead of hanging the test suite.
+        import subprocess
+        code = ('import tempfile\n'
+                f'tempfile.tempdir = {str(tmp_path)!r}\n'
+                'from exportlib import output_directory\n'
+                f'with output_directory({str(destination)!r}):\n'
+                '    raise SystemExit(42)\n')
+        result = subprocess.run([sys.executable, '-c', code],
+                                cwd=pathlib.Path(__file__).resolve().parents[1] / 'product/pipeline',
+                                capture_output=True, text=True, timeout=5)
+>       assert result.returncode == 1, result.stderr
+E       AssertionError: 
+E       assert 42 == 1
+E        +  where 42 = CompletedProcess(args=['/Users/p.tothandras/Code/etsy-something/.venv/bin/python', '-c', "import tempfile\ntempfile.te...ytest-58/test_unsafe_lock_paths_are_rej5/product'):\n    raise SystemExit(42)\n"], returncode=42, stdout='', stderr='').returncode
+
+tests/test_exports.py:123: AssertionError
+_________ test_check_script_discovers_shell_files[new command.sh-True] _________
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_check_script_discovers_sh3')
+broken = True, name = 'new command.sh'
+
+    @pytest.mark.parametrize('broken', [False, True])
+    @pytest.mark.parametrize('name', ['product/pipeline/run_theme.sh', 'new command.sh',
+                                      'product/pipeline/new tool/run.sh', 'tests/helpers/check.sh'])
+    def test_check_script_discovers_shell_files(tmp_path, broken, name):
+        shutil.copyfile(ROOT / 'check.sh', tmp_path / 'check.sh')
+        py = tmp_path / '.venv/bin/python'
+        py.parent.mkdir(parents=True)
+        py.write_text('#!/bin/sh\nexit 0\n')
+        py.chmod(0o755)
+        existing = tmp_path / 'product/pipeline/run_theme.sh'
+        existing.parent.mkdir(parents=True)
+        existing.write_text('#!/bin/bash\nexit 0\n')
+        shell = tmp_path / name
+        shell.parent.mkdir(parents=True, exist_ok=True)
+        shell.write_text('if [[ -n x ]; then\n' if broken else '#!/bin/bash\nexit 0\n')
+        result = subprocess.run(['bash', str(tmp_path / 'check.sh')], capture_output=True, text=True)
+>       assert (result.returncode != 0) == broken
+E       AssertionError: assert (0 != 0) == True
+E        +  where 0 = CompletedProcess(args=['bash', '/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest...covers_sh3/check.sh'], returncode=0, stdout='== ruff ==\n== shell syntax ==\n== pytest ==\n== rendben ==\n', stderr='').returncode
+
+tests/test_shell_entrypoints.py:29: AssertionError
+_ test_check_script_discovers_shell_files[product/pipeline/new tool/run.sh-True] _
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_check_script_discovers_sh5')
+broken = True, name = 'product/pipeline/new tool/run.sh'
+
+    @pytest.mark.parametrize('broken', [False, True])
+    @pytest.mark.parametrize('name', ['product/pipeline/run_theme.sh', 'new command.sh',
+                                      'product/pipeline/new tool/run.sh', 'tests/helpers/check.sh'])
+    def test_check_script_discovers_shell_files(tmp_path, broken, name):
+        shutil.copyfile(ROOT / 'check.sh', tmp_path / 'check.sh')
+        py = tmp_path / '.venv/bin/python'
+        py.parent.mkdir(parents=True)
+        py.write_text('#!/bin/sh\nexit 0\n')
+        py.chmod(0o755)
+        existing = tmp_path / 'product/pipeline/run_theme.sh'
+        existing.parent.mkdir(parents=True)
+        existing.write_text('#!/bin/bash\nexit 0\n')
+        shell = tmp_path / name
+        shell.parent.mkdir(parents=True, exist_ok=True)
+        shell.write_text('if [[ -n x ]; then\n' if broken else '#!/bin/bash\nexit 0\n')
+        result = subprocess.run(['bash', str(tmp_path / 'check.sh')], capture_output=True, text=True)
+>       assert (result.returncode != 0) == broken
+E       AssertionError: assert (0 != 0) == True
+E        +  where 0 = CompletedProcess(args=['bash', '/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest...covers_sh5/check.sh'], returncode=0, stdout='== ruff ==\n== shell syntax ==\n== pytest ==\n== rendben ==\n', stderr='').returncode
+
+tests/test_shell_entrypoints.py:29: AssertionError
+_____ test_check_script_discovers_shell_files[tests/helpers/check.sh-True] _____
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-58/test_check_script_discovers_sh7')
+broken = True, name = 'tests/helpers/check.sh'
+
+    @pytest.mark.parametrize('broken', [False, True])
+    @pytest.mark.parametrize('name', ['product/pipeline/run_theme.sh', 'new command.sh',
+                                      'product/pipeline/new tool/run.sh', 'tests/helpers/check.sh'])
+    def test_check_script_discovers_shell_files(tmp_path, broken, name):
+        shutil.copyfile(ROOT / 'check.sh', tmp_path / 'check.sh')
+        py = tmp_path / '.venv/bin/python'
+        py.parent.mkdir(parents=True)
+        py.write_text('#!/bin/sh\nexit 0\n')
+        py.chmod(0o755)
+        existing = tmp_path / 'product/pipeline/run_theme.sh'
+        existing.parent.mkdir(parents=True)
+        existing.write_text('#!/bin/bash\nexit 0\n')
+        shell = tmp_path / name
+        shell.parent.mkdir(parents=True, exist_ok=True)
+        shell.write_text('if [[ -n x ]; then\n' if broken else '#!/bin/bash\nexit 0\n')
+        result = subprocess.run(['bash', str(tmp_path / 'check.sh')], capture_output=True, text=True)
+>       assert (result.returncode != 0) == broken
+E       AssertionError: assert (0 != 0) == True
+E        +  where 0 = CompletedProcess(args=['bash', '/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest...covers_sh7/check.sh'], returncode=0, stdout='== ruff ==\n== shell syntax ==\n== pytest ==\n== rendben ==\n', stderr='').returncode
+
+tests/test_shell_entrypoints.py:29: AssertionError
+_______________ test_empty_material_has_actionable_error[geom0] ________________
+
+geom = <GEOMETRYCOLLECTION EMPTY>
+
+    @pytest.mark.parametrize('geom', [GeometryCollection(), LineString([(0, 0), (1, 1)])])
+    def test_empty_material_has_actionable_error(geom):
+>       with pytest.raises(ValueError, match='No polygon material remains'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'No polygon material remains'
+E         Actual message: 'min() iterable argument is empty'
+
+tests/test_trace_geometry.py:52: AssertionError
+_______________ test_empty_material_has_actionable_error[geom1] ________________
+
+geom = <LINESTRING (0 0, 1 1)>
+
+    @pytest.mark.parametrize('geom', [GeometryCollection(), LineString([(0, 0), (1, 1)])])
+    def test_empty_material_has_actionable_error(geom):
+>       with pytest.raises(ValueError, match='No polygon material remains'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'No polygon material remains'
+E         Actual message: 'min() iterable argument is empty'
+
+tests/test_trace_geometry.py:52: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_exports.py::test_unsafe_lock_paths_are_rejected_before_generation[directory_symlink]
+FAILED tests/test_exports.py::test_unsafe_lock_paths_are_rejected_before_generation[public_directory]
+FAILED tests/test_exports.py::test_unsafe_lock_paths_are_rejected_before_generation[file_symlink]
+FAILED tests/test_exports.py::test_unsafe_lock_paths_are_rejected_before_generation[hardlink]
+FAILED tests/test_exports.py::test_unsafe_lock_paths_are_rejected_before_generation[fifo]
+FAILED tests/test_exports.py::test_unsafe_lock_paths_are_rejected_before_generation[public_file]
+FAILED tests/test_shell_entrypoints.py::test_check_script_discovers_shell_files[new command.sh-True]
+FAILED tests/test_shell_entrypoints.py::test_check_script_discovers_shell_files[product/pipeline/new tool/run.sh-True]
+FAILED tests/test_shell_entrypoints.py::test_check_script_discovers_shell_files[tests/helpers/check.sh-True]
+FAILED tests/test_trace_geometry.py::test_empty_material_has_actionable_error[geom0]
+FAILED tests/test_trace_geometry.py::test_empty_material_has_actionable_error[geom1]
+11 failed, 16 passed in 7.51s

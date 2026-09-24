@@ -1,0 +1,22 @@
+{
+  "verdict": "APPROVE",
+  "findings": [],
+  "nonblocking_nits": [
+    "tests/test_exports.py:86 – A test_unsafe_lock_paths_are_rejected_before_generation tesztben a monkeypatch.setattr(exportlib.tempfile, 'gettempdir', ...) nem hat semmire, mert a tényleges ellenőrzés egy alfolyamatban fut, és ott a `tempfile.tempdir` beállítása (116. sor) érvényesül. Ez holt kód, törölhető.",
+    "tests/test_exports.py:126 – A generator expression `code` ciklusváltozója ugyanazt a nevet kapta, mint a 115. sorban létrehozott alfolyamat-forráskód. A generátornak saját scope-ja van, ezért ez nem hiba, de olvasáskor zavaró; érdemes átnevezni (pl. `errno_code`).",
+    "check.sh:25 – A `printf '%s\\0' ./*.sh` nullglob nélkül fut, ezért ha a gyökérben nincs egyetlen *.sh fájl sem, a `./*.sh` szó szerint kerül a listába, és a `bash -n` hibát ad rá. A gyakorlatban ez nem fordulhat elő, mert maga a check.sh mindig ott van; csak megjegyzésként rögzítem."
+  ],
+  "reviewed_files": [
+    "product/pipeline/exportlib.py",
+    "check.sh",
+    "tests/test_exports.py",
+    "tests/test_shell_entrypoints.py",
+    "reviews/2026-09-16/check.log"
+  ],
+  "limitations": [
+    "Csak olvastam a fájlokat, parancsot nem futtattam. A tesztek eredményét a reviews/2026-09-16/check.log fájlból vettem (ruff rendben, a shell syntax lépés hiba nélkül lefutott, 97 passed, a végén „== rendben ==” szerepel).",
+    "Az ELOOP/ENOTDIR viselkedést és a FIFO O_RDWR|O_NONBLOCK megnyitását a darwin platformon ellenőriztem. A Linux alatti errno-t csak a POSIX/Linux szemantika alapján ítéltem meg, ott nem próbáltam ki.",
+    "A módosított cutlib/geometriai kódot és a többi tesztet a kérésnek megfelelően nem vizsgáltam újra.",
+    "_destination_lock: az átnevezés után egyetlen hívóhely maradt, az output_directory, amely feloldott elérési utat ad át neki. A check.sh-ban a mktemp fájl és az EXIT trap megőrzi a find kilépési kódját (7), és a set -e még a pytest előtt leállítja a futást. Ezt a test_check_stops_when_shell_discovery_fails teszt fedi le. Regressziót egyik javításnál sem találtam."
+  ]
+}

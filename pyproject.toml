@@ -2,7 +2,7 @@
 # A pipeline-szkriptek hosszú, magyarázó kommenteket hordoznak - azok a
 # tudás nagy része ebben a projektben, nem a kód. A sorhossz ehhez igazodik.
 line-length = 100
-target-version = "py311"
+target-version = "py314"
 exclude = [".venv", "product/iterations", "wiki/assets"]
 
 [tool.ruff.lint]
@@ -24,8 +24,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 # A Blender-szkript a `bpy` modult csak futásidőben kapja meg, és a
-# felső szintű kódot nem lehet függvénybe zárni a bpy-operátorok miatt.
-"product/render_blender.py" = ["E402", "F821"]
+# jelenetépítés felső szinten fut. A nem definiált nevek itt is hibák.
+"product/render_blender.py" = ["E402"]
 
 [tool.pytest.ini_options]
 # Fowler, SelfTestingCode: a tesztkészletet EGYETLEN paranccsal kell tudni

@@ -10,3 +10,11 @@ product/iterations/0041-cat-choices/v*/layers/
 product/pipeline/geodata/
 .pytest_cache/
 .ruff_cache/
+
+# Export locks and interrupted staging are runtime state
+*.lockfile
+*.previous/
+.*.staging-*/
+__pycache__/
+*.pyc
+product/builds/

@@ -1,0 +1,15 @@
+  OK       csempe: min_area a csempehatáron (anyagvesztés)
+  OK       csempe: szilánk-beolvasztás elhagyva (vághatatlan darab)
+  OK       csempe: üres bemenet őre törölve (NaN)
+  OK       híd: pont-érintkezés iránya (nulla hosszú LineString → üres buffer)
+  OK       híd: max_span 'continue' törölve (árva mégis hidalódik)
+  OK       szöveg: betűnként külön path (a lyukak tömör foltok lesznek)
+  OK       szöveg: üres-név őr törölve (matplotlib AttributeError)
+  OK       DXF: Y-tükrözés elhagyva (fejjel lefelé gravírozott felirat)
+  OK       gyógyítás: nem-konvergencia jelzése törölve (néma hiba)
+  OK       gyógyítás: clip-metszés elhagyva (kilóg a laptáblából)
+  OK       drop_specks: lyuk-szűrés elhagyva (1 mm²-es tavat is kivágunk)
+  OK       snap: make_valid elhagyva (GEOS side location conflict)
+  OK       widest_inscribed: rossz irányú felezés (kétszeres szélesség)
+
+13/13 mutáció elbukik.

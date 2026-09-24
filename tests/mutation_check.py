@@ -27,7 +27,7 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TARGET = ROOT / "product" / "pipeline" / "cutlib.py"
-PY = str(ROOT / ".venv" / "bin" / "python")
+PY = sys.executable
 
 # (leírás, a védő teszt neve, régi kódrészlet, mire cseréljük)
 # Minden sor egy VALÓDI javítás visszavonása, nem kitalált elrontás.
@@ -107,11 +107,21 @@ MUTATIONS = [
 
 def main():
     original = TARGET.read_text()
-    backup = pathlib.Path(tempfile.gettempdir()) / "cutlib_mutation_backup.py"
-    backup.write_text(original)
 
-    survivors, skipped = [], []
-    try:
+    survivors, skipped, errors = [], [], []
+    with tempfile.TemporaryDirectory(prefix="etsy-mutations-") as temp:
+        workspace = pathlib.Path(temp)
+        target = workspace / "product/pipeline/cutlib.py"
+        target.parent.mkdir(parents=True)
+        target.write_text(original)
+        shutil.copytree(ROOT / "tests", workspace / "tests", ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copyfile(ROOT / "pyproject.toml", workspace / "pyproject.toml")
+        baseline = subprocess.run([PY, "-m", "pytest", "tests/test_cutlib.py", "-q"],
+                                  cwd=workspace, capture_output=True, text=True)
+        if baseline.returncode != 0:
+            print("Baseline failed; mutation results would be meaningless.")
+            print(baseline.stdout, baseline.stderr)
+            return 1
         for desc, test, old, new in MUTATIONS:
             if old not in original:
                 # A kód elmozdult a mutáció alól. Ezt KI KELL MONDANI: a csendben
@@ -125,29 +135,33 @@ def main():
                 print(f"  KIMARAD  {desc}\n           (a mintázat {original.count(old)} "
                       f"helyen szerepel — tedd egyedivé)")
                 continue
-            TARGET.write_text(original.replace(old, new, 1))
+            target.write_text(original.replace(old, new, 1))
             # A `__pycache__` a mutacio NEMA ELLENSEGE: a pyc ervenytelenitese
             # (mtime, meret) parost nez, es a gyors, egyforma meretu ujrairasoknal
             # a pytest a MUTALATLAN kodot futtatta - ket mutacio ezert latszott
             # tulelonek, holott a teszt valojaban elkapta oket.
-            shutil.rmtree(TARGET.parent / "__pycache__", ignore_errors=True)
-            failed = subprocess.run(
+            shutil.rmtree(target.parent / "__pycache__", ignore_errors=True)
+            result = subprocess.run(
                 [PY, "-m", "pytest", f"tests/test_cutlib.py::{test}", "-q"],
-                cwd=ROOT, capture_output=True,
+                cwd=workspace, capture_output=True, text=True,
                 env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-            ).returncode != 0
+            )
+            if result.returncode not in (0, 1):
+                errors.append(desc)
+                print(f"  KERET-HIBA {desc}: pytest exit {result.returncode}")
+                print(result.stdout, result.stderr)
+                continue
+            failed = result.returncode == 1
             print(f"  {'OK  ' if failed else 'BAJ '}     {desc}")
             if not failed:
                 survivors.append((desc, test))
-    finally:
-        TARGET.write_text(original)
 
-    print(f"\n{len(MUTATIONS) - len(survivors) - len(skipped)}/{len(MUTATIONS)} mutáció elbukik.")
+    print(f"\n{len(MUTATIONS) - len(survivors) - len(skipped) - len(errors)}/{len(MUTATIONS)} mutáció elbukik.")
     if skipped:
         print(f"{len(skipped)} mutáció nem volt alkalmazható — frissítsd a mintázatokat.")
     for desc, test in survivors:
         print(f"[!] TÚLÉLŐ: {desc}\n    a {test} nem védi meg — a fixture nem hozza létre a hibát")
-    return 1 if (survivors or skipped) else 0
+    return 1 if (survivors or skipped or errors) else 0
 
 
 if __name__ == "__main__":

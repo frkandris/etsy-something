@@ -1,29 +1,17 @@
-#!/bin/bash
-# Egy tema teljes lancon valo atvitele. A melysegterkep mar sullyesztett.
-set -e
-cd "$(dirname "$0")/../.."
-KEY="$1"; LEVELS="${2:-8}"
-D=product/themes/$KEY
-SRC=$(ls $D/raw_*.png | head -1)
-# Frame and interior per theme. Shipping five listings on one grey frame and
-# one plant made the series read as a template; the reference shop styles each
-# listing to its subject.
-case "$KEY" in
-  cat)          BG=cosy-yarn;    FRAMEFLAG="" ;;
-  dachshund)    BG=warm-shelf;   FRAMEFLAG="--wood-frame" ;;
-  wolf)         BG=nordic-desk;  FRAMEFLAG="--wood-frame" ;;
-  highland-cow) BG=autumn-table; FRAMEFLAG="--wood-frame" ;;
-  tree-of-life) BG=warm-shelf;   FRAMEFLAG="--wood-frame" ;;
-  *)            BG=warm-shelf;   FRAMEFLAG="" ;;
-esac
-.venv/bin/python product/pipeline/02_trace.py --src "$SRC" --levels $LEVELS \
-  --min-part 180 --min-feature 5.0 --speckle 0.8 --sliver-ratio 3 --min-area-pct 1.2 --max-parts 18 --round-corners 3.5 --motif-scale 0.95 --merge-below 0.012 --margin 30 --punch 14 \
-  --no-keyhole --full-panel --out $D/layers 2>&1 \
-  | grep -v -E "Deprecat|px = list" | tail -14
-# A render-beallitasok a termek-profilbol jonnek (product/profiles/papercut.json).
-# Ami itt marad kapcsolokent, az temanként valtozik - a keret-anyag.
-blender -b -P product/render_blender.py -- $D/layers "$PWD/$D/plate.png" \
-  plate --profile papercut $FRAMEFLAG 2>&1 | grep -E "profil|mu=|kesz|Error" | tail -2
-.venv/bin/python product/pipeline/04_composite.py --bg product/pipeline/backdrops/$BG.png \
-  --art $D/plate.png --out $D/render_photo.png --cx 0.44 --base 0.94 --height 0.88 \
-  --warm 1.02 --square 2>&1 | tail -1
+#!/usr/bin/env bash
+# Explicit convenience wrapper; all geometry and rendering come from PROFILE.
+# SOURCE/PROFILE paths are relative to the caller, as with run_product.py.
+set -euo pipefail
+if (( $# < 3 || $# > 4 )); then
+  echo 'Usage: run_theme.sh THEME SOURCE PROFILE [LEVELS]' >&2
+  exit 2
+fi
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+KEY="$1"
+if [[ ! "$KEY" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo 'THEME must contain only letters, digits, hyphens or underscores' >&2
+  exit 2
+fi
+args=(--profile "$3" --src "$2" --out "$ROOT/product/themes/$KEY/current")
+if [[ -n "${4:-}" ]]; then args+=(--levels "$4"); fi
+exec "$ROOT/.venv/bin/python" "$ROOT/product/pipeline/run_product.py" "${args[@]}"

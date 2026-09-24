@@ -18,7 +18,8 @@ from shapely.geometry import Polygon, Point
 from shapely.ops import unary_union
 import sys as _sys, pathlib as _pl
 _sys.path.insert(0, str(_pl.Path(__file__).resolve().parent))
-from cutlib import ghost_outline
+from cutlib import ghost_outline, widest_inscribed, necks, polys as parts_of
+from exportlib import output_directory, require_valid
 from shapely import make_valid, set_precision
 from shapely import affinity
 
@@ -256,47 +257,18 @@ def clean(geom, scale, thicken, min_part, height):
     return final, (unary_union(dropped) if dropped else None)
 
 
-def parts_of(geom):
-    return list(geom.geoms) if geom.geom_type == "MultiPolygon" else [geom]
-
-
 def _extent(ring):
     minx, miny, maxx, maxy = Polygon(ring).bounds
     return max(maxx - minx, maxy - miny)
 
 
-def widest_inscribed(p):
-    """Thickest point of one piece, by erosion bisection."""
-    lo, hi = 0.0, 12.0
-    for _ in range(16):
-        mid = (lo + hi) / 2
-        if p.buffer(-mid / 2).is_empty:
-            hi = mid
-        else:
-            lo = mid
-    return lo
-
-
 def frailest(geom):
     """min over pieces of their thickest point - catches end-to-end slivers.
     Does NOT catch a thin neck between two fat blobs; necks() does that."""
-    return min(widest_inscribed(p) for p in parts_of(geom))
-
-
-def necks(geom):
-    """Count thin necks: places where eroding by MIN_WEB/2 splits one piece
-    into several substantial fragments. A dumbbell with a 0.2 mm bridge has a
-    fat widest-point on both sides, so frailest() alone would pass it - this
-    is the check that fails it instead."""
-    n = 0
-    for p in parts_of(geom):
-        er = p.buffer(-MIN_WEB / 2)
-        if er.is_empty:
-            continue
-        frags = [f for f in parts_of(er) if f.area >= MIN_FRAG]
-        if len(frags) > 1:
-            n += len(frags) - 1
-    return n
+    pieces = parts_of(geom)
+    if not pieces:
+        raise ValueError("No polygon material remains; adjust the source or filtering thresholds")
+    return min(widest_inscribed(p) for p in pieces)
 
 
 def thin_limbs(p, frags):
@@ -452,9 +424,40 @@ def keyhole(geom):
     return geom.difference(hole)
 
 
+def fit_panel_openings(geoms, panel, inner, motif_scale=1.0):
+    """Center and fit ALL openings, including the deepest sheet's holes.
+
+    The lowest cut sheet is not a solid backing. Using it as the subtraction
+    domain leaves its eye/ear openings in place while moving the other sheets;
+    subsequent nesting then cuts the displaced shapes against those old holes.
+    """
+    panel = set_precision(make_valid(panel), 0.01)
+    openings = {k: panel.difference(set_precision(make_valid(g), 0.01)).buffer(0)
+                for k, g in geoms.items()}
+    combined = unary_union(list(openings.values()))
+    if combined.is_empty or inner.is_empty:
+        return geoms, 1.0, 0.0, 0.0
+    x0, y0, x1, y1 = combined.bounds
+    ix0, iy0, ix1, iy1 = inner.bounds
+    fit = min(1.0, (ix1 - ix0) / max(1e-6, x1 - x0),
+              (iy1 - iy0) / max(1e-6, y1 - y0)) * motif_scale
+    dx, dy = (ix0 + ix1 - x0 - x1) / 2, (iy0 + iy1 - y0 - y1) / 2
+    origin = ((ix0 + ix1) / 2, (iy0 + iy1) / 2)
+    fitted = {}
+    for k, opening in openings.items():
+        opening = affinity.translate(opening, dx, dy)
+        opening = affinity.scale(opening, xfact=fit, yfact=fit, origin=origin)
+        fitted[k] = panel.difference(set_precision(opening, 0.01)).buffer(0)
+    return fitted, fit, dx, dy
+
+
 def main():
-    ap = argparse.ArgumentParser()
+    global MM
+    ap = argparse.ArgumentParser(allow_abbrev=False)
     ap.add_argument("--src", required=True)
+    ap.add_argument("--size", type=float, default=MM, help="A motívum legnagyobb mérete mm-ben")
+    ap.add_argument("--background-cutoff", type=int, default=0,
+                    help="Relief: az ennél sötétebb háttértónusok nullázása")
     ap.add_argument("--levels", type=int, default=6)
     ap.add_argument("--thicken", type=float, default=0.6, help="mm, hairline repair")
     ap.add_argument("--min-part", type=float, default=MIN_PART,
@@ -510,9 +513,15 @@ def main():
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
+    requested_levels = a.levels
+    if not math.isfinite(a.size) or a.size <= 0:
+        ap.error("--size must be positive")
+    MM = a.size
     src = pathlib.Path(a.src)
     out = pathlib.Path(a.out or src.parent / "layers"); out.mkdir(parents=True, exist_ok=True)
     img = Image.open(src)
+    if a.background_cutoff:
+        img = img.convert("L").point(lambda v: 0 if v <= a.background_cutoff else v)
     if a.recessed:
         # normalise BEFORE inverting: a 0..6 index map inverted becomes 249..255,
         # hi is then 255 and the index-map branch never fires, so k-means sees a
@@ -665,8 +674,9 @@ def main():
                 # close the hairline ring between the disc edge and this sheet's
                 # own outer boundary, otherwise the union leaves 0.8 mm wedges
                 g = unary_union([geoms[k], outside]).buffer(0)
-                g = g.buffer(MIN_WEB * 0.6).buffer(-MIN_WEB * 0.6).buffer(0)
-                geoms[k] = g
+                closed = g.buffer(MIN_WEB * 0.6).buffer(-MIN_WEB * 0.6).buffer(0)
+                seam_patch = closed.difference(g).intersection(outside.buffer(MIN_WEB))
+                geoms[k] = unary_union([g, seam_patch]).buffer(0)
             print(f"[i] teljes panel kikenyszeritve ({outside.area:,.0f} mm2 "
                   f"kerult minden lapra)")
 
@@ -692,32 +702,10 @@ def main():
         mnx0, mny0, mxx0, mxy0 = geoms[ks0[0]].bounds
         outer0 = Polygon([(mnx0, mny0), (mxx0, mny0), (mxx0, mxy0), (mnx0, mxy0)])
         inner0 = outer0.buffer(-a.margin)
-        base0 = set_precision(make_valid(geoms[ks0[0]]), 0.01)
-        for k in ks0:
-            geoms[k] = set_precision(make_valid(geoms[k]), 0.01)
-        op_all = unary_union([base0.difference(geoms[k]).buffer(0)
-                              for k in ks0[1:]]).buffer(0)
-        if not op_all.is_empty and not inner0.is_empty:
-            omnx, omny, omxx, omxy = op_all.bounds
-            imnx, imny, imxx, imxy = inner0.bounds
-            fit = min(1.0,
-                      (imxx - imnx) / max(1e-6, omxx - omnx),
-                      (imxy - imny) / max(1e-6, omxy - omny)) * a.motif_scale
-            dx = (imnx + imxx) / 2 - (omnx + omxx) / 2
-            dy = (imny + imxy) / 2 - (omny + omxy) / 2
-            if fit < 0.999 or abs(dx) > 0.5 or abs(dy) > 0.5:
-                ox, oy = (imnx + imxx) / 2, (imny + imxy) / 2
-                for k in ks0[1:]:
-                    op = base0.difference(geoms[k]).buffer(0)
-                    if op.is_empty:
-                        continue
-                    op = affinity.translate(op, dx, dy)
-                    op = affinity.scale(op, xfact=fit, yfact=fit, origin=(ox, oy))
-                    geoms[k] = base0.difference(set_precision(op, 0.01)).buffer(0)
-                # (a snap mar a bounds-szamitas ELOTT megtortent - a fit igy a
-                # tenyleg feldolgozott geometriabol keszul)
-                print(f"[i] minta a biztonsagos zonara illesztve "
-                      f"({fit:.3f}x, eltolas {dx:+.0f}/{dy:+.0f} mm)")
+        geoms, fit, dx, dy = fit_panel_openings(geoms, outer0, inner0, a.motif_scale)
+        if fit < 0.999 or abs(dx) > 0.5 or abs(dy) > 0.5:
+            print(f"[i] minta a biztonsagos zonara illesztve "
+                  f"({fit:.3f}x, eltolas {dx:+.0f}/{dy:+.0f} mm)")
 
     if a.margin > 0 and geoms:
         # The reference listings have NOTHING in the outer band: no corner
@@ -729,10 +717,8 @@ def main():
         band = outer.difference(outer.buffer(-a.margin))
         for k in ks1:
             g = unary_union([geoms[k], band]).buffer(0)
-            # A ribbon running into the band gets sliced off flat, and those
-            # blunt stubs at the border read as render errors. Round them, then
-            # drop whatever fragment is left stranded against the band.
-            g = g.buffer(2.5).buffer(-2.5).buffer(0)
+            # Openings already fit inside the band. A global closing here
+            # erases eye contours and narrow decorative slots far from it.
             inner_zone = outer.buffer(-a.margin)
             keep = [p for p in parts_of(g)
                     if p.intersection(inner_zone).area > p.area * 0.25
@@ -1024,193 +1010,192 @@ def main():
     if not all_ok and not a.draft:
         raise SystemExit("HIBAS RETEG - nem irok ki fajlokat. Reszeredmenyhez: --draft")
 
-    # build into a staging dir and swap at the very end - neither a failed
-    # report nor a mid-export crash may leave a half-mixed output directory
-    import shutil
-    stage = out.parent / (out.name + ".staging")
-    if stage.exists():
-        shutil.rmtree(stage)
-    stage.mkdir(parents=True)
-    final_out, out = out, stage
+    final_out = out
+    with output_directory(final_out) as out:
+        export_geoms = [(f"layer_{k}_of_{len(rows)}", geom) for k, geom, *_ in rows]
+        if a.full_panel:
+            x0, y0, x1, y1 = geoms[min(geoms)].bounds
+            export_geoms.append(("backing", Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])))
+        for stem, geom in export_geoms:
+            svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
+                   f'viewBox="0 0 {MM} {MM}">\n  <path d="{d_of(geom)}" fill-rule="evenodd" '
+                   f'fill="none" stroke="#000" stroke-width="0.3"/>\n</svg>\n')
+            (out / f"{stem}.svg").write_text(svg)
 
-    for k, geom, *_ in rows:
-        svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
-               f'viewBox="0 0 {MM} {MM}">\n  <path d="{d_of(geom)}" fill-rule="evenodd" '
-               f'fill="none" stroke="#000" stroke-width="0.3"/>\n</svg>\n')
-        (out / f"layer_{k}_of_{len(rows)}.svg").write_text(svg)
+            # R12 with an explicit version header, mm units and a declared CUT
+            # layer - LightBurn imports an unitless DXF at a guessed scale, and a
+            # strict reader may reject an undeclared layer.
+            e = ["0", "SECTION", "2", "HEADER",
+                 "9", "$ACADVER", "1", "AC1009",
+                 "9", "$INSUNITS", "70", "4",
+                 "0", "ENDSEC",
+                 "0", "SECTION", "2", "TABLES",
+                 "0", "TABLE", "2", "LAYER", "70", "1",
+                 "0", "LAYER", "2", "CUT", "70", "0", "62", "7", "6", "CONTINUOUS",
+                 "0", "ENDTAB", "0", "ENDSEC",
+                 "0", "SECTION", "2", "ENTITIES"]
+            for gg in (geom.geoms if geom.geom_type == "MultiPolygon" else [geom]):
+                for ring in [gg.exterior] + list(gg.interiors):
+                    e += ["0", "POLYLINE", "8", "CUT", "66", "1", "70", "1",
+                          "10", "0.0", "20", "0.0", "30", "0.0"]
+                    pts = [(f"{x:.4f}", f"{y:.4f}") for x, y in ring.coords]
+                    # dedupe AFTER rounding - two distinct floats can land on the
+                    # same 4-decimal value and would leave a zero-length edge
+                    dd = [q for i, q in enumerate(pts) if i == 0 or q != pts[i - 1]]
+                    if len(dd) > 1 and dd[0] == dd[-1]:
+                        dd = dd[:-1]          # 70=1 closes the loop
+                    for x, y in dd:
+                        e += ["0", "VERTEX", "8", "CUT", "10", x, "20", y]
+                    e += ["0", "SEQEND"]
+            e += ["0", "ENDSEC", "0", "EOF"]
+            (out / f"{stem}.dxf").write_text("\n".join(e) + "\n")
 
-        # R12 with an explicit version header, mm units and a declared CUT
-        # layer - LightBurn imports an unitless DXF at a guessed scale, and a
-        # strict reader may reject an undeclared layer.
-        e = ["0", "SECTION", "2", "HEADER",
-             "9", "$ACADVER", "1", "AC1009",
-             "9", "$INSUNITS", "70", "4",
-             "0", "ENDSEC",
-             "0", "SECTION", "2", "TABLES",
-             "0", "TABLE", "2", "LAYER", "70", "1",
-             "0", "LAYER", "2", "CUT", "70", "0", "62", "7", "6", "CONTINUOUS",
-             "0", "ENDTAB", "0", "ENDSEC",
-             "0", "SECTION", "2", "ENTITIES"]
-        for gg in (geom.geoms if geom.geom_type == "MultiPolygon" else [geom]):
-            for ring in [gg.exterior] + list(gg.interiors):
-                e += ["0", "POLYLINE", "8", "CUT", "66", "1", "70", "1",
-                      "10", "0.0", "20", "0.0", "30", "0.0"]
-                pts = [(f"{x:.4f}", f"{y:.4f}") for x, y in ring.coords]
-                # dedupe AFTER rounding - two distinct floats can land on the
-                # same 4-decimal value and would leave a zero-length edge
-                dd = [q for i, q in enumerate(pts) if i == 0 or q != pts[i - 1]]
-                if len(dd) > 1 and dd[0] == dd[-1]:
-                    dd = dd[:-1]          # 70=1 closes the loop
-                for x, y in dd:
-                    e += ["0", "VERTEX", "8", "CUT", "10", x, "20", y]
-                e += ["0", "SEQEND"]
-        e += ["0", "ENDSEC", "0", "EOF"]
-        (out / f"layer_{k}_of_{len(rows)}.dxf").write_text("\n".join(e) + "\n")
+        # GHOST-OUTLINE ragasztasi sablon (a vilagterkep-lancon vezettuk be):
+        # minden reteg konturja beljebb huzva a MOGOTTE levo lapra gravirozva -
+        # igy maga a lap mondja meg, hova kerul a darab. A beljebb huzas azert
+        # kell, hogy a felragasztott darab eltakarja a vonalat.
+        if a.ghost > 0 and len(rows) > 1:
+            for _i in range(1, len(rows)):
+                k_host, geom_top = rows[_i - 1][0], rows[_i][1]
+                rings = ghost_outline(geom_top, inset=a.ghost)
+                if not rings:
+                    continue
+                d = " ".join("M " + " L ".join(f"{x:.3f},{y:.3f}" for x, y in r.coords)
+                             for r in rings)
+                (out / f"ghost_on_layer_{k_host}.svg").write_text(
+                    f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" '
+                    f'height="{MM}mm" viewBox="0 0 {MM} {MM}">\n'
+                    f'  <path d="{d}" fill="none" stroke="#f00" stroke-width="0.1"/>\n'
+                    "</svg>\n")
+            print(f"[i] ghost-outline: {len(rows) - 1} lapra, {a.ghost} mm-rel beljebb")
 
-    # GHOST-OUTLINE ragasztasi sablon (a vilagterkep-lancon vezettuk be):
-    # minden reteg konturja beljebb huzva a MOGOTTE levo lapra gravirozva -
-    # igy maga a lap mondja meg, hova kerul a darab. A beljebb huzas azert
-    # kell, hogy a felragasztott darab eltakarja a vonalat.
-    if a.ghost > 0 and len(rows) > 1:
-        for _i in range(1, len(rows)):
-            k_host, geom_top = rows[_i - 1][0], rows[_i][1]
-            rings = ghost_outline(geom_top, inset=a.ghost)
-            if not rings:
-                continue
-            d = " ".join("M " + " L ".join(f"{x:.3f},{y:.3f}" for x, y in r.coords)
-                         for r in rings)
-            (out / f"ghost_on_layer_{k_host}.svg").write_text(
-                f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" '
-                f'height="{MM}mm" viewBox="0 0 {MM} {MM}">\n'
-                f'  <path d="{d}" fill="none" stroke="#f00" stroke-width="0.1"/>\n'
-                "</svg>\n")
-        print(f"[i] ghost-outline: {len(rows) - 1} lapra, {a.ghost} mm-rel beljebb")
+        # stacked preview
+        tones = ["#6b4f33", "#7b5d3e", "#8b6b49", "#9b7955", "#ab8761", "#bb956d", "#cba379"]
+        s = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
+             f'viewBox="0 0 {MM} {MM}">\n  <rect width="{MM}" height="{MM}" fill="#ece2d3"/>\n')
+        for k, geom, *_ in rows:
+            o = (k - 1) * 1.0
+            s += (f'  <g transform="translate({-o:.2f},{-o:.2f})"><path d="{d_of(geom)}" '
+                  f'fill-rule="evenodd" fill="{tones[(k-1) % len(tones)]}" stroke="#3d2e1e" '
+                  f'stroke-width="0.25"/></g>\n')
+        s += "</svg>\n"
+        (out / "preview_stacked.svg").write_text(s)
 
-    # stacked preview
-    tones = ["#6b4f33", "#7b5d3e", "#8b6b49", "#9b7955", "#ab8761", "#bb956d", "#cba379"]
-    s = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
-         f'viewBox="0 0 {MM} {MM}">\n  <rect width="{MM}" height="{MM}" fill="#ece2d3"/>\n')
-    for k, geom, *_ in rows:
-        o = (k - 1) * 1.0
-        s += (f'  <g transform="translate({-o:.2f},{-o:.2f})"><path d="{d_of(geom)}" '
-              f'fill-rule="evenodd" fill="{tones[(k-1) % len(tones)]}" stroke="#3d2e1e" '
-              f'stroke-width="0.25"/></g>\n')
-    s += "</svg>\n"
-    (out / "preview_stacked.svg").write_text(s)
+        # raster preview - no SVG renderer needed to eyeball the result.
+        # Each layer is composited through its OWN mask (holes transparent), so the
+        # layers underneath show through the cut-outs. That see-through depth is the
+        # entire product, so painting holes with the background colour would hide
+        # exactly the thing we need to judge.
+        P = 1400
+        sc = P / MM
+        prev = Image.new("RGB", (P, P), (236, 226, 211))
+        for k, geom, *_ in rows:
+            o = (k - 1) * 1.0 * sc
+            col = tuple(int(tones[(k - 1) % len(tones)][i:i + 2], 16) for i in (1, 3, 5))
+            mask = Image.new("L", (P, P), 0)
+            md = ImageDraw.Draw(mask)
+            for gg in parts_of(geom):
+                md.polygon([(x * sc - o, y * sc - o) for x, y in gg.exterior.coords], fill=255)
+                for ring in gg.interiors:
+                    md.polygon([(x * sc - o, y * sc - o) for x, y in ring.coords], fill=0)
+            prev.paste(Image.new("RGB", (P, P), col), (0, 0), mask)
+        prev.save(out / "preview_stacked.png")
 
-    # raster preview - no SVG renderer needed to eyeball the result.
-    # Each layer is composited through its OWN mask (holes transparent), so the
-    # layers underneath show through the cut-outs. That see-through depth is the
-    # entire product, so painting holes with the background colour would hide
-    # exactly the thing we need to judge.
-    P = 1400
-    sc = P / MM
-    prev = Image.new("RGB", (P, P), (236, 226, 211))
-    for k, geom, *_ in rows:
-        o = (k - 1) * 1.0 * sc
-        col = tuple(int(tones[(k - 1) % len(tones)][i:i + 2], 16) for i in (1, 3, 5))
-        mask = Image.new("L", (P, P), 0)
-        md = ImageDraw.Draw(mask)
-        for gg in parts_of(geom):
-            md.polygon([(x * sc - o, y * sc - o) for x, y in gg.exterior.coords], fill=255)
-            for ring in gg.interiors:
-                md.polygon([(x * sc - o, y * sc - o) for x, y in ring.coords], fill=0)
-        prev.paste(Image.new("RGB", (P, P), col), (0, 0), mask)
-    prev.save(out / "preview_stacked.png")
+        # assembly guide: one panel per layer, the fresh layer in orange on top of
+        # the stack so far - answers "where do the loose front pieces go"
+        PW = 700
+        sc2 = PW / MM
+        cols = 3
+        rows_n = (len(rows) + cols - 1) // cols
+        guide = Image.new("RGB", (PW * cols, (PW + 46) * rows_n), (250, 247, 242))
+        gd = ImageDraw.Draw(guide)
 
-    # assembly guide: one panel per layer, the fresh layer in orange on top of
-    # the stack so far - answers "where do the loose front pieces go"
-    PW = 700
-    sc2 = PW / MM
-    cols = 3
-    rows_n = (len(rows) + cols - 1) // cols
-    guide = Image.new("RGB", (PW * cols, (PW + 46) * rows_n), (250, 247, 242))
-    gd = ImageDraw.Draw(guide)
+        def draw_geom(target, geom, colour, ox, oy):
+            mask = Image.new("L", (PW, PW), 0)
+            md = ImageDraw.Draw(mask)
+            for gg in parts_of(geom):
+                md.polygon([(x * sc2, y * sc2) for x, y in gg.exterior.coords], fill=255)
+                for ring in gg.interiors:
+                    md.polygon([(x * sc2, y * sc2) for x, y in ring.coords], fill=0)
+            target.paste(Image.new("RGB", (PW, PW), colour), (ox, oy), mask)
 
-    def draw_geom(target, geom, colour, ox, oy):
-        mask = Image.new("L", (PW, PW), 0)
-        md = ImageDraw.Draw(mask)
-        for gg in parts_of(geom):
-            md.polygon([(x * sc2, y * sc2) for x, y in gg.exterior.coords], fill=255)
-            for ring in gg.interiors:
-                md.polygon([(x * sc2, y * sc2) for x, y in ring.coords], fill=0)
-        target.paste(Image.new("RGB", (PW, PW), colour), (ox, oy), mask)
+        for i, (k, geom, *_x) in enumerate(rows):
+            ox, oy = (i % cols) * PW, (i // cols) * (PW + 46)
+            for _k2, geom2, *_y in rows[:i]:
+                draw_geom(guide, geom2, (196, 181, 160), ox, oy)
+            draw_geom(guide, geom, (214, 116, 40), ox, oy)
+            gd.text((ox + 12, oy + PW + 8), f"{k}. reteg", fill=(60, 50, 40))
+        guide.save(out / "assembly_guide.png")
 
-    for i, (k, geom, *_x) in enumerate(rows):
-        ox, oy = (i % cols) * PW, (i // cols) * (PW + 46)
-        for _k2, geom2, *_y in rows[:i]:
-            draw_geom(guide, geom2, (196, 181, 160), ox, oy)
-        draw_geom(guide, geom, (214, 116, 40), ox, oy)
-        gd.text((ox + 12, oy + PW + 8), f"{k}. reteg", fill=(60, 50, 40))
-    guide.save(out / "assembly_guide.png")
+        # Scaling guidance. The buyer's real failure is scaling down until the webs
+        # snap ("some lines end up thinner than 0.5 mm"). An earlier version derived
+        # a "safe down to X%" floor from frailest(), which is WRONG: frailest()
+        # measures each piece's WIDEST inscribed circle and saturates at 12 mm, so
+        # it is blind to the 2 mm bridges that actually break. The honest statement
+        # is the narrowest guaranteed web (the chain heals everything to MIN_WEB and
+        # drops what it cannot) and what that becomes at each scale.
+        # NOT a guarantee. The OK status tolerates up to 2% of a layer's area being
+        # thinner than the target, so "minimum web = 2 mm" would be a false claim -
+        # this is the second time that wording had to be walked back. Report the
+        # design TARGET and the MEASURED worst-layer thin fraction side by side, and
+        # let the reader see both.
+        worst_thin = max((ta for *_, ta in rows), default=0.0)
+        report = {
+            "web_target_mm": MIN_WEB,
+            "thin_area_worst_pct": round(worst_thin * 100, 2),
+            "web_target_at_scale_mm": {f"{int(p*100)}%": round(MIN_WEB * p, 2)
+                                       for p in (1.0, .75, .5, .25)},
+            "note": ("web_target_mm is the design target the chain heals to, not a "
+                     "guaranteed floor; thin_area_worst_pct is how much of the worst "
+                     "layer measured below it."),
+            "levels": len(rows),
+            "levels_requested": requested_levels,
+            "levels_merged": MERGED,
+            "layers": {k: {"pieces": pc, "holes": ho, "weakest_mm": round(nw, 2),
+                           "thin_pct": round(ta * 100, 2)}
+                       for k, _, pc, ho, nw, ta in rows},
+            "pieces_total": sum(pc for _, _, pc, *_ in rows),
+            "weakest_mm": round(min(nw for *_, nw, _ in rows), 2),
+            "necks": sum(necks(g) for g in geoms.values()),
+            "keyhole": not a.no_keyhole,
+            "draft": a.draft,
+            "size_mm": MM,
+        }
+        # accents recounted from the FINAL geometry - the mid-chain count could
+        # name layers that healing later merged or clipped
+        accents_final = {}
+        if a.connected and geoms:
+            mnxf, mnyf, mxxf, mxyf = geoms[sorted(geoms)[0]].bounds
+            rim_f = Polygon([(mnxf, mnyf), (mxxf, mnyf), (mxxf, mxyf), (mnxf, mxyf)]) \
+                .exterior.buffer(1.5)
+            for k in sorted(geoms):
+                n = sum(1 for q in parts_of(geoms[k]) if not q.intersects(rim_f))
+                if n:
+                    accents_final[k] = n
+            if accents_final:
+                print("[i] akcentus-darabok (kulon ragasztando, vegso): "
+                      + ", ".join(f"{k}. reteg: {n}" for k, n in sorted(accents_final.items())))
 
-    # Scaling guidance. The buyer's real failure is scaling down until the webs
-    # snap ("some lines end up thinner than 0.5 mm"). An earlier version derived
-    # a "safe down to X%" floor from frailest(), which is WRONG: frailest()
-    # measures each piece's WIDEST inscribed circle and saturates at 12 mm, so
-    # it is blind to the 2 mm bridges that actually break. The honest statement
-    # is the narrowest guaranteed web (the chain heals everything to MIN_WEB and
-    # drops what it cannot) and what that becomes at each scale.
-    # NOT a guarantee. The OK status tolerates up to 2% of a layer's area being
-    # thinner than the target, so "minimum web = 2 mm" would be a false claim -
-    # this is the second time that wording had to be walked back. Report the
-    # design TARGET and the MEASURED worst-layer thin fraction side by side, and
-    # let the reader see both.
-    worst_thin = max((ta for *_, ta in rows), default=0.0)
-    report = {
-        "web_target_mm": MIN_WEB,
-        "thin_area_worst_pct": round(worst_thin * 100, 2),
-        "web_target_at_scale_mm": {f"{int(p*100)}%": round(MIN_WEB * p, 2)
-                                   for p in (1.0, .75, .5, .25)},
-        "note": ("web_target_mm is the design target the chain heals to, not a "
-                 "guaranteed floor; thin_area_worst_pct is how much of the worst "
-                 "layer measured below it."),
-        "levels": len(rows),
-        "levels_requested": a.levels,
-        "levels_merged": MERGED,
-        "layers": {k: {"pieces": pc, "holes": ho, "weakest_mm": round(nw, 2),
-                       "thin_pct": round(ta * 100, 2)}
-                   for k, _, pc, ho, nw, ta in rows},
-        "pieces_total": sum(pc for _, _, pc, *_ in rows),
-        "weakest_mm": round(min(nw for *_, nw, _ in rows), 2),
-        "necks": 0 if all_ok else None,
-        "keyhole": not a.no_keyhole,
-        "draft": a.draft,
-        "size_mm": MM,
-    }
-    # accents recounted from the FINAL geometry - the mid-chain count could
-    # name layers that healing later merged or clipped
-    accents_final = {}
-    if a.connected and geoms:
-        mnxf, mnyf, mxxf, mxyf = geoms[sorted(geoms)[0]].bounds
-        rim_f = Polygon([(mnxf, mnyf), (mxxf, mnyf), (mxxf, mxyf), (mnxf, mxyf)]) \
-            .exterior.buffer(1.5)
-        for k in sorted(geoms):
-            n = sum(1 for q in parts_of(geoms[k]) if not q.intersects(rim_f))
-            if n:
-                accents_final[k] = n
-        if accents_final:
-            print("[i] akcentus-darabok (kulon ragasztando, vegso): "
-                  + ", ".join(f"{k}. reteg: {n}" for k, n in sorted(accents_final.items())))
+        if a.palette:
+            palette_src = json.loads(pathlib.Path(a.palette).read_text())
+            # palette_src[0] is the floor of the deepest well - never a sheet
+            out_pal = []
+            for k in sorted(geoms):
+                i = src_level.get(k, k)
+                out_pal.append(palette_src[min(i, len(palette_src) - 1)])
+            (out / "palette.json").write_text(json.dumps(out_pal))
+            if a.full_panel:
+                (out / "backing_palette.json").write_text(json.dumps(palette_src[0]))
+            print(f"[i] paletta: {len(out_pal)} lap a forras {len(palette_src)} tonusabol")
+        report["all_ok"] = all_ok
+        report["backing_required"] = a.full_panel
+        require_valid(report, a.draft)
+        report["accent_pieces"] = {str(k): v for k, v in accents_final.items()}
+        report["accent_note"] = ("accent pieces sit on the solid sheet behind them "
+                                 "and are glued separately; count above is per layer")
+        (out / "report.json").write_text(json.dumps(report, indent=1))
 
-    if a.palette:
-        src = json.loads(pathlib.Path(a.palette).read_text())
-        # src[0] is the floor of the deepest well - never a sheet
-        out_pal = []
-        for k in sorted(geoms):
-            i = src_level.get(k, k)
-            out_pal.append(src[min(i, len(src) - 1)])
-        (out / "palette.json").write_text(json.dumps(out_pal))
-        print(f"[i] paletta: {len(out_pal)} lap a forras {len(src)} tonusabol")
-    report["accent_pieces"] = {str(k): v for k, v in accents_final.items()}
-    report["accent_note"] = ("accent pieces sit on the solid sheet behind them "
-                             "and are glued separately; count above is per layer")
-    (out / "report.json").write_text(json.dumps(report, indent=1))
-
-    if final_out.exists():
-        shutil.rmtree(final_out)
-    stage.rename(final_out)
-    print(f"\nkiirva: {final_out}  ({len(list(final_out.iterdir()))} fajl)")
+    print(f"\nkiírva: {final_out}")
 
 
 if __name__ == "__main__":

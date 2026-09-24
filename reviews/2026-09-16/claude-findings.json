@@ -1,0 +1,29 @@
+{
+  "verdict": "APPROVE",
+  "findings": [],
+  "nonblocking_nits": [
+    "product/pipeline/exportlib.py:23 – A `destination_lock` nyilvános név, de nem normalizálja a kapott `destination` értéket: a hash a hívó által átadott szöveges alakból készül. Ma csak az `output_directory` hívja, és az előbb `resolve()`-ot futtat, így most nincs hiba. Egy későbbi közvetlen hívás viszont relatív vagy symlinkes útvonallal ugyanarra a célra más zárfájlt kapna, és a kizárás csendben megszűnne. Javaslat: a függvény elején `Path(destination).resolve()`, vagy `_destination_lock` névre átnevezés.",
+    "tests/test_exports.py:124 – Az `assert 'Error' in result.stderr` gyenge ellenőrzés: bármilyen kivétel (például egy ImportError vagy egy elgépelés a kódban) is 1-es kilépési kódot és 'Error' szöveget ad. Javaslat: esetenként konkrétan ellenőrizni, hogy `PermissionError`, `Unsafe export lock` vagy `must be private` szerepel-e, a symlinkes eseteknél pedig ELOOP-ot vagy `OSError`-t.",
+    "check.sh:29 – A `< <(find ...)` folyamathelyettesítés hibakódját a `set -e`/`pipefail` nem látja. Ha a `find` hibára fut (például egy olvashatatlan alkönyvtáron), a szkriptek egy része ellenőrzés nélkül maradhat, a check mégis zöld. Javaslat: előbb egy tömbbe gyűjteni a `find` kimenetét (`mapfile -d ''`), és külön ellenőrizni a kilépési kódját, vagy `wait $!` a folyamathelyettesítés után.",
+    "check.sh:22,29 – Csak a `*.sh` kiterjesztésű fájlokat találja meg; a kiterjesztés nélküli, bash shebangos szkriptek kimaradnak. Ez a jelenlegi, dokumentált hatókörön belül elfogadható, de a kommentben érdemes kimondani.",
+    "product/pipeline/cutlib.py:346-349 – Az új angol bekezdés ékezet nélküli magyar docstringbe került, vegyes nyelven. Karbantarthatósági szempontból érdemes egy nyelvre egységesíteni. A tartalma pontos, és a `tests/test_cutlib.py:366` teszt rögzíti.",
+    "product/pipeline/exportlib.py:38 – Az `O_NONBLOCK` jelző a szabályos zárfájl leíróján is beállítva marad. A `flock` `LOCK_NB`-vel már amúgy is nem blokkoló, ezért most ártalmatlan. Egy rövid kommentben érdemes jelezni, hogy csak a FIFO-nyitás blokkolása ellen van ott, hogy később senki ne vegye ki és ne is használja másra."
+  ],
+  "reviewed_files": [
+    "reviews/2026-09-16/changes.patch",
+    "product/pipeline/exportlib.py",
+    "product/pipeline/02_trace.py (frailest, parts_of import, fit_panel_openings docstring)",
+    "product/pipeline/cutlib.py (tile_piece docstring delta)",
+    "check.sh",
+    "tests/test_exports.py",
+    "tests/test_shell_entrypoints.py",
+    "tests/test_trace_geometry.py",
+    "tests/test_cutlib.py (utolsó tesztek, 340–375. sor)"
+  ],
+  "limitations": [
+    "Csak olvasási jogom volt: a teszteket és a mutációs futást nem futtattam újra. A 96 sikeres tesztet és a 13/13 mutációt a reviews/2026-09-16/ naplóiból vett állításként kezeltem, nem ellenőriztem.",
+    "A cutlib.polys (parts_of) implementációját nem néztem meg. Azt, hogy listát ad vissza (és nem generátort, amelyre a `not pieces` mindig hamis lenne), csak a test_empty_material_has_actionable_error teszt létéből következtetem; ezt a futtatásuk igazolja, én nem láttam.",
+    "Az O_DIRECTORY|O_NOFOLLOW és a FIFO-nál O_RDWR|O_NONBLOCK viselkedését platformismeretből értékeltem (macOS/Linux); más POSIX-rendszeren nem ellenőriztem.",
+    "A flat-map integrációs tesztet, amelyre a cutlib-teszt kommentje hivatkozik a width release gate kapcsán, nem olvastam el."
+  ]
+}

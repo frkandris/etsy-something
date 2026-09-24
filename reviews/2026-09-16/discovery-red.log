@@ -1,0 +1,30 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________________ test_check_stops_when_shell_discovery_fails __________________
+
+tmp_path = PosixPath('/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest-63/test_check_stops_when_shell_di0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ab45cd0>
+
+    def test_check_stops_when_shell_discovery_fails(tmp_path, monkeypatch):
+        import os
+        shutil.copyfile(ROOT / 'check.sh', tmp_path / 'check.sh')
+        py = tmp_path / '.venv/bin/python'
+        py.parent.mkdir(parents=True)
+        py.write_text('#!/bin/sh\nexit 0\n')
+        py.chmod(0o755)
+        (tmp_path / 'product/pipeline').mkdir(parents=True)
+        commands = tmp_path / 'commands'
+        commands.mkdir()
+        find = commands / 'find'
+        find.write_text('#!/bin/sh\necho "simulated discovery failure" >&2\nexit 7\n')
+        find.chmod(0o755)
+        monkeypatch.setenv('PATH', str(commands) + os.pathsep + os.environ['PATH'])
+        result = subprocess.run(['bash', str(tmp_path / 'check.sh')], capture_output=True, text=True)
+>       assert result.returncode == 7
+E       AssertionError: assert 0 == 7
+E        +  where 0 = CompletedProcess(args=['bash', '/private/var/folders/lb/cjf_k20j00n3s6gy_z45g1mc0000gn/T/pytest-of-p.tothandras/pytest...code=0, stdout='== ruff ==\n== shell syntax ==\n== pytest ==\n== rendben ==\n', stderr='simulated discovery failure\n').returncode
+
+tests/test_shell_entrypoints.py:70: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_shell_entrypoints.py::test_check_stops_when_shell_discovery_fails
+1 failed in 0.51s

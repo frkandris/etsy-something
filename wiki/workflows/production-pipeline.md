@@ -20,6 +20,32 @@ A támogatott futtató a `product/pipeline/run_product.py`: a profil vezérli a 
 Állatportrénál `--src` is kell. A `run_theme.sh THEME SOURCE PROFILE [LEVELS]` csak explicit wrapper. A korábbi `04_composite.py` / `render_photo.png` lépést és témánkénti háttérválasztást nem futtatja; helyettük a profil Blender-nézetei készülnek. A `worldmap`/`vyva-worldmap` kísérleti, lezárt validált futás nélkül. Ellenőrzési és review-eljárás: [[workflows/engineering-quality]].
 
 
+## Jelenet-mód — 2026-09-24 (Nagy hullám)
+
+Az eddigi termékek portrék voltak: a kép szélén a felső lap „mezője” állt. Egy **széltől szélig
+tartó jelenetnél** (ég, tenger) ez a feltevés rossz, ezért két kapcsoló készült:
+
+- `01b_depth.py --sheet-colours "#hex,…"` — a rajz spot-színei **lapsorrendben** (0 = hátlap, az
+  utolsó a felső lap). A sorrendet a színek listája adja, nem a világosságuk: a halvány ég a
+  leghátsó, a krém hab a legfelső. A prompt ugyanezeket a színeket írja elő.
+- `01b_depth.py --scene` — a kép köré 3 px-es 0-s perem kerül, így az 1. lap maga a tömör hátlap.
+  `--full-panel` nélkül, `--margin`-nal futtatva minden lap keretet kap.
+
+Útközben két rejtett hiba derült ki; a portrék egyiket sem mutatták meg:
+
+- **Négyzetes vászon.** Az SVG/DXF mindig `--size × --size` négyzetre ment, a 3:2-es jelenet a
+  felső kétharmadba került. Most a vászon a panel: a hosszabb oldal a `--size`, a rövidebb a mért
+  érték (a németjuhász relief így 193,8 × 300 mm-es lapot kap a korábbi 300 × 300 helyett). A
+  riportban `panel_mm`.
+- **Leválasztott keret.** A trace-elt lap a panel szélén néhány századmilliméterrel elmarad. Az
+  illesztés ezeket a csíkokat nyílásként kicsinyítette, így a keret belső határán hajszálvékony vágás
+  keletkezett, a keretet pedig a sáv-lépés laza darabként eldobta. Most a legszélső 1 mm nem számít
+  nyílásnak. Regressziós teszt: `test_scene_keeps_the_frame_band_on_every_sheet`.
+
+A két javítás után a mentett receptek geometriája változatlan: a macskáknál bájtra azonos alakzatok,
+csak a gyűrűk sorrendje más. Eredmény: [[shops/marlasercut]],
+`product/catalog/great-wave/runs/2026-09-24-v1/README.md`.
+
 # Termelési folyamat
 
 > **Státusz: élesben fut** (2026-08-08-tól). Implementáció: `product/pipeline/00_generate.py`

@@ -56,6 +56,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 - [[shops/colorlayerart]] — a friss belépő bizonyítéka
 - [[shops/laserartisandesigns]] — a legkonzisztensebb adatpont
 - [[shops/woodlusterstore]] — a legkisebb működő katalógus
+- [[shops/marlasercut]] — a világtérkép és a Nagy hullám referenciája (**nem** tagja a 35/21-es populációnak)
 - [[shops/beameez]] — **visszavont** adatpont, tanulságként megtartva
 
 ## Módszer — `methods/`

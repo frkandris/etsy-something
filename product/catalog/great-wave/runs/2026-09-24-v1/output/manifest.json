@@ -1,0 +1,156 @@
+{
+  "profile": {
+    "name": "great-wave",
+    "title": "Nagy hullám (Hokusai, közkincs) — rétegzett jelenet kerettel",
+    "note": "Széltől szélig tartó jelenet: 01b_depth --sheet-colours --scene, így az 1. lap a tömör, égszínű hátlap; a --margin minden lapra krém keretet ad. 400 x 266,8 mm.",
+    "pipeline": {
+      "script": "02_trace.py",
+      "args": [
+        "--size",
+        "400",
+        "--levels",
+        "7",
+        "--min-part",
+        "40",
+        "--merge-below",
+        "0.001",
+        "--margin",
+        "12",
+        "--no-keyhole",
+        "--connected",
+        "--palette",
+        "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/inputs/palettes/13.json"
+      ]
+    },
+    "render": {
+      "frame": true,
+      "paper": true,
+      "recessed": true,
+      "studio_bg": true,
+      "mixed_wood": false,
+      "frame_width": 0.05,
+      "explode": "fan",
+      "room": "shelf",
+      "props": "warm",
+      "wood_frame": true,
+      "plate_yaw": 8,
+      "plate_elevation": 2,
+      "exposure": -1.35,
+      "canvas": "1500x1000",
+      "key_color": [
+        1,
+        0.94,
+        0.84
+      ],
+      "scene_zoom": 0.9,
+      "grain_contrast": 0.08
+    },
+    "views": [
+      "plate",
+      "macro",
+      "exploded",
+      "styled"
+    ]
+  },
+  "source": "product/catalog/great-wave/runs/2026-09-24-v1/depth_map.png",
+  "source_sha256": "c6c0ed9463cc0030c3f14fab9a710eccc5c599a9dec6db027246a3e8c9bf7156",
+  "input_sha256": {
+    "inputs/palettes/13.json": "abe6e1269967b8a99e0c8720cd784bc47f88323408ba99de81f1f936d51ace7f",
+    "inputs/source/depth_map.png": "c6c0ed9463cc0030c3f14fab9a710eccc5c599a9dec6db027246a3e8c9bf7156"
+  },
+  "command": [
+    "/Users/p.tothandras/Code/etsy-something/.venv/bin/python",
+    "/Users/p.tothandras/Code/etsy-something/product/pipeline/02_trace.py",
+    "--size",
+    "400",
+    "--levels",
+    "7",
+    "--min-part",
+    "40",
+    "--merge-below",
+    "0.001",
+    "--margin",
+    "12",
+    "--no-keyhole",
+    "--connected",
+    "--palette",
+    "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/inputs/palettes/13.json",
+    "--out",
+    "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers",
+    "--src",
+    "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/inputs/source/depth_map.png"
+  ],
+  "render_commands": [
+    [
+      "blender",
+      "-b",
+      "--python-exit-code",
+      "1",
+      "-P",
+      "/Users/p.tothandras/Code/etsy-something/product/render_blender.py",
+      "--",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/plate.png",
+      "plate",
+      "--profile",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/profile.json",
+      "--palette-file",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers/palette.json"
+    ],
+    [
+      "blender",
+      "-b",
+      "--python-exit-code",
+      "1",
+      "-P",
+      "/Users/p.tothandras/Code/etsy-something/product/render_blender.py",
+      "--",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/macro.png",
+      "macro",
+      "--profile",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/profile.json",
+      "--palette-file",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers/palette.json"
+    ],
+    [
+      "blender",
+      "-b",
+      "--python-exit-code",
+      "1",
+      "-P",
+      "/Users/p.tothandras/Code/etsy-something/product/render_blender.py",
+      "--",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/exploded.png",
+      "exploded",
+      "--profile",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/profile.json",
+      "--palette-file",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers/palette.json"
+    ],
+    [
+      "blender",
+      "-b",
+      "--python-exit-code",
+      "1",
+      "-P",
+      "/Users/p.tothandras/Code/etsy-something/product/render_blender.py",
+      "--",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/styled.png",
+      "styled",
+      "--profile",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/profile.json",
+      "--palette-file",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/layers/palette.json"
+    ]
+  ],
+  "views": [
+    "plate",
+    "macro",
+    "exploded",
+    "styled"
+  ],
+  "release_ready": true
+}

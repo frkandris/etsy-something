@@ -4,6 +4,7 @@
 - [Egyrétegű világtérkép](marlaser-worldmap/README.md)
 - [Réteges világtérkép](vyva-worldmap/README.md)
 - [Süllyesztett absztrakt állatportrék](recessed-papercut/README.md)
+- [Nagy hullám (Hokusai)](great-wave/runs/2026-09-24-v1/README.md)
 - [Korai motívumkísérletek](early-concepts/README.md)
 
 A régi mappák helyükön maradtak; a history hivatkozásai megőrzik a wiki és a korábbi szkriptek útvonalait. Az ismeretlen forrásokat külön jelöljük.

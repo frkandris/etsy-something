@@ -1,0 +1,53 @@
+{
+  "title": "THE GREAT WAVE  ·  LAYERED CUT FILE",
+  "surface": "product/pipeline/assets/textures/white_plaster_02_diff_4k.jpg",
+  "ink": "#172A4B",
+  "crops": [
+    "0.22,0.03,0.62,0.48",
+    "0.40,0.40,0.80,0.85",
+    "0.00,0.52,0.40,0.97",
+    "0.60,0.40,1.00,0.85"
+  ],
+  "variants": {
+    "Hokusai original": [
+      "#EED9B9",
+      "#A49E93",
+      "#DBA864",
+      "#B2CFDD",
+      "#1E5B93",
+      "#133458",
+      "#FDF6E3"
+    ],
+    "Sunset": [
+      "#F6C8A2",
+      "#E98A6B",
+      "#F4D38E",
+      "#A9CFDB",
+      "#2E6598",
+      "#1B2E52",
+      "#FFF6E6"
+    ],
+    "Night": [
+      "#243556",
+      "#3D5078",
+      "#C9A15B",
+      "#7FA3C2",
+      "#2A5585",
+      "#0F1C33",
+      "#F3EBD6"
+    ],
+    "Natural wood": [
+      "#D9B98F",
+      "#C29A6C",
+      "#A87B4F",
+      "#E3C9A3",
+      "#8C6440",
+      "#6A4629",
+      "#F1E1C6"
+    ]
+  },
+  "extra_lines": [
+    "Suggested: cardstock with foam spacers, or 1.5–3 mm plywood"
+  ],
+  "credit": "Artwork after Katsushika Hokusai, c. 1831 — public domain"
+}

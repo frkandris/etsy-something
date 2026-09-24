@@ -8,4 +8,5 @@ Egyedi boltprofilok, amikre a következtetések hivatkoznak. A visszavont adatpo
 - [[shops/colorlayerart]]
 - [[shops/laserartisandesigns]]
 - [[shops/magicvectorlaser]]
+- [[shops/marlasercut]]
 - [[shops/woodlusterstore]]

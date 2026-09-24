@@ -65,6 +65,23 @@ Következmény: mindkét új témánk (0007–0012 iterációk) a fenti receptek
 formátum, tömör hátlap sötét kontraszttal, fajtaszínű vagy MaWood-kontrasztú paletta, polcos
 lifestyle render (--grain + shelf nézet a render_blender.py-ban).
 
+## Kiegészítés — MarLaserCut, Nagy hullám listing (2026-09-24)
+
+Populáció: **1 listing** 9 képe, letöltve és megnézve ([[shops/marlasercut]]). Ez a galéria nem
+fotó és nem perspektivikus render:
+
+- **Hero:** szemből, laposan fotózott mű világosszürke beton/vakolat textúrán, fa keret nélkül, csak
+  krém szegéllyel, lágy vetett árnyékkal. Alatta a bolt neve és 7 formátum sora.
+- **6 kép:** szemből készült, éles közeli kivágások ugyanabból a műből. A rétegek közti árnyék adja a
+  mélységet.
+- **Rétegtábla:** a kész mű alatt a rétegek egyenként, saját színükben, 3 × 3-as rácsban.
+- **Utolsó kép:** vásárlói vélemények kollázsa, amelyek **más termékekről** szólnak (kolibri, iránytű).
+
+Következmény: a perspektivikus, fa keretes Blender-renderünk ([[workflows/production-pipeline]])
+ezen a mércén „3D modell” hatású. Ezért készült a `product/render_flat.py` (ortografikus, szemből,
+ferde fény, vakolat háttér) és a `product/pipeline/gallery.py`. A kimenet:
+`product/catalog/great-wave/runs/2026-09-24-v1/output/gallery/`.
+
 ## Fenntartások
 
 Kis, kvalitatív minta; a review-számok bolti szintűek (az UpSVGStudio 390-e is BOLT-szintű: a konkrét listingen 7 review van — 2026-08-09-i javítás).

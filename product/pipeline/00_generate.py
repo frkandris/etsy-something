@@ -357,15 +357,25 @@ def _multipart(fields, files):
 
 
 def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
-             levels=LEVELS, subject_text=None, name=None, recessed=False, flat=False, relief=False):
+             levels=LEVELS, subject_text=None, name=None, recessed=False, flat=False, relief=False,
+             prompt_file=None):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY hianyzik")
-    if subject_text:
+    if prompt_file:
+        subject_key = pathlib.Path(prompt_file).name
+        # Verbatim prompt, kept next to the run. The templates below tell the
+        # model NOT to copy the reference's subject; for a public-domain
+        # artwork re-drawn as papercut, the reference IS the subject.
+        prompt = pathlib.Path(prompt_file).read_text()
+        subj = fmt = None
+    elif subject_text:
         subj, fmt = subject_text, "square"
     else:
         subj, fmt = SUBJECTS[subject_key]
-    if relief:
+    if prompt_file:
+        pass
+    elif relief:
         # KIEMELKEDO relief, kontukoveto sziluettel (MagicVectorLaser-tipus).
         # A FLAT prompt "folyekony szalag / ontott festek" nyelve ide rossz: ott
         # a keretes, sullyesztett papirvagas a cel. Itt a kulso el MAGA a
@@ -407,7 +417,7 @@ def generate(subject_key, out_dir, size="1024x1024", n=1, ref=None, crop=None,
             img = img.crop((x, y, x + w, y + h))
         buf = io.BytesIO(); img.save(buf, "PNG")
         body, ctype = _multipart(
-            {"model": MODEL, "prompt": prompt + (FLAT_REF_NOTE if flat else REF_NOTE), "size": size, "n": str(n)},
+            {"model": MODEL, "prompt": prompt if prompt_file else prompt + (FLAT_REF_NOTE if flat else REF_NOTE), "size": size, "n": str(n)},
             {"image": ("ref.png", buf.getvalue(), "image/png")})
         url = "https://api.openai.com/v1/images/edits"
         print(f"[gen] {MODEL}  {size}  temaja: {subject_key}  ref: {ref}"
@@ -452,8 +462,10 @@ if __name__ == "__main__":
     ap.add_argument("--levels", type=int, default=LEVELS)
     ap.add_argument("--ref", default=None, help="stilus-referencia kep (image-to-image)")
     ap.add_argument("--crop", default=None, help="x,y,w,h - a referencia kivagando resze")
+    ap.add_argument("--prompt-file", default=None,
+                    help="a prompt szo szerint ebbol a fajlbol (sablonok nelkul)")
     ap.add_argument("--out", default=str(pathlib.Path(__file__).parent / "work"))
     a = ap.parse_args()
     crop = tuple(int(v) for v in a.crop.split(",")) if a.crop else None
     generate(a.subject, pathlib.Path(a.out), a.size, a.n, a.ref, crop, a.levels,
-             a.subject_text, a.name, a.recessed, a.flat, a.relief)
+             a.subject_text, a.name, a.recessed, a.flat, a.relief, a.prompt_file)

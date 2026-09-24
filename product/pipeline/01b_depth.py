@@ -124,6 +124,28 @@ def quantise(img, levels):
     return q
 
 
+def by_sheet_colours(img, hexes):
+    """Assign every pixel to the NEAREST of the given spot colours, in sheet order.
+
+    Tone order breaks as soon as a light colour sits at the back: in a relief
+    scene the pale sky is the deepest sheet and the cream foam the top one. The
+    prompt fixes the spot colours anyway, so the sheet order is stated, not
+    guessed: index 0 is the backing seen through every opening, the last is the
+    top sheet. The palette keeps the colours the model actually drew.
+    """
+    a = np.asarray(img.convert("RGB"), dtype=np.float32)
+    ref = np.array([[int(h.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)] for h in hexes],
+                   dtype=np.float32)
+    q = np.argmin(((a[:, :, None, :] - ref[None, None]) ** 2).sum(axis=3), axis=2)
+    pal = []
+    for i, c in enumerate(ref):
+        m = q == i
+        pal.append([round(float(v)) for v in (a[m].mean(axis=0) if m.any() else c)])
+        print(f"[depth]   lap {i}  {hexes[i]}  {float(m.mean())*100:5.1f}%")
+    quantise.palette = pal
+    return q.astype(np.int32)
+
+
 def clean(q, levels, min_px):
     """Drop specks, then hand their pixels to the nearest surviving region.
 
@@ -221,6 +243,13 @@ def main():
                     help="nesting: hany lapos szinre kvantaljon a szegmentalas elott")
     ap.add_argument("--min-region-pct", type=float, default=0.03,
                     help="ennel kisebb folt beolvad a szomszedjaba (a kep %-aban)")
+    ap.add_argument("--sheet-colours", default=None, metavar="HEX,HEX,...",
+                    help="a rajz spot-szinei LAPSORRENDBEN (0 = hatlap, utolso = "
+                         "felso lap); ilyenkor a szintszam a szinek szama")
+    ap.add_argument("--scene", action="store_true",
+                    help="szeltol szelig tarto jelenet (--sheet-colours mellett): a "
+                         "hatso szin is lap lesz - az 1. lap a tomor hatlap -, a "
+                         "levagott szint csak egy keskeny peremsav")
     ap.add_argument("--debug", action="store_true")
     a = ap.parse_args()
 
@@ -230,9 +259,14 @@ def main():
         if want != a.levels:
             print(f"[depth] szintszam {a.levels} helyett {want}")
         a.levels = want
-    q = quantise(img, a.levels)
     d = None
-    if a.order == "depth":
+    if a.sheet_colours:
+        hexes = [h.strip() for h in a.sheet_colours.split(",") if h.strip()]
+        a.levels = len(hexes)
+        q = by_sheet_colours(img, hexes)
+    else:
+        q = quantise(img, a.levels)
+    if a.order == "depth" and not a.sheet_colours:
         q, d = by_depth(img, q, a.levels)
         # the sheets were re-ranked; their colours have to follow, or the
         # geometry is right and every sheet wears the wrong paper
@@ -243,6 +277,16 @@ def main():
                 new[t] = pal0[c]
             quantise.palette = new
     q = clean(q, a.levels, int(img.width * img.height * a.min_region_pct / 100))
+    if a.scene:
+        if not a.sheet_colours:
+            ap.error("--scene requires --sheet-colours")
+        # The tracer cuts level 0 away and --full-panel assumes whatever touches
+        # the border is the top sheet's field. A scene's sky touches the border
+        # AND is the deepest sheet, so push every sheet up by one and leave
+        # level 0 only as a thin rim: sheet 1 becomes the solid back panel.
+        q = np.pad(q + 1, 3, constant_values=0)
+        a.levels += 1
+        quantise.palette = [quantise.palette[0]] + quantise.palette
 
     used = len(np.unique(q))
     print(f"[depth] {used} szint {a.levels} kertbol  (rendezes: {a.order})")

@@ -97,3 +97,36 @@ def test_dxf_is_not_upside_down_relative_to_svg(tmp_path):
     assert max(svg_ys) < size / 2                       # SVG: near the top edge
     assert min(dxf_ys) == pytest.approx(size - max(svg_ys), abs=0.01)
     assert max(dxf_ys) == pytest.approx(size - min(svg_ys), abs=0.01)
+
+
+@pytest.mark.skipif(not shutil.which('potrace'), reason='potrace is required for SVG tracing')
+def test_scene_keeps_the_frame_band_on_every_sheet(tmp_path):
+    # An edge-to-edge scene (sky touching the border, 01b_depth --scene): only
+    # a thin rim is level 0. Hairline trace slivers at the panel edge used to
+    # be scaled into a cut just inside the frame, and the frame was dropped.
+    source = tmp_path / 'scene.png'
+    img = Image.new('L', (306, 206), 0)
+    draw = ImageDraw.Draw(img)
+    draw.rectangle((3, 3, 302, 202), fill=60)                  # sheet 1: solid back
+    draw.polygon([(3, 120), (150, 60), (302, 110), (302, 202), (3, 202)], fill=120)
+    draw.polygon([(3, 160), (120, 110), (302, 150), (302, 202), (3, 202)], fill=180)
+    draw.polygon([(3, 185), (150, 170), (302, 180), (302, 202), (3, 202)], fill=240)
+    draw.ellipse((200, 30, 250, 80), fill=240)                 # floating accent
+    img.save(source)
+    out = tmp_path / 'layers'
+    subprocess.run([sys.executable, str(ROOT / 'product/pipeline/02_trace.py'),
+                    '--src', str(source), '--out', str(out), '--size', '300',
+                    '--levels', '4', '--no-keyhole', '--min-part', '20',
+                    '--merge-below', '0.001', '--margin', '12', '--connected'],
+                   check=True, capture_output=True)
+    report = json.loads((out / 'report.json').read_text())
+    width, height = report['panel_mm']
+    assert width == 300.0 and 190 < height < 205          # 3:2-ish, not a square
+    for svg in sorted(out.glob('layer_*.svg')):
+        root = ET.parse(svg).getroot()
+        assert root.get('height') == f'{height}mm'
+        values = [float(v) for v in re.findall(r'-?\d+\.?\d*',
+                                               root.find('{http://www.w3.org/2000/svg}path').get('d'))]
+        xs, ys = values[::2], values[1::2]
+        assert min(xs) < 0.5 and max(xs) > width - 0.5, svg.name     # frame band present
+        assert min(ys) < 0.5 and max(ys) > height - 0.5, svg.name

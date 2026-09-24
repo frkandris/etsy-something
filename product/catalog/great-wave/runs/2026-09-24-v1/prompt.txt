@@ -1,0 +1,18 @@
+Use case: FLAT VECTOR SOURCE ARTWORK for a layered paper-cut / laser-cut shadow box, 3:2 landscape. The attached image is Hokusai's "Under the Wave off Kanagawa" (public domain, Metropolitan Museum of Art, JP1847). Redraw THAT composition - same great wave curling from the left, the claw-like foam crest, the three boats in the troughs, small Mount Fuji low in the centre, the smaller wave on the right - as a clean flat papercut illustration. Keep the composition and proportions of the original; simplify every shape into large, smooth, closed regions.
+
+EXACTLY seven flat spot colours, and each colour is ONE paper sheet. Listed from the BACK sheet to the FRONT sheet:
+1. #EADCBF warm paper - the sky, AND the snow cap of Mount Fuji
+2. #9A958C warm grey - the darker band of sky low behind Fuji and the boats
+3. #D8A56E light tan - the three boat hulls
+4. #A9CBDA pale blue - the far sea, the body of Mount Fuji, the pale inner faces of the waves
+5. #2E6598 Prussian blue - the main body of every wave
+6. #172A4B deep indigo - the dark curling bands inside the waves
+7. #F7F2E4 cream white - the foam crests and the foam fingers of the great wave
+
+Rules for cutting (these override the original's fine detail):
+- Every shape is a smooth, purposeful curve. No texture, no wood grain, no gradients, no shading, no outlines, no spray dots, no text, no seals, no title cartouche, no signature.
+- The foam fingers are BOLD, ROUNDED claws: every finger and every gap between fingers at least 1/60 of the picture width. Merge small claws into fewer larger ones rather than drawing thin ones.
+- No region, band or gap anywhere thinner than 1/70 of the picture width.
+- Boats are simple solid hull shapes; the rowers are omitted or merged into the hull.
+- The picture runs to all four edges. No border, no frame, no margin - a frame is added later.
+- Straight-on, flat illustration only: no room, no wood, no shadows, no 3D rendering, no photograph.

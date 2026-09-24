@@ -1,0 +1,53 @@
+{
+  "name": "great-wave",
+  "title": "Nagy hullám (Hokusai, közkincs) — rétegzett jelenet kerettel",
+  "note": "Széltől szélig tartó jelenet: 01b_depth --sheet-colours --scene, így az 1. lap a tömör, égszínű hátlap; a --margin minden lapra krém keretet ad. 400 x 266,8 mm.",
+  "pipeline": {
+    "script": "02_trace.py",
+    "args": [
+      "--size",
+      "400",
+      "--levels",
+      "7",
+      "--min-part",
+      "40",
+      "--merge-below",
+      "0.001",
+      "--margin",
+      "12",
+      "--no-keyhole",
+      "--connected",
+      "--palette",
+      "/Users/p.tothandras/Code/etsy-something/product/catalog/great-wave/runs/2026-09-24-v1/output/inputs/palettes/13.json"
+    ]
+  },
+  "render": {
+    "frame": true,
+    "paper": true,
+    "recessed": true,
+    "studio_bg": true,
+    "mixed_wood": false,
+    "frame_width": 0.05,
+    "explode": "fan",
+    "room": "shelf",
+    "props": "warm",
+    "wood_frame": true,
+    "plate_yaw": 8,
+    "plate_elevation": 2,
+    "exposure": -1.35,
+    "canvas": "1500x1000",
+    "key_color": [
+      1,
+      0.94,
+      0.84
+    ],
+    "scene_zoom": 0.9,
+    "grain_contrast": 0.08
+  },
+  "views": [
+    "plate",
+    "macro",
+    "exploded",
+    "styled"
+  ]
+}

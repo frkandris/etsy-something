@@ -432,8 +432,18 @@ def fit_panel_openings(geoms, panel, inner):
     subsequent nesting then cuts the displaced shapes against those old holes.
     """
     panel = set_precision(make_valid(panel), 0.01)
-    openings = {k: panel.difference(set_precision(make_valid(g), 0.01)).buffer(0)
-                for k, g in geoms.items()}
+    edge = panel.difference(panel.buffer(-1.0))
+
+    def design_openings(g):
+        # A traced sheet stops a few hundredths short of the panel edge, and
+        # potrace rounds its corners. Those strips are not openings: scaled with
+        # the rest they became a hairline cut just inside the frame that severed
+        # the frame from the design on every sheet. The frame band covers the
+        # outer millimetre anyway; interior slots never reach it.
+        diff = panel.difference(set_precision(make_valid(g), 0.01)).difference(edge)
+        return unary_union([q for q in parts_of(diff.buffer(0)) if q.area >= 1.0])
+
+    openings = {k: design_openings(g) for k, g in geoms.items()}
     combined = unary_union(list(openings.values()))
     if combined.is_empty or inner.is_empty:
         return geoms, 1.0, 0.0, 0.0
@@ -807,6 +817,14 @@ def main():
     if not all_ok and not a.draft:
         raise SystemExit("HIBAS RETEG - nem irok ki fajlokat. Reszeredmenyhez: --draft")
 
+    # The canvas is the panel, not an MM x MM square: a 3:2 landscape scene
+    # used to sit in the top two thirds of a square sheet. The long side is the
+    # promised size (the margin and healing shave a few hundredths off the
+    # geometry); the short side is measured.
+    bw = max(g.bounds[2] for g in geoms.values())
+    bh = max(g.bounds[3] for g in geoms.values())
+    W = MM if bw >= bh - 0.5 else round(bw, 3)
+    H = MM if bh >= bw - 0.5 else round(bh, 3)
     final_out = out
     with output_directory(final_out) as out:
         export_geoms = [(f"layer_{k}_of_{len(rows)}", geom) for k, geom, *_ in rows]
@@ -814,8 +832,8 @@ def main():
             x0, y0, x1, y1 = geoms[min(geoms)].bounds
             export_geoms.append(("backing", Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])))
         for stem, geom in export_geoms:
-            svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
-                   f'viewBox="0 0 {MM} {MM}">\n  <path d="{d_of(geom)}" fill-rule="evenodd" '
+            svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" '
+                   f'viewBox="0 0 {W} {H}">\n  <path d="{d_of(geom)}" fill-rule="evenodd" '
                    f'fill="none" stroke="#000" stroke-width="0.3"/>\n</svg>\n')
             (out / f"{stem}.svg").write_text(svg)
 
@@ -837,7 +855,7 @@ def main():
                           "10", "0.0", "20", "0.0", "30", "0.0"]
                     # DXF Y points up; this geometry is SVG-style Y-down.
                     # Writing y unchanged cut every design upside down.
-                    pts = [(f"{x:.4f}", f"{MM - y:.4f}") for x, y in ring.coords]
+                    pts = [(f"{x:.4f}", f"{H - y:.4f}") for x, y in ring.coords]
                     # dedupe AFTER rounding - two distinct floats can land on the
                     # same 4-decimal value and would leave a zero-length edge
                     dd = [q for i, q in enumerate(pts) if i == 0 or q != pts[i - 1]]
@@ -851,8 +869,8 @@ def main():
 
         # stacked preview
         tones = ["#6b4f33", "#7b5d3e", "#8b6b49", "#9b7955", "#ab8761", "#bb956d", "#cba379"]
-        s = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" height="{MM}mm" '
-             f'viewBox="0 0 {MM} {MM}">\n  <rect width="{MM}" height="{MM}" fill="#ece2d3"/>\n')
+        s = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" '
+             f'viewBox="0 0 {W} {H}">\n  <rect width="{W}" height="{H}" fill="#ece2d3"/>\n')
         for k, geom, *_ in rows:
             o = (k - 1) * 1.0
             s += (f'  <g transform="translate({-o:.2f},{-o:.2f})"><path d="{d_of(geom)}" '
@@ -866,45 +884,45 @@ def main():
         # layers underneath show through the cut-outs. That see-through depth is the
         # entire product, so painting holes with the background colour would hide
         # exactly the thing we need to judge.
-        P = 1400
-        sc = P / MM
-        prev = Image.new("RGB", (P, P), (236, 226, 211))
+        sc = 1400 / max(W, H)
+        P = (round(W * sc), round(H * sc))
+        prev = Image.new("RGB", P, (236, 226, 211))
         for k, geom, *_ in rows:
             o = (k - 1) * 1.0 * sc
             col = tuple(int(tones[(k - 1) % len(tones)][i:i + 2], 16) for i in (1, 3, 5))
-            mask = Image.new("L", (P, P), 0)
+            mask = Image.new("L", P, 0)
             md = ImageDraw.Draw(mask)
             for gg in parts_of(geom):
                 md.polygon([(x * sc - o, y * sc - o) for x, y in gg.exterior.coords], fill=255)
                 for ring in gg.interiors:
                     md.polygon([(x * sc - o, y * sc - o) for x, y in ring.coords], fill=0)
-            prev.paste(Image.new("RGB", (P, P), col), (0, 0), mask)
+            prev.paste(Image.new("RGB", P, col), (0, 0), mask)
         prev.save(out / "preview_stacked.png")
 
         # assembly guide: one panel per layer, the fresh layer in orange on top of
         # the stack so far - answers "where do the loose front pieces go"
-        PW = 700
-        sc2 = PW / MM
+        sc2 = 700 / max(W, H)
+        PW, PH = round(W * sc2), round(H * sc2)
         cols = 3
         rows_n = (len(rows) + cols - 1) // cols
-        guide = Image.new("RGB", (PW * cols, (PW + 46) * rows_n), (250, 247, 242))
+        guide = Image.new("RGB", (PW * cols, (PH + 46) * rows_n), (250, 247, 242))
         gd = ImageDraw.Draw(guide)
 
         def draw_geom(target, geom, colour, ox, oy):
-            mask = Image.new("L", (PW, PW), 0)
+            mask = Image.new("L", (PW, PH), 0)
             md = ImageDraw.Draw(mask)
             for gg in parts_of(geom):
                 md.polygon([(x * sc2, y * sc2) for x, y in gg.exterior.coords], fill=255)
                 for ring in gg.interiors:
                     md.polygon([(x * sc2, y * sc2) for x, y in ring.coords], fill=0)
-            target.paste(Image.new("RGB", (PW, PW), colour), (ox, oy), mask)
+            target.paste(Image.new("RGB", (PW, PH), colour), (ox, oy), mask)
 
         for i, (k, geom, *_x) in enumerate(rows):
-            ox, oy = (i % cols) * PW, (i // cols) * (PW + 46)
+            ox, oy = (i % cols) * PW, (i // cols) * (PH + 46)
             for _k2, geom2, *_y in rows[:i]:
                 draw_geom(guide, geom2, (196, 181, 160), ox, oy)
             draw_geom(guide, geom, (214, 116, 40), ox, oy)
-            gd.text((ox + 12, oy + PW + 8), f"{k}. reteg", fill=(60, 50, 40))
+            gd.text((ox + 12, oy + PH + 8), f"{k}. reteg", fill=(60, 50, 40))
         guide.save(out / "assembly_guide.png")
 
         # Scaling guidance. The buyer's real failure is scaling down until the webs
@@ -940,6 +958,7 @@ def main():
             "keyhole": not a.no_keyhole,
             "draft": a.draft,
             "size_mm": MM,
+            "panel_mm": [W, H],
         }
         # accents recounted from the FINAL geometry - the mid-chain count could
         # name layers that healing later merged or clipped

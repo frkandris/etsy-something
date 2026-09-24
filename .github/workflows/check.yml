@@ -2,10 +2,10 @@ name: Pipeline checks
 on: [push, pull_request]
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
       - run: sudo apt-get update && sudo apt-get install -y potrace libcairo2

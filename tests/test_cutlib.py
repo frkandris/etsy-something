@@ -301,12 +301,6 @@ def test_svg_text_empty_input():
     assert cutlib.svg_text("", 10, 10, 4, 100) is None
 
 
-def test_dxf_text_flips_y():
-    """A vágó-DXF minden Y-t H-y alakban ír; ha a szöveg kimarad, tükrözve gravírozódik."""
-    ent = cutlib.dxf_text("A", 10.0, 20.0, 4.0, 100.0)
-    assert ent[ent.index("20") + 1] == "80.000"
-
-
 def test_text_rotation_moves_the_glyphs():
     """A ferde címke (MEXICO) tényleg elfordul."""
     flat = cutlib.text_paths("MEXICO", 0, 0, 4, rot=0)

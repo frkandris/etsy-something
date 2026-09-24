@@ -22,7 +22,8 @@ for i in $(seq 1 "$N"); do
       --min-part 60 --merge-below 0.005 --margin 8 --no-keyhole --full-panel --connected \
       --palette "$D/palette_full.json" --out "$D/layers" >"$D/trace.log" 2>&1 \
     || { echo "v$i trace HIBA (lasd $D/trace.log)"; continue; }
-  blender -b -P product/render_blender.py -- "$D/layers" "$PWD/$D/plate.png" plate \
-      --frame --paper --recessed --palette-file "$D/layers/palette.json" >/dev/null 2>&1
+  blender -b --python-exit-code 1 -P product/render_blender.py -- "$D/layers" "$PWD/$D/plate.png" plate \
+      --frame --paper --recessed --palette-file "$D/layers/palette.json" >"$D/render.log" 2>&1 \
+    || { echo "v$i render HIBA (lasd $D/render.log)"; continue; }
   echo "v$i kesz"
 done

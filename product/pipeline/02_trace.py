@@ -18,7 +18,7 @@ from shapely.geometry import Polygon, Point
 from shapely.ops import unary_union
 import sys as _sys, pathlib as _pl
 _sys.path.insert(0, str(_pl.Path(__file__).resolve().parent))
-from cutlib import ghost_outline, widest_inscribed, necks, polys as parts_of
+from cutlib import widest_inscribed, necks, polys as parts_of
 from exportlib import output_directory, require_valid
 from shapely import make_valid, set_precision
 from shapely import affinity
@@ -424,7 +424,7 @@ def keyhole(geom):
     return geom.difference(hole)
 
 
-def fit_panel_openings(geoms, panel, inner, motif_scale=1.0):
+def fit_panel_openings(geoms, panel, inner):
     """Center and fit ALL openings, including the deepest sheet's holes.
 
     The lowest cut sheet is not a solid backing. Using it as the subtraction
@@ -440,7 +440,7 @@ def fit_panel_openings(geoms, panel, inner, motif_scale=1.0):
     x0, y0, x1, y1 = combined.bounds
     ix0, iy0, ix1, iy1 = inner.bounds
     fit = min(1.0, (ix1 - ix0) / max(1e-6, x1 - x0),
-              (iy1 - iy0) / max(1e-6, y1 - y0)) * motif_scale
+              (iy1 - iy0) / max(1e-6, y1 - y0))
     dx, dy = (ix0 + ix1 - x0 - x1) / 2, (iy0 + iy1 - y0 - y1) / 2
     origin = ((ix0 + ix1) / 2, (iy0 + iy1) / 2)
     fitted = {}
@@ -463,18 +463,6 @@ def main():
     ap.add_argument("--min-part", type=float, default=MIN_PART,
                     help="mm2, below this a piece is left to the plate behind")
     ap.add_argument("--no-keyhole", action="store_true")
-    ap.add_argument("--motif-scale", type=float, default=1.0,
-                    help="a vagott resz kicsinyitese a lapon belul")
-    ap.add_argument("--max-parts", type=int, default=0,
-                    help="retegenkenti komponens-plafon; a tobbi beolvad")
-    ap.add_argument("--round-corners", type=float, default=0.0,
-                    help="mm: minimalis sarok-lekerekitesi sugar")
-    ap.add_argument("--sliver-ratio", type=float, default=0.0,
-                    help="ennel karcsubb komponenst beolvaszt (hossz / sajat "
-                         "legnagyobb beirt kore); a hajszalcsikok 10 folott vannak")
-    ap.add_argument("--min-area-pct", type=float, default=0.35,
-                    help="a panel teruletenek ennyi szazaleka alatti komponens "
-                         "beolvad a szomszed retegbe")
     ap.add_argument("--merge-below", type=float, default=0.04,
                     help="ekkoranal kisebb uj teruletet ado szintet osszevon; "
                          "4%% elnyelte az arcot hordozo szinteket")
@@ -489,22 +477,11 @@ def main():
                     help="mm: ilyen szeles erintetlen sav a lap szelen")
     ap.add_argument("--speckle", type=float, default=0.0,
                     help="mm: nyitas+zaras sugara a szemcses belso ellen")
-    ap.add_argument("--punch", type=int, default=0,
-                    help="ennyi kerek nyilast uss a motivum kore, valtozo "
-                         "meretben es melysegben")
     ap.add_argument("--min-feature", type=float, default=0.0,
                     help="mm: ennel vekonyabb nyulvanyt a lanc levagja "
                          "(a referencia formanyelve durvabb, mint a MIN_WEB)")
-    ap.add_argument("--ghost", type=float, default=0.0, metavar="MM",
-                    help="ragasztasi sablon: minden reteg konturja ennyi mm-rel "
-                         "BELJEBB gravirozva az alatta levo lapra (ajanlott 0.5)")
     ap.add_argument("--full-panel", action="store_true",
                     help="minden lap teljes negyzet legyen, csak nyilasokkal")
-    ap.add_argument("--recessed", action="store_true",
-                    help="sullyesztett szerkezet: felul teljes lap, lefele szukulo nyilasok")
-    ap.add_argument("--drop-field", action="store_true",
-                    help="a legvilagosabb szint (a forraskep hattere) NEM lap: "
-                         "kontukoveto reliefnel a kulso el maga a sziluett")
     ap.add_argument("--solid-back", action="store_true",
                     help="a hatlap lyukai kitoltve - tomor hatter a csipke moge, "
                          "ahogy a keretezett shadow boxoknal szokas")
@@ -522,34 +499,15 @@ def main():
     img = Image.open(src)
     if a.background_cutoff:
         img = img.convert("L").point(lambda v: 0 if v <= a.background_cutoff else v)
-    if a.recessed:
-        # normalise BEFORE inverting: a 0..6 index map inverted becomes 249..255,
-        # hi is then 255 and the index-map branch never fires, so k-means sees a
-        # single occupied cluster and the run dies
-        # The reference product is INTAGLIO, not relief: the top sheet is a full
-        # white panel with the motif punched through it, and each sheet below
-        # has a smaller opening, so you look DOWN a stepped well that darkens
-        # with depth. Inverting the depth map turns our nesting machinery around:
-        # layer 1 becomes the whole panel and every later layer a smaller hole.
-        _g = img.convert("L")
-        _lo, _hi = _g.getextrema()
-        if _hi > _lo and _hi <= a.levels + 2:
-            _g = _g.point(lambda v: min(255, int((v - _lo) * 255 / (_hi - _lo))))
-        img = Image.eval(_g, lambda v: 255 - v)
-    # Step down until the image actually supports the level count. One retry
-    # was not enough: each reposterisation can reveal fewer usable tones again.
-    while True:
-        try:
-            g, edges, cent = posterise(img, a.levels)
-            a.levels = len(cent) - 1      # what the image really supports
-            break
-        except ToneShortfall as e:
-            nxt = min(e.available, a.levels - 1)
-            if nxt < 4:
-                raise SystemExit(f"a kep csak {e.available} szintet ad - "
-                                 f"hasznalhatatlan")
-            print(f"[i] {a.levels} szint helyett {nxt} - a kep csak ennyit ad")
-            a.levels = nxt
+    # posterise() already drops empty tone clusters and only raises when fewer
+    # than three usable levels remain, so there is nothing to retry with.
+    try:
+        g, edges, cent = posterise(img, a.levels)
+    except ToneShortfall as e:
+        raise SystemExit(f"a kep csak {e.available} szintet ad - hasznalhatatlan")
+    if len(cent) - 1 < a.levels:
+        print(f"[i] {a.levels} szint helyett {len(cent) - 1} - a kep csak ennyit ad")
+    a.levels = len(cent) - 1
 
     print(f"forras: {src.name}  {img.width}x{img.height}px")
     print("tonusszintek: " + ", ".join(f"{c:.0f}" for c in cent))
@@ -581,21 +539,6 @@ def main():
                 dropped[k] = drp
     if 1 not in geoms:
         raise SystemExit("az 1. reteg (hatlap) ures - hasznalhatatlan bemenet")
-
-    if a.drop_field:
-        # KONTUKOVETO (kiemelkedo) relief: a forraskep FEHER HATTERE nem lap,
-        # hanem a semmi - a kulso vagasel maga a motivum sziluettje. Merve: a
-        # nemet juhasz forrasan a pixelek 51,5%-a esett a legvilagosabb savba,
-        # es abbol egy krem lekerekitett negyzet-lap lett a kutya mogott.
-        # A mezo eldobasa utan a legnagyobb megmarado szint MAGA a sziluett.
-        if len(geoms) < 2:
-            raise SystemExit("--drop-field: nem maradna reteg")
-        del geoms[1]
-        ks = sorted(geoms)
-        geoms = {i + 1: geoms[k] for i, k in enumerate(ks)}
-        src_level = {i + 1: src_level[k] for i, k in enumerate(ks)}
-        dropped = {i + 1: dropped[k] for i, k in enumerate(ks) if k in dropped}
-        print(f"[i] --drop-field: a mezo eldobva, {len(geoms)} reteg maradt")
 
     # anchor the object at the origin
     minx, miny, maxx, maxy = geoms[1].bounds
@@ -702,7 +645,7 @@ def main():
         mnx0, mny0, mxx0, mxy0 = geoms[ks0[0]].bounds
         outer0 = Polygon([(mnx0, mny0), (mxx0, mny0), (mxx0, mxy0), (mnx0, mxy0)])
         inner0 = outer0.buffer(-a.margin)
-        geoms, fit, dx, dy = fit_panel_openings(geoms, outer0, inner0, a.motif_scale)
+        geoms, fit, dx, dy = fit_panel_openings(geoms, outer0, inner0)
         if fit < 0.999 or abs(dx) > 0.5 or abs(dy) > 0.5:
             print(f"[i] minta a biztonsagos zonara illesztve "
                   f"({fit:.3f}x, eltolas {dx:+.0f}/{dy:+.0f} mm)")
@@ -728,102 +671,6 @@ def main():
             geoms[k] = g
         print(f"[i] {a.margin:.0f} mm-es erintetlen margosav minden lapon")
 
-    if a.sliver_ratio > 0 and geoms:
-        # Filter by COMPONENT SHAPE, not by morphology radius. Tuning the
-        # opening radius trades detail against noise and always loses one of
-        # them: 6 mm ate the wolf's eyes, 2.5 mm let hairline strips back in.
-        # A component's slenderness (extent / its own widest inscribed circle)
-        # separates the two cleanly - a teardrop scores 2-4, a contour hairline
-        # scores 10+.
-        panel_area = geoms[sorted(geoms)[0]].area
-        min_area = panel_area * a.min_area_pct / 100.0
-        # The frame body is exempt. A top sheet is by definition a panel with a
-        # large opening in it, so its ring is thin and its slenderness score is
-        # high - and this filter was quietly deleting it. That is what made the
-        # top one or two sheets vanish and the design read as flat: the filter
-        # was working exactly as written, on the one part it must never touch.
-        # A thin ring that is part of the frame cannot fall out; a thin ribbon
-        # floating in the middle can. That is the distinction, not thinness.
-        _pb = geoms[sorted(geoms)[0]].bounds
-        frame_rim = Polygon([(_pb[0], _pb[1]), (_pb[2], _pb[1]),
-                             (_pb[2], _pb[3]), (_pb[0], _pb[3])]).exterior.buffer(1.5)
-        cut_p = cut_h = 0
-        for k in sorted(geoms):
-            keep = []
-            for p in parts_of(geoms[k]):
-                # The frame body is exempt from the SLENDERNESS test, not from
-                # the hole test. Skipping both let every hairline opening in
-                # the panel through unchecked - the exemption is about the
-                # piece not falling out, which says nothing about its holes.
-                if not p.intersects(frame_rim):
-                    w = widest_inscribed(p)
-                    if p.area < min_area or (w > 0
-                                             and _extent(p.exterior) / w > a.sliver_ratio):
-                        cut_p += 1
-                        continue
-                holes = []
-                for r in p.interiors:
-                    # A HOLE CANNOT FALL OUT. Slenderness is a structural test
-                    # for pieces, and applying it to openings deleted the whole
-                    # design language of this product - every ribbon-shaped
-                    # opening scores as a sliver. Openings get an area floor and
-                    # nothing else; whether one is long and thin is the
-                    # designer's business, not the cutter's.
-                    if Polygon(r).area < min_area:
-                        cut_h += 1
-                        continue
-                    holes.append(r)
-                keep.append(Polygon(p.exterior, holes))
-            if keep:
-                geoms[k] = unary_union(keep).buffer(0)
-            elif parts_of(geoms[k]):
-                # every component failed. Saying "filtered" and leaving the
-                # layer untouched would let a wholly bad layer through.
-                raise SystemExit(f"a(z) {k}. reteg minden darabja szilank - "
-                                 f"lazitsd a --sliver-ratio / --min-area-pct erteket")
-        if cut_p or cut_h:
-            print(f"[i] szilank-szures: {cut_p} darab es {cut_h} nyilas beolvasztva "
-                  f"(karcsusag > {a.sliver_ratio:.0f} vagy terulet < {a.min_area_pct}%)")
-
-        if a.max_parts > 0:
-            # Cap the component count. Fifty small openings per layer read as
-            # noise no matter how clean each one is; the references run 8-20
-            # large shapes. Keep the biggest and let the rest fall back to the
-            # sheet behind.
-            drop_p = drop_h = 0
-            for k in sorted(geoms):
-                ps = sorted(parts_of(geoms[k]), key=lambda q: -q.area)[:a.max_parts]
-                out2 = []
-                for p in ps:
-                    hs = sorted(p.interiors, key=lambda r: -Polygon(r).area)
-                    drop_h += max(0, len(hs) - a.max_parts)
-                    out2.append(Polygon(p.exterior, hs[:a.max_parts]))
-                drop_p += len(parts_of(geoms[k])) - len(ps)
-                if out2:
-                    geoms[k] = unary_union(out2).buffer(0)
-            if drop_p or drop_h:
-                print(f"[i] komponens-plafon {a.max_parts}: {drop_p} darab es "
-                      f"{drop_h} nyilas beolvasztva")
-
-        if a.round_corners > 0:
-            # Round every corner to a minimum radius. Straight runs and sharp
-            # interior angles are what still made the shapes read as traced
-            # clip-art rather than poured paint.
-            r = a.round_corners
-            for k in sorted(geoms):
-                g = geoms[k].buffer(r, join_style=1).buffer(-2 * r, join_style=1) \
-                            .buffer(r, join_style=1).buffer(0)
-                if g.is_empty:
-                    continue
-                # The panel's own square outline must survive untouched: the
-                # rounding chain nicked its corner and left a diagonal seam
-                # across the sheet.
-                base_ring = max(parts_of(geoms[k]), key=lambda q: q.area)
-                square = Polygon(base_ring.exterior).envelope
-                g = unary_union([g, square.difference(
-                    square.buffer(-a.margin if a.margin > 0 else -1.0))]).buffer(0)
-                geoms[k] = g
-
     if a.speckle > 0 and geoms:
         # open THEN close: the opening removes grainy specks, the closing fills
         # the pinholes the opening leaves behind. Without the close the interior
@@ -834,55 +681,6 @@ def main():
             g = unary_union([p for p in parts_of(g) if p.area >= a.min_part])
             if not g.is_empty:
                 geoms[k] = g
-
-    if a.punch > 0 and len(geoms) >= 3:
-        # Punch them here, not in the image: the model gave ~30 identical dots
-        # all opening to the same layer. The reference scatters a few large and
-        # many small ones, each reaching a DIFFERENT depth, which is what makes
-        # them read as coloured wells instead of polka dots.
-        ks2 = sorted(geoms)
-        mnx, mny, mxx, mxy = geoms[ks2[0]].bounds
-        cxp, cyp = (mnx + mxx) / 2, (mny + mxy) / 2
-        span = min(mxx - mnx, mxy - mny)
-        motif = geoms[ks2[min(2, len(ks2) - 1)]]
-        safe = Polygon([(mnx, mny), (mxx, mny), (mxx, mxy), (mnx, mxy)])
-        safe = safe.buffer(-(a.margin + 6))
-        # 6-40 px on a 1024 canvas ~= 2-12 mm at 300 mm. The old set was
-        # 3-16 mm but bunched in the middle, so the scatter read as uniform
-        # confetti rather than a few big wells among small ones.
-        sizes = [12.0, 11.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.5, 4.0, 3.5,
-                 3.2, 3.0, 2.8, 2.6, 2.4, 2.2, 2.0, 2.0, 2.0, 2.0]
-        # 70% inside ONE 140 deg sector: the references cluster the dots to one
-        # side of the motif instead of ringing it.
-        base_ang = 40.0 if (len(geoms) % 2 == 0) else 215.0
-        placed, done = 0, []
-        for i in range(a.punch * 6):
-            if placed >= a.punch:
-                break
-            d = sizes[placed % len(sizes)]
-            u = ((i * 0.6180339887) % 1.0)
-            v = ((i * 0.7548776662) % 1.0)
-            if placed < int(a.punch * 0.7):
-                ang = base_ang + 140.0 * (u - 0.5)
-            else:
-                ang = 360.0 * u
-            rad = span * (0.20 + 0.25 * v)
-            px = cxp + rad * math.cos(math.radians(ang))
-            py = cyp + rad * math.sin(math.radians(ang))
-            hole = Point(px, py).buffer(d / 2, 48)
-            if not safe.contains(hole) or motif.intersects(hole.buffer(2.5)):
-                continue
-            # allow the last few to merge into peanut shapes, block the rest
-            if any(hole.buffer(0.8).intersects(q) for q in done[:-4]):
-                continue
-            done.append(hole)
-            # floor on one of the TOP TWO coloured sheets so gold or orange
-            # flashes in the well instead of black
-            depth = 1 + (placed % 2)
-            for k in ks2[len(ks2) - depth:]:
-                geoms[k] = geoms[k].difference(hole).buffer(0)
-            placed += 1
-        print(f"[i] {placed} kerek nyilas utve, valtozo merettel es melyseggel")
 
     if a.connected and geoms:
         # FRAME-FIRST. The documented workshop rule for this product is that
@@ -997,9 +795,8 @@ def main():
               f"{ta*100:>8.2f}%{nk:>6}  {st}")
         rows.append((k, geom, len(pieces), holes, nw, ta))
 
-    # a deliberately merged level is not a missing one - and neither is the
-    # field, ha --drop-field-del SZANDEKOSAN dobtuk el (kontukoveto relief)
-    _expect = a.levels - (1 if a.drop_field else 0)
+    # a deliberately merged level is not a missing one
+    _expect = a.levels
     if len(geoms) + MERGED < _expect:
         all_ok = False
         print(f"[!] {_expect} varhato szintbol csak {len(geoms) + MERGED} "
@@ -1038,7 +835,9 @@ def main():
                 for ring in [gg.exterior] + list(gg.interiors):
                     e += ["0", "POLYLINE", "8", "CUT", "66", "1", "70", "1",
                           "10", "0.0", "20", "0.0", "30", "0.0"]
-                    pts = [(f"{x:.4f}", f"{y:.4f}") for x, y in ring.coords]
+                    # DXF Y points up; this geometry is SVG-style Y-down.
+                    # Writing y unchanged cut every design upside down.
+                    pts = [(f"{x:.4f}", f"{MM - y:.4f}") for x, y in ring.coords]
                     # dedupe AFTER rounding - two distinct floats can land on the
                     # same 4-decimal value and would leave a zero-length edge
                     dd = [q for i, q in enumerate(pts) if i == 0 or q != pts[i - 1]]
@@ -1049,25 +848,6 @@ def main():
                     e += ["0", "SEQEND"]
             e += ["0", "ENDSEC", "0", "EOF"]
             (out / f"{stem}.dxf").write_text("\n".join(e) + "\n")
-
-        # GHOST-OUTLINE ragasztasi sablon (a vilagterkep-lancon vezettuk be):
-        # minden reteg konturja beljebb huzva a MOGOTTE levo lapra gravirozva -
-        # igy maga a lap mondja meg, hova kerul a darab. A beljebb huzas azert
-        # kell, hogy a felragasztott darab eltakarja a vonalat.
-        if a.ghost > 0 and len(rows) > 1:
-            for _i in range(1, len(rows)):
-                k_host, geom_top = rows[_i - 1][0], rows[_i][1]
-                rings = ghost_outline(geom_top, inset=a.ghost)
-                if not rings:
-                    continue
-                d = " ".join("M " + " L ".join(f"{x:.3f},{y:.3f}" for x, y in r.coords)
-                             for r in rings)
-                (out / f"ghost_on_layer_{k_host}.svg").write_text(
-                    f'<svg xmlns="http://www.w3.org/2000/svg" width="{MM}mm" '
-                    f'height="{MM}mm" viewBox="0 0 {MM} {MM}">\n'
-                    f'  <path d="{d}" fill="none" stroke="#f00" stroke-width="0.1"/>\n'
-                    "</svg>\n")
-            print(f"[i] ghost-outline: {len(rows) - 1} lapra, {a.ghost} mm-rel beljebb")
 
         # stacked preview
         tones = ["#6b4f33", "#7b5d3e", "#8b6b49", "#9b7955", "#ab8761", "#bb956d", "#cba379"]

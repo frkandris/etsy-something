@@ -12,7 +12,6 @@ product/pipeline/geodata/
 .ruff_cache/
 
 # Export locks and interrupted staging are runtime state
-*.lockfile
 *.previous/
 .*.staging-*/
 __pycache__/

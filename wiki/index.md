@@ -69,6 +69,7 @@ A karbantartás szabályai: **[[CLAUDE|CLAUDE.md]]** (séma). Változásnapló: 
 
 ## Mérési csapdák — `pitfalls/`
 
+- [[pitfalls/2026-09-24-dxf-fejjel-lefele]] — **minden DXF fejjel lefelé volt**; a tesztek szimmetrikus ábrán zöldek maradtak
 - [[pitfalls/2026-09-05-recessed-layer-registration]] — a jó depth mapet elrontó rétegillesztés és globális simítás
 
 - [[pitfalls/2026-08-12-rossz-populacio-harmadszor]] — a hibás populáció, harmadszor

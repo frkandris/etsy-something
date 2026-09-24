@@ -9,8 +9,6 @@
       "32",
       "--min-part",
       "40",
-      "--min-area-pct",
-      "0.05",
       "--merge-below",
       "0.001",
       "--thicken",

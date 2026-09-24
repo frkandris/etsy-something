@@ -73,11 +73,6 @@ MUTATIONS = [
      "    if not name:\n        return []\n",
      ""),
 
-    ("DXF: Y-tükrözés elhagyva (fejjel lefelé gravírozott felirat)",
-     "test_dxf_text_flips_y",
-     '"20", f"{h - y:.3f}"',
-     '"20", f"{y:.3f}"'),
-
     ("gyógyítás: nem-konvergencia jelzése törölve (néma hiba)",
      "test_heal_reports_when_not_converged",
      "    left = necks(g, min_web)\n    if left:",

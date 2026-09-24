@@ -63,7 +63,7 @@ Egyik esetben sem új javítás kellett, hanem a meglévő gépezet a helyes pon
 | `--margin 30` | érintetlen sáv a lap szélén — a referenciákon a margóban semmi nincs |
 | `--speckle 2.5` | nyitás **után** zárás; a nyitás önmagában tűlyukakat hagy |
 | `--min-feature 6` | a referencia formanyelve durvább, mint a 2 mm-es vágási határ |
-| `--punch 20` | a pöttyök eljárásszerűen: méret- és mélységszórással, egyoldali klaszterben |
+| ~~`--punch 20`~~ | a pöttyök eljárásszerűen; **2026-09-24: törölve**, egyik profil sem használta |
 
 ## Néma hibák, amiket a codex talált
 
@@ -109,3 +109,13 @@ mintavételezés; és az 1024 px-es forrás 0,293 mm-es pixelrácsa → 4× fels
 A kanonikus hívás ennyi maradt:
 `02_trace.py --src depth_map.png --levels 7 --min-part 60 --merge-below 0.005 --margin 8
 --no-keyhole --full-panel --connected --palette palette_full.json`
+
+## 2026-09-24: a nem használt kapcsolók törlése
+
+Egyik profil és egyik runner sem adta át, ezért törölve a `02_trace.py`-ból: `--sliver-ratio`,
+`--min-area-pct`, `--max-parts`, `--round-corners`, `--punch`, `--ghost`, `--recessed`, `--drop-field`,
+`--motif-scale`. Az utolsó négy kivételével mind a `--sliver-ratio` ágában élt, tehát nélküle
+**csendben hatástalan** volt. A mentett katalógus-receptek mégis átadták a `--min-area-pct`-t, ezt
+kivettük belőlük. Igazolás: a receptek újrafuttatása után egyetlen SVG, paletta vagy riport sem
+változott, csak a DXF-ek, azok a [[pitfalls/2026-09-24-dxf-fejjel-lefele]] javítása miatt. A régi
+kapcsolók működése a git-történetben megmarad.

@@ -6,7 +6,6 @@ import json
 import os
 from pathlib import Path
 import shutil
-import stat
 import tempfile
 
 
@@ -21,37 +20,16 @@ def require_valid(report, draft=False):
 
 @contextmanager
 def _destination_lock(destination):
-    """Hold a private regular-file lock, refusing redirected or shared paths.
-
-    Keep lock inodes between runs: unlinking a live lock could let two writers
-    lock different inodes. Temp-directory cleanup is safe only with no exports
-    running. The directory descriptor pins the checked parent for file opening.
-    """
-    lock_dir = Path(tempfile.gettempdir()) / f"etsy-export-locks-{os.getuid()}"
-    lock_dir.mkdir(mode=0o700, exist_ok=True)
-    directory_fd = os.open(lock_dir, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
-    try:
-        info = os.fstat(directory_fd)
-        if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o077:
-            raise PermissionError(f"Export lock directory must be private and owned by this user: {lock_dir}")
-        name = hashlib.sha256(str(destination).encode()).hexdigest() + ".lock"
-        # NONBLOCK prevents a substituted FIFO from hanging before type checks.
-        fd = os.open(name, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK,
-                     0o600, dir_fd=directory_fd)
+    """One writer per destination. The lock file is left in place on purpose:
+    deleting a held lock would let a second writer lock a fresh inode."""
+    digest = hashlib.sha256(str(destination).encode()).hexdigest()[:16]
+    lock = Path(tempfile.gettempdir()) / f"etsy-export-{os.getuid()}-{digest}.lock"
+    with open(lock, "a") as handle:
         try:
-            info = os.fstat(fd)
-            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
-                    or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) & 0o022):
-                raise PermissionError(f"Unsafe export lock file: {lock_dir / name}")
-            try:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError as exc:
-                raise BlockingIOError(f"Another export is running for {destination}") from exc
-            yield
-        finally:
-            os.close(fd)
-    finally:
-        os.close(directory_fd)
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise BlockingIOError(f"Another export is running for {destination}") from exc
+        yield
 
 
 @contextmanager

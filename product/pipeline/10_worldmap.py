@@ -25,11 +25,11 @@ papíros lánccal azonos formátumú vágásbiztonsági riport.
 """
 import argparse, json, math, pathlib, urllib.request, sys
 from shapely.geometry import shape, MultiPolygon, box
-from exportlib import output_directory, require_valid
 from shapely.ops import unary_union
 from shapely import affinity, make_valid, set_precision
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from exportlib import output_directory, require_valid
 # A kozos vagas-geometria: amit itt megmertunk, azt a tobbi lanc keszen kapja.
 from cutlib import (polys, widest_inscribed, necks, widen_necks, drop_specks,
                     text_paths)
@@ -119,8 +119,12 @@ def to_svg(geom, w, h, path, stroke_only=False):
         f'viewBox="0 0 {w:.3f} {h:.3f}">\n  <path {style} d="{" ".join(d)}"/>\n</svg>\n')
 
 
-def to_dxf(geom, h, path):
-    """R12 poliline — ezt minden lézervágó szoftver beolvassa."""
+def to_dxf(geom, path):
+    """R12 poliline — ezt minden lézervágó szoftver beolvassa.
+
+    A modell Y-ja északra nő, akárcsak a DXF-é, ezért itt NINCS tükrözés
+    (az SVG-ben van, ott az Y lefelé nő). A korábbi `h - y` minden vágott
+    darabot fejjel lefelé írt ki, a feliratok pedig mellé kerültek."""
     out = ["0", "SECTION", "2", "ENTITIES"]
     parts = list(geom.geoms) if geom.geom_type in ("MultiPolygon", "MultiLineString") else [geom]
     for p in parts:
@@ -130,7 +134,7 @@ def to_dxf(geom, h, path):
             pts = list(r)
             out += ["0", "POLYLINE", "8", "0", "66", "1", "70", "1"]
             for x, y in pts:
-                out += ["0", "VERTEX", "8", "0", "10", f"{x:.4f}", "20", f"{h - y:.4f}"]
+                out += ["0", "VERTEX", "8", "0", "10", f"{x:.4f}", "20", f"{y:.4f}"]
             out += ["0", "SEQEND"]
     out += ["0", "ENDSEC", "0", "EOF"]
     path.write_text("\n".join(out))
@@ -373,7 +377,7 @@ def main():
             if is_pieces:
                 final_land = g
             to_svg(g, a.width, H, out / f"layer_{i}_of_{len(sheets)}.svg")
-            to_dxf(g, H, out / f"layer_{i}_of_{len(sheets)}_{tag}.dxf")
+            to_dxf(g, out / f"layer_{i}_of_{len(sheets)}_{tag}.dxf")
 
         if a.borders:
             # ORSZÁGONKÉNT kell a határvonal. Az unary_union összeolvasztja a
@@ -398,7 +402,7 @@ def main():
             lines = lines.difference(land.boundary.buffer(0.4)).intersection(land)
             lines = lines.simplify(a.simplify)
             to_svg(lines, a.width, H, out / "engrave_borders.svg", stroke_only=True)
-            to_dxf(lines, H, out / "engrave_borders.dxf")
+            to_dxf(lines, out / "engrave_borders.dxf")
             print(f"[i] gravírozási réteg: országhatárok ({lines.length:.0f} mm vonalhossz)")
 
         if a.countries and labels:
@@ -406,7 +410,7 @@ def main():
             # R12 TEXT entitasok mennek ugyanazokkal a pozíciókkal
             txt = ['<svg xmlns="http://www.w3.org/2000/svg" '
                    f'width="{a.width:.2f}mm" height="{H:.2f}mm" viewBox="0 0 {a.width:.3f} {H:.3f}">']
-            def emit_text(name, x, y, hgt, sw="0.08", rot=0.0):
+            def emit_text(name, x, y, hgt, rot=0.0):
                 # EGY path, minden kontur alutvonalkent: kulon path-onkent a betuk
                 # lyuk-konturjai (O, A, R belseje) tomor foltta valtak, es a
                 # graviro nagyitasban halandzsanak olvasodott (reviewer)
@@ -419,13 +423,13 @@ def main():
                                'fill-rule="evenodd" stroke="none"/>')
             for name, x, y, hgt, rot in labels:
                 emit_text(name, x, y, hgt, rot=rot)
-            emit_text("WORLD MAP", a.width / 2, a.margin * 0.35 + 2.1, 4.2, sw="0.1")
+            title = ("WORLD MAP", a.width / 2, a.margin * 0.35 + 2.1, 4.2, 0.0)
+            emit_text(*title[:4])
             txt.append("</svg>")
             (out / "engrave_labels.svg").write_text("\n".join(txt))
             dxf = ["0", "SECTION", "2", "ENTITIES"]
-            # a vago-DXF minden Y-t H-y alakban ir - a cimkeknek is igy kell,
-            # kulonben fuggolegesen tukrozve gravirozodnanak (codex merte ki)
-            for name, x, y, hgt, rot in labels + [("WORLD MAP", a.width/2, H - a.margin*0.35, 4.2, 0.0)]:
+            # modell-koordinata (Y eszakra), ugyanaz, mint a vago-DXF-ben
+            for name, x, y, hgt, rot in labels + [title]:
                 dxf += ["0", "TEXT", "8", "0", "10", f"{x:.3f}", "20", f"{y:.3f}",
                         "40", f"{hgt:.3f}", "50", f"{rot:.1f}", "72", "1",
                         "11", f"{x:.3f}", "21", f"{y:.3f}", "1", name]
@@ -450,7 +454,7 @@ def main():
             else:
                 gl = unary_union(ghosts).simplify(a.simplify)
                 to_svg(gl, a.width, H, out / "engrave_ghost.svg", stroke_only=True)
-                to_dxf(gl, H, out / "engrave_ghost.dxf")
+                to_dxf(gl, out / "engrave_ghost.dxf")
                 print(f"[i] ghost-outline gravir: {len(ghosts)} darab-kontur "
                       f"({gl.length:.0f} mm) - a 200 m-es lapra megy")
 

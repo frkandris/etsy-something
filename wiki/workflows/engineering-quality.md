@@ -54,3 +54,36 @@ A lock fájlokat futó exportok mellett nem szabad törölni: az azonos útvonal
 Ugyanebben a körben a review utáni kiegészítés a shell-felderítés hibakódját is ellenőrzi: a fájllista előállítása külön, hibára megálló lépés. A köztes 96 tesztes állapothoz képest egy új regresszió került be; a korábbi folyamathelyettesítés elnyelte a szimulált `find` 7-es hibakódját. [Piros kontroll](../../reviews/2026-09-16/discovery-red.log).
 
 2026-09-16 végső ellenőrzés: a második célzott Claude-review APPROVE, üres findings lista; kisebb nem blokkoló tisztázási megjegyzésekkel. A vizsgált források hash-e a lezáráskor egyezett.
+
+## 2026-09-24 — egyszerűsítés és kódátnézés
+
+Az átnézés kódolvasással és célzott futtatással dolgozott, nem további védőrétegekkel. Két súlyos
+hibát talált, amelyeket a zöld készlet nem fogott meg. A részletek a
+[[pitfalls/2026-09-24-dxf-fejjel-lefele]] oldalon vannak.
+
+| változás | miért |
+|---|---|
+| DXF-tájolás javítva a trace- és mindkét térkép-láncban, 3 aszimmetrikus regressziós teszttel | minden DXF az SVG függőleges tükörképe volt |
+| 9 hatástalan kapcsoló törölve a `02_trace.py`-ból (1202 → 982 sor) | egyik profil sem használta, és 4 közülük csendben semmit nem csinált |
+| Az exportzár egyetlen `flock` (~35 → ~10 sor), a `check.sh` shell-felderítése `git ls-files` | FIFO-, linkszám- és tulajdonos-ellenőrzés egy egyfelhasználós helyi eszközben felesleges teher |
+| 16 teszt törölve (zárfájl-jogosultság 7, a `check.sh` saját felderítése 9) | a törölt implementációs részleteket tesztelték, nem a termék viselkedését |
+| Renderer: ismeretlen palettanév esetén nem száll el, az exploded nézet halott objektív-sora törölve | a `PALETTE` név a fallback után is a hibás érték maradt, és a `KeyError` a hátlapnál jött. Az exploded kamerát mindig 85 mm-re írta felül a közös ág |
+| `gen_candidates.sh` törölve | egyszeri futás rekordja volt, és egy másik session scratchpadjéből olvasta az API-kulcsot |
+
+**Igazolás:** 83 teszt sikeres, 12/12 mutáció elbukik. A mentett receptek újrafuttatása után 94
+kimeneti fájlból csak a 29 DXF változott; az SVG-k, a paletták és a riportok bájtra azonosak.
+
+**Nyitott, igazolt megállapítások (nem javítva):**
+
+- `shelf` nézet kerettel: a keret és a hátlap laposan fekszik a felállított mű előtt. Egyik profil
+  sem használja ezt a nézetet.
+- `styled` + `room: sideboard` (a `worldmap` profil): a földsík eltakarja a komód elejét.
+- A renderer több hibaága 0-s kóddal lép ki: hiányzó kellék, hiányzó HDRI, ismeretlen `room`,
+  `props` vagy `explode` érték, hiányzó `engrave_labels.svg`.
+- `02_trace.py`: a `max_parts`-szerű rétegtörlés után az `enforce_nesting` a `k-1`. réteget keresi,
+  és ha az törlődött, nem klippel. Hibás geometriát ezzel eddig nem mértünk.
+- Duplikáció: a `10_worldmap.py` a `geolib` másolatát tartalmazza, a három DXF/SVG-író külön él,
+  a `render_blender.py`-ban a kamera- és „felállítás”-kód 4–7 példányban szerepel.
+
+A `11_worldmap_flat.py` riportja `all_ok` mellett is felsorol kimaradt országokat. Ez szándékos: a
+`--hard-floor` alatti darab fizikailag vághatatlan, és a riport név szerint felsorolja.

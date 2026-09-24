@@ -22,8 +22,10 @@ módszertant, a döntéseket és az indoklásukat, és a mérési hibák postmor
 - Ha új mérés fut le, egy szám korrekció miatt megváltozik, döntés születik, vagy egy boltot
   megvizsgálunk — hozd létre vagy frissítsd a megfelelő wiki-oldalt a séma szerint, és fűzz egy sort
   a `wiki/_log.md`-hoz.
-- **Soha ne írj le számot a populációja nélkül.** Ebben a projektben a `173 bolt` / `65 specialista`
-  / `33 igazolt` megkülönböztetés a különbség egy igaz és egy hamis állítás között.
+- **Soha ne írj le számot a populációja nélkül.** Ebben a projektben a `173 bolt` / `35 specialista`
+  (dedupolva) / `21 igazolt` megkülönböztetés a különbség egy igaz és egy hamis állítás között. A
+  korábbi `65` / `33` a duplikált találatokkal és a hibás szűrővel számolt érték — lásd
+  `wiki/findings/verified-shop-list.md`.
 - A `wiki/assets/` csak olvasható: nyers adatok és elemző szkriptek. Ne szerkeszd őket.
 
 ## Google Sheet

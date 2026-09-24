@@ -416,7 +416,8 @@ if PALETTE_FILE:
         "#%02x%02x%02x" % tuple(c) for c in _srgb))
 elif PALETTE not in PALETTES:
     print(f"[render] FIGYELEM: ismeretlen paletta '{PALETTE}', wood-ra esem vissza")
-    BASE = PALETTES["wood"]
+    PALETTE = "wood"          # the name is read again below (SPOT, backing)
+    BASE = PALETTES[PALETTE]
 else:
     BASE = PALETTES[PALETTE]
 
@@ -1276,8 +1277,9 @@ if VIEW == "exploded":
               max(q.y for q in _pts) - min(q.y for q in _pts),
               max(q.z for q in _pts) - min(q.z for q in _pts))
     # allo lapok, 3/4-es nezet balrol-elolrol, enyhen felulrol - a 21-es
-    # referencia-kep kameraja. 55 mm: merheto perspektiva-konvergencia,
-    # ahogy a referencian, a 85 mm-es tavkep tul lapos volt ehhez.
+    # referencia-kep kameraja. A kozos kamera-ag alul MINDEN nezetre LENS-et
+    # (85 mm) allit; az itt korabban beallitott 48/55 mm soha nem jutott el a
+    # renderig, es a D-szorzokat a 85 mm-es kepeken hangoltuk be.
     if EXPLODE == "standing":
         D = ext * 3.7
         loc = (cx - D * 0.30, cy - D * 0.80, cz + D * 0.11)   # atlos, balrol
@@ -1293,7 +1295,6 @@ if VIEW == "exploded":
     print(f"[render] exploded({EXPLODE}) fit: ext={ext:.3f} D={D:.3f}")
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
-    cam.data.lens = 48.0 if EXPLODE == 'standing' else 55.0
     _dir = (cx - loc[0], cy - loc[1], cz - loc[2])
     import mathutils as _mu
     cam.rotation_euler = _mu.Vector(_dir).to_track_quat('-Z', 'Y').to_euler()

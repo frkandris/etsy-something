@@ -17,19 +17,12 @@ echo "== ruff =="
 $PY -m ruff check product/ tests/
 
 echo "== shell syntax =="
-# Discover maintained *.sh files, including newly added/untracked files.
-# Generated products, historical runs and research assets are outside scope.
-# Materialize the list first so find failures cannot hide in process substitution.
-shell_list=$(mktemp)
-trap 'rm -f -- "$shell_list"' EXIT
-printf '%s\0' ./*.sh > "$shell_list"
-for directory in product/pipeline tests; do
-  [[ -d "$directory" ]] || continue
-  find "$directory" -type f -name '*.sh' -print0 >> "$shell_list"
-done
-while IFS= read -r -d '' script; do
-  bash -n "$script"
-done < "$shell_list"
+# Every tracked or new (not ignored) *.sh file. The assignment keeps git's exit
+# status, so a failed listing stops the check instead of checking nothing.
+shell_files=$(git ls-files -co --exclude-standard -- '*.sh')
+while IFS= read -r script; do
+  if [[ -n "$script" ]]; then bash -n "$script"; fi
+done <<< "$shell_files"
 
 echo "== pytest =="
 $PY -m pytest

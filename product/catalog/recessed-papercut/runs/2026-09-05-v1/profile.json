@@ -9,8 +9,6 @@
       "6",
       "--min-part",
       "40",
-      "--min-area-pct",
-      "0.02",
       "--merge-below",
       "0.001",
       "--margin",

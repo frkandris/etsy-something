@@ -120,3 +120,11 @@ A fenti 30 tesztes eredmény történeti mérés. A keret immár egy ideiglenes 
 ## 2026-09-05 — a korábbi lefedettségi állítások korrekciója
 
 A fenti 0,2 másodperces futásidő és a „02_trace/profilbetöltés fedetlen” állítás a korábbi, 30 tesztes állapotra vonatkozik. Az új teljes készlet 80 tesztje 2,35 másodperc alatt sikeres: a `test_trace_geometry.py` és `test_trace_export.py` a trace geometriáját és valódi SVG/DXF-exportját, a `test_product_runner.py` a profilbetöltést és a futtatás hibahatárait is ellenőrzi. A [check napló](../../reviews/check.log) és [Claude APPROVE bírálat](../../reviews/claude-round-2-findings.json) rögzíti a vizsgált állapotot. Nem állítunk teljes ág- vagy geometriai lefedettséget.
+
+## 2026-09-24 — a mutáció a hibát is „igazolta”
+
+A `test_dxf_text_flips_y` mutációja 13/13-as zöld jelentésben szerepelt, pedig a teszt **a hibás
+értéket** rögzítette: a DXF-ben az Y felfelé nő, a `h - y` tehát tükrözött. A mutáció azt igazolja,
+hogy a teszt a változásra érzékeny, azt nem, hogy a várt érték helyes. Ha a várt értéket a kódból
+másoljuk ki, a teszt a hibát védi. Törölve, a mutációk száma 13 → 12. Lásd
+[[pitfalls/2026-09-24-dxf-fejjel-lefele]].

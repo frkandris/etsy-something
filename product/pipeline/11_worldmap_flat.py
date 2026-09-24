@@ -29,10 +29,10 @@ import pathlib
 import sys
 
 from shapely.geometry import MultiLineString
-from exportlib import output_directory, require_valid
 from shapely.ops import unary_union
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from exportlib import output_directory, require_valid  # noqa: E402
 from cutlib import (components, heal_to_convergence, necks,  # noqa: E402
                     polys, snap,
                     text_paths, text_width, tile_piece, widest_inscribed)
@@ -319,7 +319,8 @@ def main():
             b.append("</svg>")
             (cdir / f"{cont.replace(' ', '_').lower()}.svg").write_text("\n".join(b) + "\n")
 
-        # DXF: retegnevvel, nem szinnel
+        # DXF: retegnevvel, nem szinnel. A modell Y-ja eszakra no, mint a DXF-e:
+        # itt nincs tukrozes (a korabbi H-y fejjel lefele irta a terkepet).
         dxf = ["0", "SECTION", "2", "ENTITIES"]
 
         def dxf_rings(geom, layer):
@@ -328,7 +329,7 @@ def main():
                     dxf.extend(["0", "POLYLINE", "8", layer, "66", "1", "70", "1"])
                     for x, y in ring.coords:
                         dxf.extend(["0", "VERTEX", "8", layer,
-                                    "10", f"{x:.4f}", "20", f"{H - y:.4f}"])
+                                    "10", f"{x:.4f}", "20", f"{y:.4f}"])
                     dxf.append("0")
                     dxf.append("SEQEND")
 
@@ -341,12 +342,12 @@ def main():
                 dxf.extend(["0", "POLYLINE", "8", "SCORE", "66", "1", "70", "0"])
                 for x, y in g.coords:
                     dxf.extend(["0", "VERTEX", "8", "SCORE",
-                                "10", f"{x:.4f}", "20", f"{H - y:.4f}"])
+                                "10", f"{x:.4f}", "20", f"{y:.4f}"])
                 dxf.extend(["0", "SEQEND"])
         for n, x, y, hgt in labels:
             dxf.extend(["0", "TEXT", "8", "ENGRAVE", "10", f"{x:.3f}",
-                        "20", f"{H - y:.3f}", "40", f"{hgt:.3f}", "72", "1",
-                        "11", f"{x:.3f}", "21", f"{H - y:.3f}", "1", n])
+                        "20", f"{y:.3f}", "40", f"{hgt:.3f}", "72", "1",
+                        "11", f"{x:.3f}", "21", f"{y:.3f}", "1", n])
         dxf.extend(["0", "ENDSEC", "0", "EOF"])
         (out / "world_map.dxf").write_text("\n".join(dxf))
 

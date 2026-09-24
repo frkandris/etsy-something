@@ -62,3 +62,38 @@ def test_real_trace_exports_matching_svg_dxf_set(tmp_path, full_panel):
         text = dxf.read_text()
         assert '$INSUNITS\n70\n4' in text
         assert text.rstrip().endswith('EOF')
+
+
+def _svg_ys(path):
+    d = ET.parse(path).getroot().find('{http://www.w3.org/2000/svg}path').get('d')
+    return [float(v) for v in re.findall(r'-?\d+(?:\.\d+)?', d)][1::2]
+
+
+def _dxf_ys(path):
+    lines = path.read_text().split('\n')
+    return [float(lines[i + 6]) for i in range(len(lines) - 6)
+            if lines[i] == 'VERTEX' and lines[i + 5] == '20']
+
+
+@pytest.mark.skipif(not shutil.which('potrace'), reason='potrace is required for SVG tracing')
+def test_dxf_is_not_upside_down_relative_to_svg(tmp_path):
+    # Symmetric, centred test art cannot show a vertical flip. Here the upper
+    # layers sit high on the canvas, so an unflipped DXF lands them low.
+    source = tmp_path / 'source.png'
+    img = Image.new('L', (256, 256), 0)
+    draw = ImageDraw.Draw(img)
+    for k in range(1, 7):
+        draw.rectangle((10 + (k - 1) * 12, 10 + (k - 1) * 8,
+                        245 - (k - 1) * 12, 245 - (k - 1) * 30), fill=k * 40)
+    img.save(source)
+    out = tmp_path / 'layers'
+    subprocess.run([sys.executable, str(ROOT / 'product/pipeline/02_trace.py'),
+                    '--src', str(source), '--out', str(out), '--levels', '6',
+                    '--no-keyhole', '--min-part', '20', '--merge-below', '0.001'],
+                   check=True, capture_output=True)
+    size = json.loads((out / 'report.json').read_text())['size_mm']
+    top = sorted(out.glob('layer_*.svg'))[-1]
+    svg_ys, dxf_ys = _svg_ys(top), _dxf_ys(top.with_suffix('.dxf'))
+    assert max(svg_ys) < size / 2                       # SVG: near the top edge
+    assert min(dxf_ys) == pytest.approx(size - max(svg_ys), abs=0.01)
+    assert max(dxf_ys) == pytest.approx(size - min(svg_ys), abs=0.01)

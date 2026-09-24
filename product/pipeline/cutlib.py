@@ -192,15 +192,6 @@ def svg_text(name, x, y, hgt, h, rot=0.0, fill="#803c14"):
             'fill-rule="evenodd" stroke="none"/>')
 
 
-def dxf_text(name, x, y, hgt, h, rot=0.0):
-    """R12 TEXT entitás. Az Y-t H-y alakban írjuk — a vágó-DXF minden
-    geometriája így megy, és ha a szöveg kimarad belőle, függőlegesen tükrözve
-    gravírozódik. Az 50-es kód a forgatás."""
-    return ["0", "TEXT", "8", "ENGRAVE", "10", f"{x:.3f}", "20", f"{h - y:.3f}",
-            "40", f"{hgt:.3f}", "50", f"{rot:.1f}", "72", "1",
-            "11", f"{x:.3f}", "21", f"{h - y:.3f}", "1", name]
-
-
 def drop_specks(geom, min_area):
     """Sziget, ami kisebb a küszöbnél, kiesik a lapból — nem vágjuk ki.
     Lyukra ugyanez: egy 1 mm²-es tavat nem érdemes kivágni.
